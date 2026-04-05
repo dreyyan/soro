@@ -1,0 +1,150 @@
+import 'package:flutter/material.dart';
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+// [CLASSES]
+class Question {
+  String question;
+  String answer;
+  List<String> choices;
+
+  // Constructor
+  Question(this.question, this.answer, this.choices);
+}
+
+
+class _HomePageState extends State<HomePage> {
+  // [STATES] Statistics
+  int score = 0;
+  int currentNumber = 0;
+  String selectedAnswer = "";
+
+  // [STATES] Questions
+  List<Question> questions = [
+    Question(
+      "What is the primary function of mitochondria in a cell?",
+      "Energy Production",
+      [
+        "Protein Synthesis",
+        "Energy Production",
+        "Genetic Storage",
+        "Waste Removal"
+      ],
+    ),
+    Question(
+      "What does DNA primarily store?",
+      "Genetic Information",
+      [
+        "Energy",
+        "Proteins",
+        "Genetic Information",
+        "Waste"
+      ],
+    ),
+    Question(
+      "Which organ is responsible for pumping blood?",
+      "Heart",
+      [
+        "Lungs",
+        "Brain",
+        "Heart",
+        "Liver"
+      ],
+    ),
+  ];
+
+  Question get currentQuestion => questions[currentNumber];
+
+  // [HELPER] Check if answer is correct (+1) or wrong (+0)
+  void checkAnswer(String choice) {
+    if (choice == currentQuestion.answer) { score++; }
+
+    if (currentNumber < questions.length - 1) {
+      currentNumber++; // proceed to the next number
+      selectedAnswer = ""; // reset selected answer
+    } else {
+      // [MODAL] Quiz Finished
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text("Quiz Finished!"),
+          content: Text("Your score is $score/${questions.length}"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                setState(() {
+                  currentNumber = 0;
+                  score = 0;
+                  selectedAnswer = "";
+                });
+              },
+              child: Text("Restart"),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Quiz"),
+      ),
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // [SECTION] Question + Score
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Question ${currentNumber + 1}"),
+                Text("Score: $score"),
+              ],
+            ),
+
+            SizedBox(height: 20),
+
+            // [TEXT] Question
+            Text(
+              currentQuestion.question,
+              style: TextStyle(
+                fontFamily: "Baloo",
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+
+            // [SPACE]
+            Spacer(),
+
+            // [SECTION] Choices
+            ...currentQuestion.choices.map((choice) => Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.symmetric(vertical: 8),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () => setState(() => checkAnswer(choice)),
+                    child: Text(choice),
+                  ),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+}
