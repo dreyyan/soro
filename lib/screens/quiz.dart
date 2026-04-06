@@ -6,7 +6,6 @@ import 'dart:async';
 
 // [IMPORT] Components
 import 'package:sora/widgets/choice_button.dart';
-import 'package:sora/widgets/primary_button.dart';
 
 class Quiz extends StatefulWidget {
   const Quiz({super.key});
@@ -30,10 +29,11 @@ class _QuizState extends State<Quiz> {
   int score = 0;
   int currentNumber = 0;
   String selectedAnswer = "";
+  bool answerSubmitted = false;
   String quizTitle = "Science Quiz 1";
 
   Timer? timer;
-  int timeLeft = 30;
+  int timeLeft = 120;
 
   // [STATES] Questions
   List<Question> questions = [
@@ -138,11 +138,6 @@ class _QuizState extends State<Quiz> {
 
   }
 
-  // [FUNCTION] Submit quiz if last number, else, proceed to the next number
-  void handleNext() {
-    
-  }
-
   // [HELPER] Format time as 'mm:ss'
   String formatTime(int seconds) {
     final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
@@ -152,14 +147,10 @@ class _QuizState extends State<Quiz> {
 
   // [HELPER] Check if answer is correct (+1) or wrong (+0)
   void checkAnswer(String choice) {
-    if (choice == currentQuestion.answer) { score++; }
-
-    if (!isLastNumber()) {
-      currentNumber++; // proceed to the next number
-      selectedAnswer = ""; // reset selected answer
-    } else {
-      submitQuiz();
+    if (choice == currentQuestion.answer) {
+      score++;
     }
+    answerSubmitted = true;
   }
 
   @override
@@ -355,25 +346,54 @@ class _QuizState extends State<Quiz> {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch, // full width
-                children: currentQuestion.choices.map((choice) => Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8), // spacing between buttons
-                  child: ChoiceButton(
-                    text: choice,
-                    onPressed: () => setState(() { checkAnswer(choice); }),
-                    backgroundColor: AppColors.secondary_50,
-                  ),
-                )).toList(),
+                children: currentQuestion.choices.map((choice) {
+                  Color btnColor = AppColors.secondary_50;
+
+                  if (answerSubmitted) {
+                    if (choice == currentQuestion.answer) {
+                      btnColor = AppColors.green_300;
+                    } else if (choice == selectedAnswer && choice != currentQuestion.answer) {
+                      btnColor = AppColors.primary_300;
+                    } else {
+                      btnColor = AppColors.secondary_50;
+                    }
+                  } else if (selectedAnswer == choice) {
+                    btnColor = AppColors.secondary_200; // highlight selected before submitting
+                  }
+
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: ChoiceButton(
+                      text: choice,
+                      backgroundColor: btnColor,
+                      onPressed: answerSubmitted ? () {} : () {
+                        setState(() {
+                          selectedAnswer = choice;
+                          answerSubmitted = true; // submit immediately for feedback
+                          if (choice == currentQuestion.answer) {
+                            score++;
+                          }
+                        });
+
+                        // Wait before moving to next question
+                        Future.delayed(Duration(seconds: 1), () {
+                          setState(() {
+                            answerSubmitted = false;
+                            selectedAnswer = "";
+                            if (!isLastNumber()) {
+                              currentNumber++;
+                            } else {
+                              submitQuiz();
+                            }
+                          });
+                        });
+                      },
+                      selectedAnswer: selectedAnswer == choice,
+                    ),
+                  );
+                }).toList(),
               ),
             ),
-
-            // [SPACE]
-            SizedBox(height: 40),
-
-            // [PRIMARY BUTTON] Next / Submit
-            PrimaryButton(
-              text: isLastNumber() ? "Submit" : "Next",
-              onPressed: () => handleNext(),
-            )
           ],
         ),
       ),
