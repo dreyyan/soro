@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sora/main.dart';
 
 // [IMPORT] Components
 import 'package:sora/widgets/choice_button.dart';
@@ -134,7 +135,8 @@ class _HomePageState extends State<HomePage> {
             ...currentQuestion.choices.map((choice) =>
             ChoiceButton(
               text: choice,
-              onPressed: () => setState(() { checkAnswer(choice); })
+              onPressed: () => setState(() { checkAnswer(choice); }),
+              backgroundColor: AppColors.secondary_50,
               )
             )
           ],
