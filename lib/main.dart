@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 // [IMPORT] Pages
-import 'package:sora/pages/home_page.dart';
+import 'package:sora/screens/home_page.dart';
 
 void main() {
   runApp(MyApp());
