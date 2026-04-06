@@ -1,8 +1,9 @@
 // [IMPORT] Widgets
 import 'package:flutter/material.dart';
 
-// [IMPORT] Pages
+// [IMPORT] Screens
 import 'package:soro/screens/quiz.dart';
+import 'package:soro/screens/home_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -17,7 +18,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false, // hide 'default' banner
       theme: ThemeData(),
-      home: Quiz(),
+
+      // [ROUTES]
+      initialRoute: '/',
+      routes: {
+        '/': (_) => const HomePage(),
+        '/quiz': (_) => const Quiz()
+      }
     );
   }
 }
