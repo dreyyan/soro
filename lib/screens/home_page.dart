@@ -10,7 +10,7 @@ class HomePage extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           onPressed: () {
-            Navigator.pushNamed(context, '/quiz');
+            Navigator.pushNamed(context, '/quiz/settings');
           },
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -19,7 +19,7 @@ class HomePage extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          child: const Text("Start Quiz"),
+          child: const Text("Quiz"),
         ),
       ),
     );

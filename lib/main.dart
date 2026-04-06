@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 // [IMPORT] Screens
 import 'package:soro/screens/quiz.dart';
 import 'package:soro/screens/home_page.dart';
+import 'package:soro/screens/quiz_settings.dart';
 
 void main() {
   runApp(MyApp());
@@ -23,7 +24,8 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (_) => const HomePage(),
-        '/quiz': (_) => const Quiz()
+        '/quiz/settings': (_) => const QuizSettings(),
+        '/quiz/start': (_) => const Quiz()
       }
     );
   }
