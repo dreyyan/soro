@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sora/main.dart';
+import 'package:soro/main.dart';
 
 class ChoiceButton extends StatelessWidget {
   // Attributes

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 // [IMPORT] Pages
-import 'package:sora/screens/quiz.dart';
+import 'package:soro/screens/quiz.dart';
 
 void main() {
   runApp(MyApp());

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:sora/main.dart';
+
+// [IMPORT] Screens
+import 'package:soro/main.dart';
+import 'home_page.dart';
 
 // [IMPORT] Timer
 import 'dart:async';
 
 // [IMPORT] Components
-import 'package:sora/widgets/choice_button.dart';
+import 'package:soro/widgets/choice_button.dart';
 
 class Quiz extends StatefulWidget {
   const Quiz({super.key});
@@ -135,7 +138,10 @@ class _QuizState extends State<Quiz> {
 
   // [FUNCTION] Return back to menu
   void handleBack() {
-
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => HomePage()),
+    );
   }
 
   // [HELPER] Format time as 'mm:ss'
