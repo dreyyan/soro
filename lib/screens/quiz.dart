@@ -131,13 +131,36 @@ class _QuizState extends State<Quiz> {
             Spacer(),
 
             // [SECTION] Choices
-            ...currentQuestion.choices.map((choice) =>
-            ChoiceButton(
-              text: choice,
-              onPressed: () => setState(() { checkAnswer(choice); }),
-              backgroundColor: AppColors.secondary_50,
-              )
-            )
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(16), // parent padding
+              decoration: BoxDecoration(
+                color: AppColors.secondary_100,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.secondary_500, // shadow color
+                    spreadRadius: 0, // how much the shadow spreads
+                    blurRadius: 4,   // softness of the shadow
+                    offset: Offset(0, 2), // horizontal & vertical offset
+                  ),
+                ]
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch, // full width
+                children: currentQuestion.choices.map((choice) => Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8), // spacing between buttons
+                  child: ChoiceButton(
+                    text: choice,
+                    onPressed: () => setState(() { checkAnswer(choice); }),
+                    backgroundColor: AppColors.secondary_50,
+                  ),
+                )).toList(),
+              ),
+            ),
+
+            // [PRIMARY BUTTON] Next / Submit
+            
           ],
         ),
       ),
