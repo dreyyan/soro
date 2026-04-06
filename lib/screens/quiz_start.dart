@@ -10,11 +10,11 @@ import 'dart:async';
 // [IMPORT] Components
 import 'package:soro/widgets/choice_button.dart';
 
-class Quiz extends StatefulWidget {
-  const Quiz({super.key});
+class QuizStart extends StatefulWidget {
+  const QuizStart({super.key});
 
   @override
-  State<Quiz> createState() => _QuizState();
+  State<QuizStart> createState() => _QuizStartState();
 }
 
 // [CLASSES]
@@ -27,7 +27,7 @@ class Question {
   Question(this.question, this.answer, this.choices);
 }
 
-class _QuizState extends State<Quiz> {
+class _QuizStartState extends State<QuizStart> {
   // [STATES] Statistics
   int score = 0;
   int currentNumber = 0;
