@@ -17,9 +17,8 @@ class ChoiceButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      margin: EdgeInsets.symmetric(vertical: 8),
       child: ElevatedButton(
         onPressed: onPressed,
         style: ButtonStyle(
