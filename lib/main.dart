@@ -13,8 +13,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Configures themes and routes
+    // [CONFIGURATION] Themes & routes
     return MaterialApp(
+      debugShowCheckedModeBanner: false, // hide 'default' banner
       theme: ThemeData(),
       home: Quiz(),
     );
