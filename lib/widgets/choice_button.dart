@@ -5,6 +5,7 @@ class ChoiceButton extends StatelessWidget {
   // Attributes
   final String text;
   final VoidCallback onPressed;
+  final bool selectedAnswer;
   final Color backgroundColor;
 
   // Constructor
@@ -12,6 +13,7 @@ class ChoiceButton extends StatelessWidget {
     super.key,
     required this.text,
     required this.onPressed,
+    required this.selectedAnswer,
     required this.backgroundColor,
   });
 
@@ -36,9 +38,9 @@ class ChoiceButton extends StatelessWidget {
           minimumSize: WidgetStatePropertyAll(Size(double.infinity, 50)),
           backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
             if (states.contains(WidgetState.pressed)) {
-              return AppColors.primary_100;
+              return backgroundColor.withValues(alpha: 0.8); // pressed effect
             }
-            return AppColors.secondary_50;
+            return backgroundColor;
           }),
           foregroundColor: WidgetStatePropertyAll(AppColors.text_700),
           shape: WidgetStateProperty.resolveWith<OutlinedBorder>((states) =>
