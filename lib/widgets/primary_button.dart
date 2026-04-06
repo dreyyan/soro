@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sora/main.dart';
-import 'choice_button.dart';
 
 class PrimaryButton extends StatelessWidget {
   // Attributes
