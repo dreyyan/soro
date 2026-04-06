@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 // [IMPORT] Pages
-import 'package:sora/screens/home_page.dart';
+import 'package:sora/screens/quiz.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
     // Configures themes and routes
     return MaterialApp(
       theme: ThemeData(),
-      home: HomePage(),
+      home: Quiz(),
     );
   }
 }

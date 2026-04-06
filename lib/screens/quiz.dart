@@ -4,11 +4,11 @@ import 'package:sora/main.dart';
 // [IMPORT] Components
 import 'package:sora/widgets/choice_button.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class Quiz extends StatefulWidget {
+  const Quiz({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<Quiz> createState() => _QuizState();
 }
 
 // [CLASSES]
@@ -21,8 +21,7 @@ class Question {
   Question(this.question, this.answer, this.choices);
 }
 
-
-class _HomePageState extends State<HomePage> {
+class _QuizState extends State<Quiz> {
   // [STATES] Statistics
   int score = 0;
   int currentNumber = 0;
