@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+// [IMPORT] Components
+import 'package:sora/widgets/choice_button.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -128,20 +131,12 @@ class _HomePageState extends State<HomePage> {
             Spacer(),
 
             // [SECTION] Choices
-            ...currentQuestion.choices.map((choice) => Container(
-                  width: double.infinity,
-                  margin: EdgeInsets.symmetric(vertical: 8),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed: () => setState(() => checkAnswer(choice)),
-                    child: Text(choice),
-                  ),
-                )),
+            ...currentQuestion.choices.map((choice) =>
+            ChoiceButton(
+              text: choice,
+              onPressed: () => setState(() { checkAnswer(choice); })
+              )
+            )
           ],
         ),
       ),
