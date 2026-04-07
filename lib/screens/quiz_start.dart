@@ -1,14 +1,20 @@
+// [IMPORT] Libraries
 import 'package:flutter/material.dart';
+import 'dart:math';
+import 'dart:async';
 
 // [IMPORT] Screens
 import 'package:soro/main.dart';
 import 'home_page.dart';
 
-// [IMPORT] Timer
-import 'dart:async';
-
 // [IMPORT] Components
 import 'package:soro/widgets/choice_button.dart';
+
+// [IMPORT] Database
+import '../database/database_helper.dart';
+
+// [IMPORT] Classes
+import '../models/question.dart';
 
 class QuizStart extends StatefulWidget {
   const QuizStart({super.key});
@@ -17,68 +23,68 @@ class QuizStart extends StatefulWidget {
   State<QuizStart> createState() => _QuizStartState();
 }
 
-// [CLASSES]
-class Question {
-  String question;
-  String answer;
-  List<String> choices;
-
-  // Constructor
-  Question(this.question, this.answer, this.choices);
-}
-
 class _QuizStartState extends State<QuizStart> {
-  // [STATES] Statistics
+  // [STATES] Quiz statistics
   int score = 0;
   int currentNumber = 0;
   String selectedAnswer = "";
   bool answerSubmitted = false;
   String quizTitle = "Science Quiz 1";
 
+  // [STATES] Timer
   Timer? timer;
   int timeLeft = 120;
 
-  // [STATES] Questions
-  List<Question> questions = [
-    Question(
-      "What is the primary function of mitochondria in a cell?",
-      "Energy Production",
-      [
-        "Protein Synthesis",
-        "Energy Production",
-        "Genetic Storage",
-        "Waste Removal"
-      ],
-    ),
-    Question(
-      "What does DNA primarily store?",
-      "Genetic Information",
-      [
-        "Energy",
-        "Proteins",
-        "Genetic Information",
-        "Waste"
-      ],
-    ),
-    Question(
-      "Which organ is responsible for pumping blood?",
-      "Heart",
-      [
-        "Lungs",
-        "Brain",
-        "Heart",
-        "Liver"
-      ],
-    ),
-  ];
+  // [DATABASE] Hive helper
+  final dbHelper = DatabaseHelper();
 
+  // [STATES] Quiz settings
+  int numberOfQuestions = 5;
+  String selectedMode = "Multiple Choice";
+  String selectedGameMode = "Classic";
+
+  // [STATES] Loaded questions
+  List<Question> questions = [];
   Question get currentQuestion => questions[currentNumber];
 
-  // [FUNCTION] Calculate score and evaluation
-  void submitQuiz() {
-    timer?.cancel(); // stop timer
+  // [FUNCTION] Generate choices with distractors
+  void _generateChoices() {
+    final random = Random();
+    final allAnswers = questions.map((q) => q.answer).toList();
 
-    // [DIALOG] Finished quiz
+    for (var question in questions) {
+      final wrongAnswers = allAnswers
+          .where((a) => a != question.answer)
+          .toSet()
+          .toList()
+        ..shuffle(random);
+
+      final distractors = wrongAnswers.take(3).toList();
+      final fillers = [
+        "None of the above",
+        "All of the above",
+        "Cannot be determined",
+        "Not applicable",
+      ];
+
+      int fillerIndex = 0;
+      while (distractors.length < 3 && fillerIndex < fillers.length) {
+        final filler = fillers[fillerIndex];
+        if (filler != question.answer && !distractors.contains(filler)) {
+          distractors.add(filler);
+        }
+        fillerIndex++;
+      }
+
+      question.choices = [...distractors, question.answer]..shuffle(random);
+    }
+  }
+
+  // [FUNCTION] Submit quiz and show score
+  void submitQuiz() {
+    timer?.cancel();
+
+    // [DIALOG] Show finished quiz
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -92,8 +98,8 @@ class _QuizStartState extends State<QuizStart> {
                 currentNumber = 0;
                 score = 0;
                 selectedAnswer = "";
-                timeLeft = 60; // reset timer
-                startTimer(); // restart quiz
+                timeLeft = 60;
+                startTimer();
               });
             },
             child: Text("Restart"),
@@ -106,12 +112,9 @@ class _QuizStartState extends State<QuizStart> {
   // [FUNCTION] Timer countdown
   void startTimer() {
     timer?.cancel();
-
     timer = Timer.periodic(Duration(seconds: 1), (t) {
       if (timeLeft > 0) {
-        setState(() {
-          timeLeft--;
-        });
+        setState(() => timeLeft--);
       } else {
         t.cancel();
         submitQuiz();
@@ -119,11 +122,50 @@ class _QuizStartState extends State<QuizStart> {
     });
   }
 
-  // [FUNCTION] Start timer
+  // [GET] Load settings and questions from arguments
+  void _loadSettings() async {
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+    if (args != null) {
+      numberOfQuestions = args['numberOfQuestions'] ?? 5;
+      selectedMode = args['mode'] ?? "Multiple Choice";
+      selectedGameMode = args['gameMode'] ?? "Classic";
+
+      final rawList = args['questions'] as List?;
+      if (rawList != null && rawList.isNotEmpty) {
+        questions = rawList.map((q) {
+          final map = Map<String, dynamic>.from(q as Map);
+          return Question(
+            map['question'] as String,
+            map['answer'] as String,
+            List<String>.from(map['choices'] ?? []),
+          );
+        }).toList();
+      }
+    }
+
+    setState(() {});
+
+    if (questions.isNotEmpty) {
+      _generateChoices();
+      startTimer();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    startTimer(); // start countdown when screen loads
+  }
+
+  bool _settingsLoaded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_settingsLoaded) {
+      _settingsLoaded = true;
+      _loadSettings();
+    }
   }
 
   // [FUNCTION] Dispose timer
@@ -133,10 +175,10 @@ class _QuizStartState extends State<QuizStart> {
     super.dispose();
   }
 
-  // [HELPER] Check if last number
-  bool isLastNumber() { return currentNumber == questions.length - 1; }
+  // [HELPER] Check if last question
+  bool isLastNumber() => currentNumber == questions.length - 1;
 
-  // [FUNCTION] Return back to menu
+  // [FUNCTION] Navigate back to home
   void handleBack() {
     Navigator.pushReplacement(
       context,
@@ -144,23 +186,33 @@ class _QuizStartState extends State<QuizStart> {
     );
   }
 
-  // [HELPER] Format time as 'mm:ss'
+  // [HELPER] Format seconds to mm:ss
   String formatTime(int seconds) {
     final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
     final secs = (seconds % 60).toString().padLeft(2, '0');
     return "$minutes:$secs";
   }
 
-  // [HELPER] Check if answer is correct (+1) or wrong (+0)
-  void checkAnswer(String choice) {
-    if (choice == currentQuestion.answer) {
-      score++;
-    }
-    answerSubmitted = true;
-  }
-
   @override
   Widget build(BuildContext context) {
+    if (questions.isEmpty) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("No questions found."),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: handleBack,
+                child: Text("Go Back"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.secondary_300,
       body: Padding(
@@ -168,14 +220,15 @@ class _QuizStartState extends State<QuizStart> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // [HEADER] Quiz title + timer + back button
             IntrinsicHeight(
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch, // make children fill the height
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // [BUTTON] Back
                   SizedBox(
-                    width: 48, // fixed width for square button
+                    width: 48,
                     child: ElevatedButton(
                       onPressed: handleBack,
                       style: ButtonStyle(
@@ -194,20 +247,15 @@ class _QuizStartState extends State<QuizStart> {
                       child: Center(
                         child: Text(
                           "<",
-                          style: TextStyle(
-                            fontFamily: "Nunito",
-                            fontWeight: FontWeight.w700,
-                            fontSize: 24,
-                          ),
+                          style: TextStyle(fontFamily: "Nunito", fontWeight: FontWeight.w700, fontSize: 24),
                         ),
                       ),
                     ),
                   ),
 
-                  // [SPACE]
                   SizedBox(width: 16),
 
-                  // [HEADER] Quiz title + timer
+                  // [QUIZ TITLE + TIMER]
                   Expanded(
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -258,31 +306,29 @@ class _QuizStartState extends State<QuizStart> {
               ),
             ),
 
-            // [SPACE]
             SizedBox(height: 20),
 
-            // [SECTION] Choices
+            // [QUESTION SECTION] Progress + question text
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(16), // parent padding
+              padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.secondary_100,
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.secondary_500, // shadow color
-                    spreadRadius: 0, // how much the shadow spreads
-                    blurRadius: 4,   // softness of the shadow
-                    offset: Offset(0, 2), // horizontal & vertical offset
+                    color: AppColors.secondary_500,
+                    spreadRadius: 0,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
                   ),
-                ]
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // [COMPONENT] Progress Bar
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(100), // make the progress bar fully rounded
+                    borderRadius: BorderRadius.circular(100),
                     child: LinearProgressIndicator(
                       value: (currentNumber + 1) / questions.length,
                       minHeight: 6,
@@ -290,68 +336,47 @@ class _QuizStartState extends State<QuizStart> {
                       valueColor: AlwaysStoppedAnimation(AppColors.primary_600),
                     ),
                   ),
-                  // [SPACE]
                   SizedBox(height: 8),
-                  // [UI] Question Number
                   Text.rich(
                     TextSpan(
-                      style: TextStyle(
-                        fontFamily: "Nunito",
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: TextStyle(fontFamily: "Nunito", fontSize: 12, fontWeight: FontWeight.w500),
                       children: [
                         TextSpan(text: "Question "),
-                        TextSpan(
-                          text: "${currentNumber + 1}",
-                          style: TextStyle(fontWeight: FontWeight.w800),
-                        ),
+                        TextSpan(text: "${currentNumber + 1}", style: TextStyle(fontWeight: FontWeight.w800)),
                         TextSpan(text: " of "),
-                        TextSpan(
-                          text: "${questions.length}",
-                          style: TextStyle(fontWeight: FontWeight.w800),
-                        ),
+                        TextSpan(text: "${questions.length}", style: TextStyle(fontWeight: FontWeight.w800)),
                       ],
                     ),
                   ),
-
-                  // [SPACE]
                   SizedBox(height: 16),
-
-                  // [UI] Question
                   Text(
                     currentQuestion.question,
-                    style: TextStyle(
-                      fontFamily: "Baloo",
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: TextStyle(fontFamily: "Baloo", fontSize: 18, fontWeight: FontWeight.w500),
                   ),
                 ],
-              )
+              ),
             ),
 
-            // [SPACE]
             Spacer(),
 
-            // [SECTION] Choices
+            // [CHOICES SECTION] Answer buttons
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(16), // parent padding
+              padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.secondary_100,
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.secondary_500, // shadow color
-                    spreadRadius: 0, // how much the shadow spreads
-                    blurRadius: 4,   // softness of the shadow
-                    offset: Offset(0, 2), // horizontal & vertical offset
+                    color: AppColors.secondary_500,
+                    spreadRadius: 0,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
                   ),
-                ]
+                ],
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch, // full width
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: currentQuestion.choices.map((choice) {
                   Color btnColor = AppColors.secondary_50;
 
@@ -364,7 +389,7 @@ class _QuizStartState extends State<QuizStart> {
                       btnColor = AppColors.secondary_50;
                     }
                   } else if (selectedAnswer == choice) {
-                    btnColor = AppColors.secondary_200; // highlight selected before submitting
+                    btnColor = AppColors.secondary_200;
                   }
 
                   return Padding(
@@ -372,28 +397,27 @@ class _QuizStartState extends State<QuizStart> {
                     child: ChoiceButton(
                       text: choice,
                       backgroundColor: btnColor,
-                      onPressed: answerSubmitted ? () {} : () {
-                        setState(() {
-                          selectedAnswer = choice;
-                          answerSubmitted = true; // submit immediately for feedback
-                          if (choice == currentQuestion.answer) {
-                            score++;
-                          }
-                        });
+                      onPressed: answerSubmitted
+                          ? () {}
+                          : () {
+                              setState(() {
+                                selectedAnswer = choice;
+                                answerSubmitted = true;
+                                if (choice == currentQuestion.answer) score++;
+                              });
 
-                        // Wait before moving to next question
-                        Future.delayed(Duration(seconds: 1), () {
-                          setState(() {
-                            answerSubmitted = false;
-                            selectedAnswer = "";
-                            if (!isLastNumber()) {
-                              currentNumber++;
-                            } else {
-                              submitQuiz();
-                            }
-                          });
-                        });
-                      },
+                              Future.delayed(Duration(seconds: 1), () {
+                                setState(() {
+                                  answerSubmitted = false;
+                                  selectedAnswer = "";
+                                  if (!isLastNumber()) {
+                                    currentNumber++;
+                                  } else {
+                                    submitQuiz();
+                                  }
+                                });
+                              });
+                            },
                       selectedAnswer: selectedAnswer == choice,
                     ),
                   );
