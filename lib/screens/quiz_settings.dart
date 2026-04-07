@@ -1,4 +1,11 @@
+// [IMPORT] Material Library
 import 'package:flutter/material.dart';
+
+// [IMPORT] Hive
+import 'package:hive/hive.dart';
+
+// [IMPORT] Classes
+import '../models/question.dart';
 
 class QuizSettings extends StatefulWidget {
   const QuizSettings({super.key});
@@ -8,18 +15,87 @@ class QuizSettings extends StatefulWidget {
 }
 
 class _QuizSettingsState extends State<QuizSettings> {
-  // [STATES] Form values
+  // [STATES] Quiz Settings
   int numberOfQuestions = 5;
   String selectedMode = "Multiple Choice";
-
-  // [STATES] Game mode
   String selectedGameMode = "Classic";
+  List<Question> questions = [];
 
-  // [OPTIONS] Modes
+  // [CONTROLLER] For pasting questions
+  final TextEditingController questionsController = TextEditingController();
+
+  // [OPTIONS] Quiz Modes
   final List<String> modes = ["Multiple Choice", "Identification", "True or False"];
 
-  // [OPTIONS] Game modes
+  // [OPTIONS] Game Modes
   final List<String> gameModes = ["Classic", "Time Attack"];
+
+  // [DATABASE] Hive box for quiz settings
+  late Box settingsBox;
+
+  @override
+  void initState() {
+    super.initState();
+    _initHive(); // [INIT] Hive and load saved settings
+  }
+
+  // [INIT] Open Hive box
+  void _initHive() async {
+    settingsBox = await Hive.openBox('quiz_settings');
+    _loadSavedSettings();
+  }
+
+  // [GET] Load saved quiz settings
+  void _loadSavedSettings() {
+    final saved = settingsBox.get('settings');
+    if (saved != null) {
+      final Map<String, dynamic> savedMap = Map<String, dynamic>.from(saved);
+      setState(() {
+        numberOfQuestions = savedMap['numberOfQuestions'] ?? 5;
+        selectedMode = savedMap['mode'] ?? "Multiple Choice";
+        selectedGameMode = savedMap['gameMode'] ?? "Classic";
+      });
+    }
+  }
+
+  // [POST] Save quiz settings
+  Future<void> _saveSettings() async {
+    await settingsBox.put('settings', {
+      'numberOfQuestions': numberOfQuestions,
+      'mode': selectedMode,
+      'gameMode': selectedGameMode,
+    });
+  }
+
+  // [FUNCTION] Parse pasted Q&A text into Question objects
+  void _parseQuestions() {
+    questions.clear();
+    final lines = questionsController.text
+        .split('\n')
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
+
+    for (int i = 0; i < lines.length - 1; i++) {
+      final currentLine = lines[i];
+      final nextLine = lines[i + 1];
+
+      if (nextLine.startsWith('-')) {
+        final q = currentLine;
+        final a = nextLine.substring(1).trim();
+        if (q.isNotEmpty && a.isNotEmpty) {
+          questions.add(Question(q, a));
+        }
+        i++; // Skip the answer line
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    questionsController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,24 +113,17 @@ class _QuizSettingsState extends State<QuizSettings> {
             // [INPUT] Number of questions
             Text(
               "Number of Questions",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             DropdownButton<int>(
               value: numberOfQuestions,
               isExpanded: true,
               items: [5, 10, 15, 20]
-                  .map((num) => DropdownMenuItem(
-                        value: num,
-                        child: Text("$num"),
-                      ))
+                  .map((num) => DropdownMenuItem(value: num, child: Text("$num")))
                   .toList(),
               onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    numberOfQuestions = value;
-                  });
-                }
+                if (value != null) setState(() => numberOfQuestions = value);
               },
             ),
             const SizedBox(height: 24),
@@ -62,24 +131,17 @@ class _QuizSettingsState extends State<QuizSettings> {
             // [INPUT] Quiz mode
             Text(
               "Mode",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             DropdownButton<String>(
               value: selectedMode,
               isExpanded: true,
               items: modes
-                  .map((mode) => DropdownMenuItem(
-                        value: mode,
-                        child: Text(mode),
-                      ))
+                  .map((mode) => DropdownMenuItem(value: mode, child: Text(mode)))
                   .toList(),
               onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    selectedMode = value;
-                  });
-                }
+                if (value != null) setState(() => selectedMode = value);
               },
             ),
             const SizedBox(height: 24),
@@ -87,33 +149,47 @@ class _QuizSettingsState extends State<QuizSettings> {
             // [INPUT] Game mode
             Text(
               "Game Mode",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             DropdownButton<String>(
               value: selectedGameMode,
               isExpanded: true,
               items: gameModes
-                  .map((mode) => DropdownMenuItem(
-                        value: mode,
-                        child: Text(mode),
-                      ))
+                  .map((mode) => DropdownMenuItem(value: mode, child: Text(mode)))
                   .toList(),
               onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    selectedGameMode = value;
-                  });
-                }
+                if (value != null) setState(() => selectedGameMode = value);
               },
             ),
+            const SizedBox(height: 24),
 
-            const Spacer(),
+            // [INPUT] Pasteable Q&A field
+            Text(
+              "Paste Questions (Q / -A format):",
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: TextField(
+                controller: questionsController,
+                keyboardType: TextInputType.multiline,
+                maxLines: null,
+                expands: true,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "Mitochondria\n- powerhouse of the cell\nCell\n- basic unit of life",
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
 
             // [BUTTON] Start Quiz
             ElevatedButton(
-              onPressed: () {
-                // Pass the settings to the quiz start page via arguments
+              onPressed: () async {
+                _parseQuestions(); // Convert text to Question objects
+                await _saveSettings(); // Save settings to Hive
+                
                 Navigator.pushNamed(
                   context,
                   '/quiz/start',
@@ -121,15 +197,19 @@ class _QuizSettingsState extends State<QuizSettings> {
                     "numberOfQuestions": numberOfQuestions,
                     "mode": selectedMode,
                     "gameMode": selectedGameMode,
+                    "questions": questions
+                        .map((q) => {
+                              "question": q.question,
+                              "answer": q.answer,
+                              "choices": q.choices,
+                            })
+                        .toList(),
                   },
                 );
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                textStyle: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               child: const Text("Start Quiz"),
             ),
