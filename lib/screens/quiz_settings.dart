@@ -10,10 +10,16 @@ class QuizSettings extends StatefulWidget {
 class _QuizSettingsState extends State<QuizSettings> {
   // [STATES] Form values
   int numberOfQuestions = 5;
-  String selectedMode = "Easy";
+  String selectedMode = "Multiple Choice";
+
+  // [STATES] Game mode
+  String selectedGameMode = "Classic";
 
   // [OPTIONS] Modes
-  final List<String> modes = ["Easy", "Medium", "Hard"];
+  final List<String> modes = ["Multiple Choice", "Identification", "True or False"];
+
+  // [OPTIONS] Game modes
+  final List<String> gameModes = ["Classic", "Time Attack"];
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +82,32 @@ class _QuizSettingsState extends State<QuizSettings> {
                 }
               },
             ),
+            const SizedBox(height: 24),
+
+            // [INPUT] Game mode
+            Text(
+              "Game Mode",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            DropdownButton<String>(
+              value: selectedGameMode,
+              isExpanded: true,
+              items: gameModes
+                  .map((mode) => DropdownMenuItem(
+                        value: mode,
+                        child: Text(mode),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    selectedGameMode = value;
+                  });
+                }
+              },
+            ),
+
             const Spacer(),
 
             // [BUTTON] Start Quiz
@@ -88,6 +120,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                   arguments: {
                     "numberOfQuestions": numberOfQuestions,
                     "mode": selectedMode,
+                    "gameMode": selectedGameMode,
                   },
                 );
               },
