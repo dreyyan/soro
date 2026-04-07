@@ -5,6 +5,7 @@ import 'dart:async';
 
 // [IMPORT] Screens
 import 'package:soro/main.dart';
+import 'package:soro/screens/quiz_settings.dart';
 import 'home_page.dart';
 
 // [IMPORT] Components
@@ -178,11 +179,11 @@ class _QuizStartState extends State<QuizStart> {
   // [HELPER] Check if last question
   bool isLastNumber() => currentNumber == questions.length - 1;
 
-  // [FUNCTION] Navigate back to home
+  // [FUNCTION] Navigate back to quiz settings
   void handleBack() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => HomePage()),
+      MaterialPageRoute(builder: (context) => QuizSettings()),
     );
   }
 
