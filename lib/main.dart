@@ -2,11 +2,20 @@
 import 'package:flutter/material.dart';
 
 // [IMPORT] Screens
-import 'package:soro/screens/quiz_start.dart';
 import 'package:soro/screens/home_page.dart';
+import 'package:soro/screens/quiz_start.dart';
 import 'package:soro/screens/quiz_settings.dart';
 
-void main() {
+// [IMPORT] SQLite
+import './database/database_helper.dart';
+
+void main() async {
+  // Ensure SQLite is initialized before runApp
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Hive (local database)
+  await DatabaseHelper.init();
+
   runApp(MyApp());
 }
 
@@ -20,7 +29,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false, // hide 'default' banner
       theme: ThemeData(),
 
-      // [ROUTES]
+      // [ROUTES] User
       initialRoute: '/',
       routes: {
         '/': (_) => const HomePage(),
@@ -31,6 +40,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// ? [CLASS] Color Palette
 class AppColors {
   static const Color primary_50 = Color(0xFFFFF3EE);
   static const Color primary_100 = Color(0xFFFFE4D9);
