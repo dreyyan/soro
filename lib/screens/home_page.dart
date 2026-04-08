@@ -74,7 +74,7 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
                 child: Text(
-                  getRandomTrivia(), // returns a random trivia string
+                  getRandomTrivia(), // return a random trivia string
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -87,7 +87,7 @@ class HomePage extends StatelessWidget {
               // [SPACE]
               const SizedBox(height: 8),
 
-              // [MASCOT IMAGE] with right margin
+              // [MASCOT IMAGE] w/ right margin
               Container(
                 margin: const EdgeInsets.only(right: 8),
                 child: Image.asset(
@@ -97,25 +97,6 @@ class HomePage extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-
-          Expanded(
-            child: Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/quiz/settings');
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 32, vertical: 16),
-                  textStyle: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                child: const Text("Quiz"),
-              ),
-            ),
           ),
         ],
       ),
