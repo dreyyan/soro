@@ -30,8 +30,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  sqflite: ^2.3.0      # SQLite plugin
-  path: ^1.9.1         # For handling file paths
   hive: ^2.2.3
   hive_flutter: ^1.1.0
 
