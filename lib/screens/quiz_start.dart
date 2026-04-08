@@ -6,7 +6,6 @@ import 'dart:async';
 // [IMPORT] Screens
 import 'package:soro/main.dart';
 import 'package:soro/screens/quiz_settings.dart';
-import 'home_page.dart';
 
 // [IMPORT] Components
 import 'package:soro/widgets/choice_button.dart';
@@ -30,7 +29,7 @@ class _QuizStartState extends State<QuizStart> {
   int currentNumber = 0;
   String selectedAnswer = "";
   bool answerSubmitted = false;
-  String quizTitle = "Science Quiz 1";
+  String quizTitle = "Quiz";
 
   // [STATES] Timer
   Timer? timer;
@@ -44,16 +43,30 @@ class _QuizStartState extends State<QuizStart> {
   String selectedMode = "Multiple Choice";
   String selectedGameMode = "Classic";
 
+  String identificationMode = "Definition";
+  bool isTermToDefinition = true; // direction per question
+
+  // [STATES] Identification input
+  final TextEditingController identificationController = TextEditingController();
+  bool identificationSubmitted = false;
+  bool identificationCorrect = false;
+
   // [STATES] Loaded questions
   List<Question> questions = [];
   Question get currentQuestion => questions[currentNumber];
 
-  // [FUNCTION] Generate choices with distractors
+  // [FUNCTION] Generate choices for Multiple Choice
   void _generateChoices() {
     final random = Random();
     final allAnswers = questions.map((q) => q.answer).toList();
 
     for (var question in questions) {
+      // For True or False, always set fixed choices
+      if (selectedMode == "True or False") {
+        question.choices = ["True", "False"];
+        continue;
+      }
+
       final wrongAnswers = allAnswers
           .where((a) => a != question.answer)
           .toSet()
@@ -85,11 +98,11 @@ class _QuizStartState extends State<QuizStart> {
   void submitQuiz() {
     timer?.cancel();
 
-    // [DIALOG] Show finished quiz
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (_) => AlertDialog(
-        title: Text("Time's up!"),
+        title: Text(selectedGameMode == "Time Attack" ? "Time's up!" : "Quiz Complete!"),
         content: Text("Your score is $score/${questions.length}"),
         actions: [
           TextButton(
@@ -99,18 +112,28 @@ class _QuizStartState extends State<QuizStart> {
                 currentNumber = 0;
                 score = 0;
                 selectedAnswer = "";
-                timeLeft = 60;
-                startTimer();
+                identificationController.clear();
+                identificationSubmitted = false;
+                timeLeft = 120;
               });
+              _generateChoices();
+              if (selectedGameMode == "Time Attack") startTimer();
             },
             child: Text("Restart"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              handleBack();
+            },
+            child: Text("Back to Settings"),
           ),
         ],
       ),
     );
   }
 
-  // [FUNCTION] Timer countdown
+  // [FUNCTION] Timer countdown (Time Attack only)
   void startTimer() {
     timer?.cancel();
     timer = Timer.periodic(Duration(seconds: 1), (t) {
@@ -123,6 +146,42 @@ class _QuizStartState extends State<QuizStart> {
     });
   }
 
+  // [FUNCTION] Advance to next question or finish
+  void _nextQuestion() {
+    if (!isLastNumber()) {
+      setState(() {
+        currentNumber++;
+        selectedAnswer = "";
+        answerSubmitted = false;
+        identificationController.clear();
+        identificationSubmitted = false;
+
+        _setIdentificationDirection();
+      });
+    } else {
+      submitQuiz();
+    }
+  }
+
+  // [FUNCTION] Handle Multiple Choice answer
+  void _handleMultipleChoiceAnswer(String choice) {
+    if (answerSubmitted) return;
+    setState(() {
+      selectedAnswer = choice;
+      answerSubmitted = true;
+      if (choice == currentQuestion.answer) score++;
+    });
+
+    Future.delayed(Duration(seconds: 1), () {
+      if (!mounted) return;
+      setState(() {
+        answerSubmitted = false;
+        selectedAnswer = "";
+      });
+      _nextQuestion();
+    });
+  }
+
   // [GET] Load settings and questions from arguments
   void _loadSettings() async {
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
@@ -130,6 +189,7 @@ class _QuizStartState extends State<QuizStart> {
     if (args != null) {
       numberOfQuestions = args['numberOfQuestions'] ?? 5;
       selectedMode = args['mode'] ?? "Multiple Choice";
+      identificationMode = args['identificationMode'] ?? "Definition";
       selectedGameMode = args['gameMode'] ?? "Classic";
 
       final rawList = args['questions'] as List?;
@@ -149,8 +209,53 @@ class _QuizStartState extends State<QuizStart> {
 
     if (questions.isNotEmpty) {
       _generateChoices();
-      startTimer();
+      _setIdentificationDirection();
+      if (selectedGameMode == "Time Attack") startTimer();
     }
+  }
+
+  // [FUNCTION] Determine identification direction
+  void _setIdentificationDirection() {
+    if (identificationMode == "Definition") {
+      isTermToDefinition = true; // show term → answer definition
+    } else if (identificationMode == "Term") {
+      isTermToDefinition = false; // show definition → answer term
+    } else {
+      // [BOTH] Randomize
+      isTermToDefinition = Random().nextBool();
+    }
+  }
+
+  // [FUNCTION] Handle Identification answer submission
+  void _handleIdentificationSubmit() {
+    if (identificationSubmitted) return;
+    final input = identificationController.text.trim().toLowerCase();
+    // [ANSWER LOGIC] depends on mode
+    final correct = isTermToDefinition
+        ? currentQuestion.answer.trim().toLowerCase()
+        : currentQuestion.question.trim().toLowerCase();
+    final isCorrect = input == correct;
+
+    setState(() {
+      identificationSubmitted = true;
+      identificationCorrect = isCorrect;
+      if (isCorrect) score++;
+    });
+
+    Future.delayed(Duration(seconds: 1), () {
+      if (!mounted) return;
+      setState(() {
+        identificationSubmitted = false;
+        identificationCorrect = false;
+        identificationController.clear();
+      });
+      _nextQuestion();
+    });
+  }
+
+  // [FUNCTION] Handle True or False answer
+  void _handleTrueOrFalseAnswer(String choice) {
+    _handleMultipleChoiceAnswer(choice); // same logic
   }
 
   @override
@@ -169,17 +274,15 @@ class _QuizStartState extends State<QuizStart> {
     }
   }
 
-  // [FUNCTION] Dispose timer
   @override
   void dispose() {
     timer?.cancel();
+    identificationController.dispose();
     super.dispose();
   }
 
-  // [HELPER] Check if last question
   bool isLastNumber() => currentNumber == questions.length - 1;
 
-  // [FUNCTION] Navigate back to quiz settings
   void handleBack() {
     Navigator.pushReplacement(
       context,
@@ -187,11 +290,162 @@ class _QuizStartState extends State<QuizStart> {
     );
   }
 
-  // [HELPER] Format seconds to mm:ss
   String formatTime(int seconds) {
     final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
     final secs = (seconds % 60).toString().padLeft(2, '0');
     return "$minutes:$secs";
+  }
+
+  // [WIDGET] Multiple Choice choices
+  Widget _buildMultipleChoice() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: currentQuestion.choices.map((choice) {
+        Color btnColor = AppColors.secondary_50;
+
+        if (answerSubmitted) {
+          if (choice == currentQuestion.answer) {
+            btnColor = AppColors.green_300;
+          } else if (choice == selectedAnswer) {
+            btnColor = AppColors.primary_300;
+          }
+        } else if (selectedAnswer == choice) {
+          btnColor = AppColors.secondary_200;
+        }
+
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 6),
+          child: ChoiceButton(
+            text: choice,
+            backgroundColor: btnColor,
+            onPressed: answerSubmitted ? () {} : () => _handleMultipleChoiceAnswer(choice),
+            selectedAnswer: selectedAnswer == choice,
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // [WIDGET] Identification input field
+  Widget _buildIdentification() {
+    Color fieldColor = AppColors.secondary_50;
+    if (identificationSubmitted) {
+      fieldColor = identificationCorrect ? AppColors.green_300 : AppColors.primary_300;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // [LABEL] Identification prompt
+        Text(
+          isTermToDefinition ? "Define the term:" : "Identify the term:",
+          style: TextStyle(
+            fontFamily: "Nunito",
+            fontSize: 12,
+            color: AppColors.text_400,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+
+        // [SPACE]
+        SizedBox(height: 8),
+        
+        AnimatedContainer(
+          duration: Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: fieldColor,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.text_200, width: 2),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: TextField(
+            controller: identificationController,
+            enabled: !identificationSubmitted,
+            textCapitalization: TextCapitalization.sentences,
+            style: TextStyle(fontFamily: "Nunito", fontSize: 16),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: "Type your answer here...",
+              hintStyle: TextStyle(color: AppColors.text_400),
+            ),
+            onSubmitted: (_) => _handleIdentificationSubmit(),
+          ),
+        ),
+        SizedBox(height: 12),
+        if (identificationSubmitted)
+          Text(
+            identificationCorrect
+                ? "✓ Correct!"
+                : "✗ Correct answer: ${isTermToDefinition 
+                ? currentQuestion.answer 
+                : currentQuestion.question}",
+            style: TextStyle(
+              fontFamily: "Nunito",
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+              color: identificationCorrect ? AppColors.green_600 : AppColors.primary_600,
+            ),
+          ),
+        SizedBox(height: 8),
+        ElevatedButton(
+          onPressed: identificationSubmitted ? null : _handleIdentificationSubmit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary_500,
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+          child: Text(
+            "Submit",
+            style: TextStyle(fontFamily: "Nunito", fontWeight: FontWeight.w700, fontSize: 16),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // [WIDGET] True or False choices
+  Widget _buildTrueOrFalse() {
+    return Row(
+      children: ["True", "False"].map((choice) {
+        Color btnColor = AppColors.secondary_50;
+
+        if (answerSubmitted) {
+          if (choice == currentQuestion.answer) {
+            btnColor = AppColors.green_300;
+          } else if (choice == selectedAnswer) {
+            btnColor = AppColors.primary_300;
+          }
+        } else if (selectedAnswer == choice) {
+          btnColor = AppColors.secondary_200;
+        }
+
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 6),
+            child: ChoiceButton(
+              text: choice,
+              backgroundColor: btnColor,
+              onPressed: answerSubmitted ? () {} : () => _handleTrueOrFalseAnswer(choice),
+              selectedAnswer: selectedAnswer == choice,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // [WIDGET] Input section based on mode
+  Widget _buildInputSection() {
+    switch (selectedMode) {
+      case "Identification":
+        return _buildIdentification();
+      case "True or False":
+        return _buildTrueOrFalse();
+      case "Multiple Choice":
+      default:
+        return _buildMultipleChoice();
+    }
   }
 
   @override
@@ -221,7 +475,7 @@ class _QuizStartState extends State<QuizStart> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // [HEADER] Quiz title + timer + back button
+            // [HEADER] Back button + title + timer
             IntrinsicHeight(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -256,7 +510,7 @@ class _QuizStartState extends State<QuizStart> {
 
                   SizedBox(width: 16),
 
-                  // [QUIZ TITLE + TIMER]
+                  // [TITLE + TIMER]
                   Expanded(
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -284,21 +538,25 @@ class _QuizStartState extends State<QuizStart> {
                               color: AppColors.text_800,
                             ),
                           ),
-                          SizedBox(width: 12),
-                          Icon(
-                            Icons.timer,
-                            color: timeLeft <= 10 ? AppColors.primary_600 : AppColors.text_700,
-                            size: 18,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            formatTime(timeLeft),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: timeLeft <= 10 ? AppColors.primary_600 : AppColors.text_800,
+
+                          // [TIMER] Only shown in Time Attack mode
+                          if (selectedGameMode == "Time Attack") ...[
+                            SizedBox(width: 12),
+                            Icon(
+                              Icons.timer,
+                              color: timeLeft <= 10 ? AppColors.primary_600 : AppColors.text_700,
+                              size: 18,
                             ),
-                          ),
+                            SizedBox(width: 4),
+                            Text(
+                              formatTime(timeLeft),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: timeLeft <= 10 ? AppColors.primary_600 : AppColors.text_800,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -309,7 +567,7 @@ class _QuizStartState extends State<QuizStart> {
 
             SizedBox(height: 20),
 
-            // [QUESTION SECTION] Progress + question text
+            // [QUESTION SECTION]
             Container(
               width: double.infinity,
               padding: EdgeInsets.all(16),
@@ -351,7 +609,13 @@ class _QuizStartState extends State<QuizStart> {
                   ),
                   SizedBox(height: 16),
                   Text(
-                    currentQuestion.question,
+                    selectedMode == "True or False"
+                        ? "True or False: ${currentQuestion.question}"
+                        : selectedMode == "Identification"
+                            ? (isTermToDefinition
+                                ? currentQuestion.question // show term
+                                : currentQuestion.answer) // show definition
+                            : currentQuestion.question,
                     style: TextStyle(fontFamily: "Baloo", fontSize: 18, fontWeight: FontWeight.w500),
                   ),
                 ],
@@ -360,7 +624,7 @@ class _QuizStartState extends State<QuizStart> {
 
             Spacer(),
 
-            // [CHOICES SECTION] Answer buttons
+            // [INPUT SECTION] Changes based on selectedMode
             Container(
               width: double.infinity,
               padding: EdgeInsets.all(16),
@@ -376,54 +640,7 @@ class _QuizStartState extends State<QuizStart> {
                   ),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: currentQuestion.choices.map((choice) {
-                  Color btnColor = AppColors.secondary_50;
-
-                  if (answerSubmitted) {
-                    if (choice == currentQuestion.answer) {
-                      btnColor = AppColors.green_300;
-                    } else if (choice == selectedAnswer && choice != currentQuestion.answer) {
-                      btnColor = AppColors.primary_300;
-                    } else {
-                      btnColor = AppColors.secondary_50;
-                    }
-                  } else if (selectedAnswer == choice) {
-                    btnColor = AppColors.secondary_200;
-                  }
-
-                  return Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: ChoiceButton(
-                      text: choice,
-                      backgroundColor: btnColor,
-                      onPressed: answerSubmitted
-                          ? () {}
-                          : () {
-                              setState(() {
-                                selectedAnswer = choice;
-                                answerSubmitted = true;
-                                if (choice == currentQuestion.answer) score++;
-                              });
-
-                              Future.delayed(Duration(seconds: 1), () {
-                                setState(() {
-                                  answerSubmitted = false;
-                                  selectedAnswer = "";
-                                  if (!isLastNumber()) {
-                                    currentNumber++;
-                                  } else {
-                                    submitQuiz();
-                                  }
-                                });
-                              });
-                            },
-                      selectedAnswer: selectedAnswer == choice,
-                    ),
-                  );
-                }).toList(),
-              ),
+              child: _buildInputSection(),
             ),
           ],
         ),

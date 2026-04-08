@@ -1,5 +1,6 @@
-// [IMPORT] Material Library
+// [IMPORT] Libraries
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 // [IMPORT] Hive
 import 'package:hive/hive.dart';
@@ -18,6 +19,7 @@ class _QuizSettingsState extends State<QuizSettings> {
   // [STATES] Quiz Settings
   int numberOfQuestions = 5;
   String selectedMode = "Multiple Choice";
+  String identificationAnswerMode = "Definition";
   String selectedGameMode = "Classic";
   List<Question> questions = [];
 
@@ -26,6 +28,13 @@ class _QuizSettingsState extends State<QuizSettings> {
 
   // [OPTIONS] Quiz Modes
   final List<String> modes = ["Multiple Choice", "Identification", "True or False"];
+
+  // [OPTIONS] Identification Modes
+  final List<String> identificationModes = [
+    "Term",
+    "Definition",
+    "Both",
+  ];
 
   // [OPTIONS] Game Modes
   final List<String> gameModes = ["Classic", "Time Attack"];
@@ -53,6 +62,7 @@ class _QuizSettingsState extends State<QuizSettings> {
       setState(() {
         numberOfQuestions = savedMap['numberOfQuestions'] ?? 5;
         selectedMode = savedMap['mode'] ?? "Multiple Choice";
+        identificationAnswerMode = savedMap['identificationMode'] ?? "Definition";
         selectedGameMode = savedMap['gameMode'] ?? "Classic";
       });
     }
@@ -63,6 +73,7 @@ class _QuizSettingsState extends State<QuizSettings> {
     await settingsBox.put('settings', {
       'numberOfQuestions': numberOfQuestions,
       'mode': selectedMode,
+      'identificationMode': identificationAnswerMode,
       'gameMode': selectedGameMode,
     });
   }
@@ -89,6 +100,23 @@ class _QuizSettingsState extends State<QuizSettings> {
         i++; // Skip the answer line
       }
     }
+  }
+
+  // [FUNCTION] Show error dialog
+  void _showError(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -146,6 +174,28 @@ class _QuizSettingsState extends State<QuizSettings> {
             ),
             const SizedBox(height: 24),
 
+            // [INPUT] Identification answer mode
+            if (selectedMode == "Identification") ...[
+              Text(
+                "Answer Type",
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              DropdownButton<String>(
+                value: identificationAnswerMode,
+                isExpanded: true,
+                items: identificationModes
+                    .map((mode) => DropdownMenuItem(value: mode, child: Text(mode)))
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => identificationAnswerMode = value);
+                  }
+                },
+              ),
+              const SizedBox(height: 24),
+            ],
+
             // [INPUT] Game mode
             Text(
               "Game Mode",
@@ -188,6 +238,21 @@ class _QuizSettingsState extends State<QuizSettings> {
             ElevatedButton(
               onPressed: () async {
                 _parseQuestions(); // Convert text to Question objects
+
+                // [VALIDATION] Not enough questions
+                if (questions.length < numberOfQuestions) {
+                  _showError(
+                    "You only provided ${questions.length} questions. Please add at least $numberOfQuestions.",
+                  );
+                  return;
+                }
+
+                // [PROCESS] If more questions, shuffle and take only needed amount
+                if (questions.length > numberOfQuestions) {
+                  questions.shuffle(Random());
+                  questions = questions.take(numberOfQuestions).toList();
+                }
+
                 await _saveSettings(); // Save settings to Hive
                 
                 Navigator.pushNamed(
@@ -196,6 +261,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                   arguments: {
                     "numberOfQuestions": numberOfQuestions,
                     "mode": selectedMode,
+                    "identificationMode": identificationAnswerMode,
                     "gameMode": selectedGameMode,
                     "questions": questions
                         .map((q) => {
