@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 
 // [IMPORT] Screens
 import 'package:soro/screens/home_page.dart';
-import 'package:soro/screens/quiz_start.dart';
+import 'package:soro/screens/cards.dart';
+import 'package:soro/screens/quiz.dart';
 import 'package:soro/screens/quiz_settings.dart';
+import 'package:soro/screens/quiz_start.dart';
+import 'package:soro/screens/quest.dart';
+import 'package:soro/screens/profile.dart';
 
 // [IMPORT] SQLite
 import './database/database_helper.dart';
@@ -16,9 +20,10 @@ void main() async {
   // Initialize Hive (local database)
   await DatabaseHelper.init();
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
+// [CLASS] Main App
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -32,10 +37,132 @@ class MyApp extends StatelessWidget {
       // [ROUTES] User
       initialRoute: '/',
       routes: {
-        '/': (_) => const HomePage(),
-        '/quiz/settings': (_) => const QuizSettings(),
-        '/quiz/start': (_) => const QuizStart()
-      }
+        '/': (_) => const HomeWithNav(),               // Home Page
+        '/cards': (_) => const Cards(),                // Flashcards
+
+        '/quiz': (_) => const Quiz(),                  // Quiz: Main
+        '/quiz/settings': (_) => const QuizSettings(), // Quiz: Settings
+        '/quiz/start': (_) => const QuizStart(),       // Quiz: Start
+        
+        '/quest': (_) => const Quest(),                // Quest
+        '/profile': (_) => const Profile(),            // Profile
+      },
+    );
+  }
+}
+
+// [CLASS] Home with Bottom Navigation Bar
+class HomeWithNav extends StatefulWidget {
+  const HomeWithNav({super.key});
+
+  @override
+  State<HomeWithNav> createState() => _HomeWithNavState();
+}
+
+class _HomeWithNavState extends State<HomeWithNav> {
+  int _selectedIndex = 0;
+
+  // [SCREENS] Screens for each tab
+  final List<Widget> _screens = [
+    const HomePage(),
+    const Cards(),
+    const SizedBox.shrink(),
+    const Quest(),
+    const Profile(),
+  ];
+
+  // [FUNCTION] Change selected tab
+  void _onTabSelected(int index) {
+    if (index == 2) {
+      // Navigate to "Create" page via FAB
+      Navigator.pushNamed(context, '/create');
+      return;
+    }
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // [BODY] Display current screen
+      body: _screens[_selectedIndex],
+
+      // [COMPONENT] Bottom Navigation Bar
+      bottomNavigationBar: Stack(
+        alignment: Alignment.center,
+        children: [
+          // [BAR BACKGROUND]
+          Container(
+            height: 70,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 8,
+                  offset: Offset(0, -2),
+                ),
+              ],
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(24), // Rounded top corners
+              ),
+            ),
+          ),
+
+          // [NAVIGATION ITEMS]
+          BottomNavigationBar(
+            currentIndex: _selectedIndex > 2 ? _selectedIndex - 1 : _selectedIndex,
+            onTap: _onTabSelected,
+            selectedItemColor: AppColors.primary_600,
+            unselectedItemColor: AppColors.text_400,
+            showUnselectedLabels: true,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: "Home",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.menu_book),
+                label: "Cards",
+              ),
+              BottomNavigationBarItem(
+                icon: SizedBox.shrink(), // Placeholder for center "+" button
+                label: "",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.star),
+                label: "Quest",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: "Profile",
+              ),
+            ],
+          ),
+
+          // [CENTER + BUTTON]
+          Positioned(
+            bottom: 10,
+            child: FloatingActionButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/quiz'); // or a dedicated CreatePage
+              },
+              backgroundColor: AppColors.primary_600,
+              elevation: 4,
+              child: const Icon(
+                Icons.add,
+                size: 32,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
