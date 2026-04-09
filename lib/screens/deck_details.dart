@@ -82,7 +82,7 @@ class _DeckDetailsState extends State<DeckDetails> {
     final cards = _cards;
 
     return Scaffold(
-      backgroundColor: AppColors.secondary_100,
+      backgroundColor: AppColors.secondary_200,
       appBar: AppBar(
         title: Text(
           _deck['title'] as String,
@@ -123,7 +123,7 @@ class _DeckDetailsState extends State<DeckDetails> {
             child: cards.isEmpty
                 ? const Center(
                     child: Text(
-                      'No cards yet — add one above!',
+                      'No cards yet - add one above!',
                       style: TextStyle(
                         fontFamily: 'Nunito',
                         color: AppColors.text_300,
@@ -143,84 +143,87 @@ class _DeckDetailsState extends State<DeckDetails> {
 
   // [WIDGET] Inline form to add a new term/definition pair
   Widget _buildAddCardForm() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // [LABEL] Section title
-          const Text(
-            'Add a card',
-            style: TextStyle(
-              fontFamily: 'Baloo',
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: AppColors.text_700,
+    return Material(
+      color: AppColors.secondary_50,
+      elevation: 4,
+      shadowColor: AppColors.secondary_500.withValues(alpha: 0.3),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // [LABEL] Section title
+            const Text(
+              'Add a card',
+              style: TextStyle(
+                fontFamily: 'Baloo',
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.text_700,
+              ),
             ),
-          ),
 
-          const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
-          Row(
-            children: [
-              // [INPUT] Term
-              Expanded(
-                child: TextField(
-                  controller: _termCtrl,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: InputDecoration(
-                    hintText: 'Term',
-                    filled: true,
-                    fillColor: AppColors.secondary_100,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
+            // [INPUT] Term (full width)
+            TextField(
+              controller: _termCtrl,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                hintText: 'Term',
+                filled: true,
+                fillColor: AppColors.secondary_100,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
                 ),
               ),
+            ),
 
-              const SizedBox(width: 8),
+            const SizedBox(height: 10),
 
-              // [INPUT] Definition
-              Expanded(
-                child: TextField(
-                  controller: _defCtrl,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: InputDecoration(
-                    hintText: 'Definition',
-                    filled: true,
-                    fillColor: AppColors.secondary_100,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
+            // [INPUT] Definition (full width)
+            TextField(
+              controller: _defCtrl,
+              textCapitalization: TextCapitalization.sentences,
+              maxLines: 2,
+              decoration: InputDecoration(
+                hintText: 'Definition',
+                filled: true,
+                fillColor: AppColors.secondary_100,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
                 ),
               ),
+            ),
 
-              const SizedBox(width: 8),
+            const SizedBox(height: 14),
 
-              // [BUTTON] Add card
-              ElevatedButton(
+            // [BUTTON] Add card (full width)
+            SizedBox(
+              height: 48,
+              child: ElevatedButton.icon(
                 onPressed: _addCard,
+                icon: const Icon(Icons.add),
+                label: const Text(
+                  'Add Card',
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary_600,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 14,
-                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Icon(Icons.add),
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -228,8 +231,9 @@ class _DeckDetailsState extends State<DeckDetails> {
   // [WIDGET] A single card row in the list
   Widget _buildCardTile(Map<String, dynamic> card, int index) {
     return Card(
+      color: AppColors.secondary_50,
       margin: const EdgeInsets.only(bottom: 10),
-      elevation: 0,
+      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ListTile(
         contentPadding:
@@ -256,7 +260,7 @@ class _DeckDetailsState extends State<DeckDetails> {
 
         // [BUTTON] Delete card
         trailing: IconButton(
-          icon: const Icon(Icons.delete_outline, color: AppColors.text_300),
+          icon: const Icon(Icons.delete_outline, color: AppColors.primary_600),
           onPressed: () => _deleteCard(index),
         ),
       ),
