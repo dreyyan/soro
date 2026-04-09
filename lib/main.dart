@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// [CLASS] Home with Bottom Navigation Bar
+// [CLASS] Home w/ Bottom Navigation Bar
 class HomeWithNav extends StatefulWidget {
   const HomeWithNav({super.key});
 
@@ -127,7 +127,7 @@ class _HomeWithNavState extends State<HomeWithNav> {
                 label: "Home",
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.menu_book),
+                icon: Icon(Icons.style),
                 label: "Cards",
               ),
               BottomNavigationBarItem(
