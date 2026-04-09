@@ -2,11 +2,17 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-// [IMPORT] Hive
-import 'package:hive/hive.dart';
+// [IMPORT] App
+import 'package:soro/main.dart';
 
-// [IMPORT] Classes
-import '../models/question.dart';
+// [IMPORT] Screens
+import 'package:soro/screens/quiz_start.dart';
+
+// [IMPORT] Database
+import 'package:soro/database/database_helper.dart';
+
+// [IMPORT] Models
+import 'package:soro/models/question.dart';
 
 class QuizSettings extends StatefulWidget {
   const QuizSettings({super.key});
@@ -16,69 +22,68 @@ class QuizSettings extends StatefulWidget {
 }
 
 class _QuizSettingsState extends State<QuizSettings> {
-  // [STATES] Quiz Settings
+  // [STATES] Quiz settings
   int numberOfQuestions = 5;
   String selectedMode = "Multiple Choice";
   String identificationAnswerMode = "Definition";
   String selectedGameMode = "Classic";
   List<Question> questions = [];
 
-  // [CONTROLLER] For pasting questions
+  // [CONTROLLER] Pasteable Q&A input
   final TextEditingController questionsController = TextEditingController();
 
-  // [OPTIONS] Quiz Modes
-  final List<String> modes = ["Multiple Choice", "Identification", "True or False"];
+  // [OPTIONS] Available quiz modes
+  final List<String> modes = [
+    "Multiple Choice",
+    "Identification",
+    "True or False",
+  ];
 
-  // [OPTIONS] Identification Modes
+  // [OPTIONS] Identification answer direction modes
   final List<String> identificationModes = [
     "Term",
     "Definition",
     "Both",
   ];
 
-  // [OPTIONS] Game Modes
+  // [OPTIONS] Game modes
   final List<String> gameModes = ["Classic", "Time Attack"];
-
-  // [DATABASE] Hive box for quiz settings
-  late Box settingsBox;
 
   @override
   void initState() {
     super.initState();
-    _initHive(); // [INIT] Hive and load saved settings
-  }
-
-  // [INIT] Open Hive box
-  void _initHive() async {
-    settingsBox = await Hive.openBox('quiz_settings');
     _loadSavedSettings();
   }
 
-  // [GET] Load saved quiz settings
-  void _loadSavedSettings() {
-    final saved = settingsBox.get('settings');
-    if (saved != null) {
-      final Map<String, dynamic> savedMap = Map<String, dynamic>.from(saved);
-      setState(() {
-        numberOfQuestions = savedMap['numberOfQuestions'] ?? 5;
-        selectedMode = savedMap['mode'] ?? "Multiple Choice";
-        identificationAnswerMode = savedMap['identificationMode'] ?? "Definition";
-        selectedGameMode = savedMap['gameMode'] ?? "Classic";
-      });
-    }
+  @override
+  void dispose() {
+    questionsController.dispose();
+    super.dispose();
   }
 
-  // [POST] Save quiz settings
-  Future<void> _saveSettings() async {
-    await settingsBox.put('settings', {
-      'numberOfQuestions': numberOfQuestions,
-      'mode': selectedMode,
-      'identificationMode': identificationAnswerMode,
-      'gameMode': selectedGameMode,
+  // [LOAD] Fetch previously saved quiz settings from Hive
+  Future<void> _loadSavedSettings() async {
+    final saved = await DatabaseHelper().getQuizSettings();
+    if (saved == null) return;
+    setState(() {
+      numberOfQuestions        = saved['numberOfQuestions'] ?? 5;
+      selectedMode             = saved['mode']              ?? "Multiple Choice";
+      identificationAnswerMode = saved['identificationMode'] ?? "Definition";
+      selectedGameMode         = saved['gameMode']          ?? "Classic";
     });
   }
 
-  // [FUNCTION] Parse pasted Q&A text into Question objects
+  // [SAVE] Persist current quiz settings to Hive
+  Future<void> _saveSettings() async {
+    await DatabaseHelper().saveQuizSettings({
+      'numberOfQuestions': numberOfQuestions,
+      'mode':               selectedMode,
+      'identificationMode': identificationAnswerMode,
+      'gameMode':           selectedGameMode,
+    });
+  }
+
+  // [PARSE] Convert pasted Q / -A text into Question objects
   void _parseQuestions() {
     questions.clear();
     final lines = questionsController.text
@@ -89,7 +94,7 @@ class _QuizSettingsState extends State<QuizSettings> {
 
     for (int i = 0; i < lines.length - 1; i++) {
       final currentLine = lines[i];
-      final nextLine = lines[i + 1];
+      final nextLine    = lines[i + 1];
 
       if (nextLine.startsWith('-')) {
         final q = currentLine;
@@ -97,21 +102,21 @@ class _QuizSettingsState extends State<QuizSettings> {
         if (q.isNotEmpty && a.isNotEmpty) {
           questions.add(Question(q, a));
         }
-        i++; // Skip the answer line
+        i++; // [SKIP] Jump over the answer line
       }
     }
   }
 
-  // [FUNCTION] Show error dialog
+  // [ERROR] Show a simple error dialog
   void _showError(String message) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Text("Error"),
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(ctx),
             child: const Text("OK"),
           ),
         ],
@@ -119,10 +124,46 @@ class _QuizSettingsState extends State<QuizSettings> {
     );
   }
 
-  @override
-  void dispose() {
-    questionsController.dispose();
-    super.dispose();
+  // [START] Validate, process, save, and navigate to QuizStart
+  Future<void> _startQuiz() async {
+    _parseQuestions();
+
+    // [VALIDATION] Ensure enough questions were provided
+    if (questions.length < numberOfQuestions) {
+      _showError(
+        "You only provided ${questions.length} question${questions.length == 1 ? '' : 's'}. "
+        "Please add at least $numberOfQuestions.",
+      );
+      return;
+    }
+
+    // [PROCESS] Shuffle and trim to the requested count
+    if (questions.length > numberOfQuestions) {
+      questions.shuffle(Random());
+      questions = questions.take(numberOfQuestions).toList();
+    }
+
+    await _saveSettings();
+
+    if (!mounted) return;
+
+    Navigator.pushNamed(
+      context,
+      '/quiz/start',
+      arguments: {
+        "numberOfQuestions":  numberOfQuestions,
+        "mode":               selectedMode,
+        "identificationMode": identificationAnswerMode,
+        "gameMode":           selectedGameMode,
+        "questions": questions
+            .map((q) => {
+                  "question": q.question,
+                  "answer":   q.answer,
+                  "choices":  q.choices,
+                })
+            .toList(),
+      },
+    );
   }
 
   @override
@@ -130,8 +171,13 @@ class _QuizSettingsState extends State<QuizSettings> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Quiz Settings"),
-        backgroundColor: Colors.blue,
+        title: const Text(
+          "Quiz Settings",
+          style: TextStyle(fontFamily: 'Baloo', fontWeight: FontWeight.w700),
+        ),
+        backgroundColor: AppColors.primary_600,
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -139,86 +185,69 @@ class _QuizSettingsState extends State<QuizSettings> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // [INPUT] Number of questions
-            Text(
-              "Number of Questions",
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
+            _buildLabel("Number of Questions"),
             const SizedBox(height: 8),
             DropdownButton<int>(
               value: numberOfQuestions,
               isExpanded: true,
               items: [5, 10, 15, 20]
-                  .map((num) => DropdownMenuItem(value: num, child: Text("$num")))
+                  .map((n) => DropdownMenuItem(value: n, child: Text("$n")))
                   .toList(),
-              onChanged: (value) {
-                if (value != null) setState(() => numberOfQuestions = value);
+              onChanged: (val) {
+                if (val != null) setState(() => numberOfQuestions = val);
               },
             ),
             const SizedBox(height: 24),
 
             // [INPUT] Quiz mode
-            Text(
-              "Mode",
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
+            _buildLabel("Mode"),
             const SizedBox(height: 8),
             DropdownButton<String>(
               value: selectedMode,
               isExpanded: true,
               items: modes
-                  .map((mode) => DropdownMenuItem(value: mode, child: Text(mode)))
+                  .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                   .toList(),
-              onChanged: (value) {
-                if (value != null) setState(() => selectedMode = value);
+              onChanged: (val) {
+                if (val != null) setState(() => selectedMode = val);
               },
             ),
             const SizedBox(height: 24),
 
-            // [INPUT] Identification answer mode
+            // [INPUT] Identification answer type (only when Identification is selected)
             if (selectedMode == "Identification") ...[
-              Text(
-                "Answer Type",
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
+              _buildLabel("Answer Type"),
               const SizedBox(height: 8),
               DropdownButton<String>(
                 value: identificationAnswerMode,
                 isExpanded: true,
                 items: identificationModes
-                    .map((mode) => DropdownMenuItem(value: mode, child: Text(mode)))
+                    .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                     .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => identificationAnswerMode = value);
-                  }
+                onChanged: (val) {
+                  if (val != null) setState(() => identificationAnswerMode = val);
                 },
               ),
               const SizedBox(height: 24),
             ],
 
             // [INPUT] Game mode
-            Text(
-              "Game Mode",
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
+            _buildLabel("Game Mode"),
             const SizedBox(height: 8),
             DropdownButton<String>(
               value: selectedGameMode,
               isExpanded: true,
               items: gameModes
-                  .map((mode) => DropdownMenuItem(value: mode, child: Text(mode)))
+                  .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                   .toList(),
-              onChanged: (value) {
-                if (value != null) setState(() => selectedGameMode = value);
+              onChanged: (val) {
+                if (val != null) setState(() => selectedGameMode = val);
               },
             ),
             const SizedBox(height: 24),
 
-            // [INPUT] Pasteable Q&A field
-            Text(
-              "Paste Questions (Q / -A format):",
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
+            // [INPUT] Pasteable Q&A text field
+            _buildLabel("Paste Questions (Q / -A format):"),
             const SizedBox(height: 8),
             Expanded(
               child: TextField(
@@ -228,7 +257,8 @@ class _QuizSettingsState extends State<QuizSettings> {
                 expands: true,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  hintText: "Mitochondria\n- powerhouse of the cell\nCell\n- basic unit of life",
+                  hintText:
+                      "Mitochondria\n- powerhouse of the cell\nCell\n- basic unit of life",
                 ),
               ),
             ),
@@ -236,51 +266,39 @@ class _QuizSettingsState extends State<QuizSettings> {
 
             // [BUTTON] Start Quiz
             ElevatedButton(
-              onPressed: () async {
-                _parseQuestions(); // Convert text to Question objects
-
-                // [VALIDATION] Not enough questions
-                if (questions.length < numberOfQuestions) {
-                  _showError(
-                    "You only provided ${questions.length} questions. Please add at least $numberOfQuestions.",
-                  );
-                  return;
-                }
-
-                // [PROCESS] If more questions, shuffle and take only needed amount
-                if (questions.length > numberOfQuestions) {
-                  questions.shuffle(Random());
-                  questions = questions.take(numberOfQuestions).toList();
-                }
-
-                await _saveSettings(); // Save settings to Hive
-                
-                Navigator.pushNamed(
-                  context,
-                  '/quiz/start',
-                  arguments: {
-                    "numberOfQuestions": numberOfQuestions,
-                    "mode": selectedMode,
-                    "identificationMode": identificationAnswerMode,
-                    "gameMode": selectedGameMode,
-                    "questions": questions
-                        .map((q) => {
-                              "question": q.question,
-                              "answer": q.answer,
-                              "choices": q.choices,
-                            })
-                        .toList(),
-                  },
-                );
-              },
+              onPressed: _startQuiz,
               style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary_600,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: const Text("Start Quiz"),
+              child: const Text(
+                "Start Quiz",
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // [WIDGET] Section label text
+  Widget _buildLabel(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontFamily: 'Nunito',
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: AppColors.text_700,
       ),
     );
   }
