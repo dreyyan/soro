@@ -121,6 +121,19 @@ class _HomeWithNavState extends State<HomeWithNav> {
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.transparent,
             elevation: 0,
+
+            // [TEXT STYLE] Set font size
+            selectedLabelStyle: const TextStyle(
+              fontFamily: "Nunito",
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontFamily: "Nunito",
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+
             items: const [
               BottomNavigationBarItem(
                 icon: Icon(Icons.home),
