@@ -61,23 +61,25 @@ class HomeWithNav extends StatefulWidget {
 class _HomeWithNavState extends State<HomeWithNav> {
   int _selectedIndex = 0;
 
-  // [SCREENS] Screens for each tab
+  // Add Quiz as the 4th screen
   final List<Widget> _screens = [
-    const HomePage(),
-    const Cards(),
-    const SizedBox.shrink(),
-    const Quest(),
-    const Profile(),
+    const HomePage(), // 0
+    const Cards(),    // 1
+    const Quest(),    // 2
+    const Profile(),  // 3
+    const Quiz(),     // 4, opened via FAB
   ];
 
-  // [FUNCTION] Change selected tab
   void _onTabSelected(int index) {
-    if (index == 2) {
-      Navigator.pushNamed(context, '/quiz');
-      return;
-    }
+    if (index < 0 || index >= _screens.length) return;
     setState(() {
       _selectedIndex = index;
+    });
+  }
+
+  void _onFabPressed() {
+    setState(() {
+      _selectedIndex = 4; // Quiz screen index
     });
   }
 
@@ -86,81 +88,28 @@ class _HomeWithNavState extends State<HomeWithNav> {
     return Scaffold(
       body: _screens[_selectedIndex],
 
-      // [COMPONENT] Bottom Navigation Bar
-      bottomNavigationBar: Stack(
-        alignment: Alignment.center,
-        children: [
-          // [BAR BACKGROUND]
-          Container(
-            height: 70,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, -2),
-                ),
-              ],
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(24),
-              ),
-            ),
-          ),
-
-          // [NAVIGATION ITEMS]
-          BottomNavigationBar(
-            currentIndex:
-                _selectedIndex > 2 ? _selectedIndex - 1 : _selectedIndex,
-            onTap: _onTabSelected,
-            selectedItemColor: AppColors.primary_600,
-            unselectedItemColor: AppColors.text_400,
-            showUnselectedLabels: true,
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: "Home",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.style),
-                label: "Cards",
-              ),
-              BottomNavigationBarItem(
-                icon: SizedBox.shrink(), // Placeholder for center "+" button
-                label: "",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.star),
-                label: "Quest",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: "Profile",
-              ),
-            ],
-          ),
-
-          // [CENTER + BUTTON]
-          Positioned(
-            bottom: 10,
-            child: FloatingActionButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/quiz');
-              },
-              backgroundColor: AppColors.primary_600,
-              elevation: 4,
-              child: const Icon(
-                Icons.add,
-                size: 32,
-                color: Colors.white,
-              ),
-            ),
-          ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex >= 4 ? 0 : _selectedIndex, // prevent navbar highlighting Quiz
+        onTap: (i) => _onTabSelected(i),
+        selectedItemColor: AppColors.primary_600,
+        unselectedItemColor: AppColors.text_400,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.style), label: "Cards"),
+          BottomNavigationBarItem(icon: Icon(Icons.star), label: "Quest"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
       ),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: _onFabPressed,
+        backgroundColor: AppColors.primary_600,
+        elevation: 4,
+        child: const Icon(Icons.add, size: 32, color: Colors.white),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
