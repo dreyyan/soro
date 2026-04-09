@@ -7,6 +7,9 @@ import 'package:soro/screens/auth/signup_page.dart';
 import 'package:soro/screens/onboarding.dart';
 import 'package:soro/screens/home_page.dart';
 import 'package:soro/screens/cards.dart';
+import 'package:soro/screens/profile/change_password.dart';
+import 'package:soro/screens/profile/edit_profile.dart';
+import 'package:soro/screens/profile/settings.dart';
 import 'package:soro/screens/quiz.dart';
 import 'package:soro/screens/quiz_settings.dart';
 import 'package:soro/screens/quiz_start.dart';
@@ -35,16 +38,19 @@ class MyApp extends StatelessWidget {
       // [ROUTES]
       initialRoute: '/login',
       routes: {
-        '/login':         (_) => const LoginPage(),
-        '/signup':        (_) => const SignupPage(),
-        '/onboarding':    (_) => const OnboardingPage(),
-        '/':              (_) => const HomeWithNav(),
-        '/cards':         (_) => const Cards(),
-        '/quiz':          (_) => const Quiz(),
-        '/quiz/settings': (_) => const QuizSettings(),
-        '/quiz/start':    (_) => const QuizStart(),
-        '/quest':         (_) => const Quest(),
-        '/profile':       (_) => const Profile(),
+        '/login':                   (_) => const LoginPage(),
+        '/signup':                  (_) => const SignupPage(),
+        '/onboarding':              (_) => const OnboardingPage(),
+        '/':                        (_) => const HomeWithNav(),
+        '/cards':                   (_) => const Cards(),
+        '/quiz':                    (_) => const Quiz(),
+        '/quiz/settings':           (_) => const QuizSettings(),
+        '/quiz/start':              (_) => const QuizStart(),
+        '/quest':                   (_) => const Quest(),
+        '/profile':                 (_) => const Profile(),
+        '/profile/edit':            (_) => const EditProfile(),
+        '/profile/change-password': (_) => const ChangePassword(),
+        '/profile/settings':        (_) => const Settings(),
       },
     );
   }
