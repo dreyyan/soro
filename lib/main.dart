@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
         '/login':         (_) => const LoginPage(),
         '/signup':        (_) => const SignupPage(),
         '/onboarding':    (_) => const OnboardingPage(),
-        '/':              (_) => const HomeWithNav(),     // Home + bottom navbar
+        '/':              (_) => const HomeWithNav(),
         '/cards':         (_) => const Cards(),
         '/quiz':          (_) => const Quiz(),
         '/quiz/settings': (_) => const QuizSettings(),
@@ -61,25 +61,20 @@ class HomeWithNav extends StatefulWidget {
 class _HomeWithNavState extends State<HomeWithNav> {
   int _selectedIndex = 0;
 
-  // Add Quiz as the 4th screen
+  // [SCREENS] Bottom Navigation Bar
   final List<Widget> _screens = [
     const HomePage(), // 0
     const Cards(),    // 1
-    const Quest(),    // 2
-    const Profile(),  // 3
-    const Quiz(),     // 4, opened via FAB
+    const Quiz(),     // 2
+    const Quest(),    // 3
+    const Profile(),  // 4
   ];
 
+  // [NAVIGATION] Handle tab change
   void _onTabSelected(int index) {
     if (index < 0 || index >= _screens.length) return;
     setState(() {
       _selectedIndex = index;
-    });
-  }
-
-  void _onFabPressed() {
-    setState(() {
-      _selectedIndex = 4; // Quiz screen index
     });
   }
 
@@ -89,29 +84,44 @@ class _HomeWithNavState extends State<HomeWithNav> {
       body: _screens[_selectedIndex],
 
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: (_selectedIndex <= 3) ? _selectedIndex : 0, // just default to 0
-        onTap: (i) => _onTabSelected(i),
-        selectedItemColor: (_selectedIndex <= 3)
-            ? AppColors.primary_600
-            : AppColors.text_400, // make it same as unselected when Quiz open
+        currentIndex: _selectedIndex,
+        onTap: _onTabSelected,
+        selectedItemColor: AppColors.primary_600,
         unselectedItemColor: AppColors.text_400,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.style), label: "Cards"),
-          BottomNavigationBarItem(icon: Icon(Icons.star), label: "Quest"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+          // [TAB] Home
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "Home",
+          ),
+
+          // [TAB] Cards
+          BottomNavigationBarItem(
+            icon: Icon(Icons.style),
+            label: "Cards",
+          ),
+
+          // [TAB] Quiz (CENTER)
+          BottomNavigationBarItem(
+            icon: Icon(Icons.quiz),
+            label: "Quiz",
+          ),
+
+          // [TAB] Quest
+          BottomNavigationBarItem(
+            icon: Icon(Icons.star),
+            label: "Quest",
+          ),
+
+          // [TAB] Profile
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: "Profile",
+          ),
         ],
       ),
-
-      floatingActionButton: FloatingActionButton(
-        onPressed: _onFabPressed,
-        backgroundColor: AppColors.primary_600,
-        elevation: 4,
-        child: const Icon(Icons.add, size: 32, color: Colors.white),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
