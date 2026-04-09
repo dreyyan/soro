@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 // [IMPORT] Screens
 import 'package:soro/screens/auth/login_page.dart';
 import 'package:soro/screens/auth/signup_page.dart';
+import 'package:soro/screens/onboarding.dart';
 import 'package:soro/screens/home_page.dart';
 import 'package:soro/screens/cards.dart';
 import 'package:soro/screens/quiz.dart';
@@ -12,16 +13,12 @@ import 'package:soro/screens/quiz_start.dart';
 import 'package:soro/screens/quest.dart';
 import 'package:soro/screens/profile.dart';
 
-// [IMPORT] SQLite
+// [IMPORT] Database
 import './database/database_helper.dart';
 
 void main() async {
-  // Ensure SQLite is initialized before runApp
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Hive (local database)
   await DatabaseHelper.init();
-
   runApp(const MyApp());
 }
 
@@ -31,258 +28,146 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // [CONFIGURATION] Themes & routes
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // hide 'default' banner
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(),
 
-      // [ROUTES] User
+      // [ROUTES]
       initialRoute: '/login',
       routes: {
-        '/login': (_) => const LoginPage(),         // Login
-        '/signup': (_) => const SignupPage(),       // Signup
-        '/': (_) => const HomePage(),            // Home Page
-        '/cards': (_) => const Cards(),             // Flashcards
-        '/quiz': (_) => const Quiz(),               // Quiz: Main
-        '/quiz/settings': (_) => const QuizSettings(), // Quiz: Settings
-        '/quiz/start': (_) => const QuizStart(),    // Quiz: Start
-        '/quest': (_) => const Quest(),             // Quest
-        '/profile': (_) => const Profile(),         // Profile
+        '/login':         (_) => const LoginPage(),
+        '/signup':        (_) => const SignupPage(),
+        '/onboarding':    (_) => const OnboardingPage(),
+        '/':              (_) => const HomeWithNav(),     // Home + bottom navbar
+        '/cards':         (_) => const Cards(),
+        '/quiz':          (_) => const Quiz(),
+        '/quiz/settings': (_) => const QuizSettings(),
+        '/quiz/start':    (_) => const QuizStart(),
+        '/quest':         (_) => const Quest(),
+        '/profile':       (_) => const Profile(),
       },
     );
   }
 }
 
-// [CLASS] Login Page
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+// [CLASS] Home w/ Bottom Navigation Bar
+class HomeWithNav extends StatefulWidget {
+  const HomeWithNav({super.key});
+
+  @override
+  State<HomeWithNav> createState() => _HomeWithNavState();
+}
+
+class _HomeWithNavState extends State<HomeWithNav> {
+  int _selectedIndex = 0;
+
+  // [SCREENS] Screens for each tab
+  final List<Widget> _screens = [
+    const HomePage(),
+    const Cards(),
+    const SizedBox.shrink(),
+    const Quest(),
+    const Profile(),
+  ];
+
+  // [FUNCTION] Change selected tab
+  void _onTabSelected(int index) {
+    if (index == 2) {
+      Navigator.pushNamed(context, '/quiz');
+      return;
+    }
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.secondary_200,
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              "Login",
-              style: TextStyle(
-                fontFamily: "Baloo",
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
-                color: AppColors.text_800,
+      body: _screens[_selectedIndex],
+
+      // [COMPONENT] Bottom Navigation Bar
+      bottomNavigationBar: Stack(
+        alignment: Alignment.center,
+        children: [
+          // [BAR BACKGROUND]
+          Container(
+            height: 70,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 8,
+                  offset: Offset(0, -2),
+                ),
+              ],
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(24),
               ),
             ),
+          ),
 
-            const SizedBox(height: 24),
-
-            // [INPUT] Email
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Email",
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
+          // [NAVIGATION ITEMS]
+          BottomNavigationBar(
+            currentIndex:
+                _selectedIndex > 2 ? _selectedIndex - 1 : _selectedIndex,
+            onTap: _onTabSelected,
+            selectedItemColor: AppColors.primary_600,
+            unselectedItemColor: AppColors.text_400,
+            showUnselectedLabels: true,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: "Home",
               ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // [INPUT] Password
-            TextField(
-              obscureText: true,
-              decoration: InputDecoration(
-                hintText: "Password",
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.style),
+                label: "Cards",
               ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // [BUTTON] Login
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/'); // Go to Home
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary_600,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: const Text(
-                  "Login",
-                  style: TextStyle(
-                    fontFamily: "Nunito",
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
+              BottomNavigationBarItem(
+                icon: SizedBox.shrink(), // Placeholder for center "+" button
+                label: "",
               ),
-            ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.star),
+                label: "Quest",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: "Profile",
+              ),
+            ],
+          ),
 
-            const SizedBox(height: 16),
-
-            // [NAVIGATION] Go to Signup
-            GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, '/signup');
+          // [CENTER + BUTTON]
+          Positioned(
+            bottom: 10,
+            child: FloatingActionButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/quiz');
               },
-              child: const Text(
-                "Don't have an account? Sign up",
-                style: TextStyle(
-                  fontFamily: "Nunito",
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.primary_600,
-                ),
+              backgroundColor: AppColors.primary_600,
+              elevation: 4,
+              child: const Icon(
+                Icons.add,
+                size: 32,
+                color: Colors.white,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-// [CLASS] Signup Page
-class SignupPage extends StatelessWidget {
-  const SignupPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.secondary_200,
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              "Sign Up",
-              style: TextStyle(
-                fontFamily: "Baloo",
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
-                color: AppColors.text_800,
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // [INPUT] Name
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Full Name",
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // [INPUT] Email
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Email",
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // [INPUT] Password
-            TextField(
-              obscureText: true,
-              decoration: InputDecoration(
-                hintText: "Password",
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // [BUTTON] Sign Up
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/'); // Go to Home
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary_600,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: const Text(
-                  "Sign Up",
-                  style: TextStyle(
-                    fontFamily: "Nunito",
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // [NAVIGATION] Go to Login
-            GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, '/login');
-              },
-              child: const Text(
-                "Already have an account? Log in",
-                style: TextStyle(
-                  fontFamily: "Nunito",
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.primary_600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ? [CLASS] Color Palette
+// [CLASS] App Color Palette
 class AppColors {
-  static const Color primary_50 = Color(0xFFFFF3EE);
+  static const Color primary_50  = Color(0xFFFFF3EE);
   static const Color primary_100 = Color(0xFFFFE4D9);
   static const Color primary_200 = Color(0xFFFFC7B3);
   static const Color primary_300 = Color(0xFFFFA98D);
@@ -294,7 +179,7 @@ class AppColors {
   static const Color primary_900 = Color(0xFF993F1D);
   static const Color primary_950 = Color(0xFF662914);
 
-  static const Color secondary_50 = Color(0xFFFFFCF6);
+  static const Color secondary_50  = Color(0xFFFFFCF6);
   static const Color secondary_100 = Color(0xFFFFF9ED);
   static const Color secondary_200 = Color(0xFFFFF5E1);
   static const Color secondary_300 = Color(0xFFF2E8D3);
@@ -306,7 +191,7 @@ class AppColors {
   static const Color secondary_900 = Color(0xFF736B57);
   static const Color secondary_950 = Color(0xFF4D4739);
 
-  static const Color text_50 = Color(0xFFF4F5F7);
+  static const Color text_50  = Color(0xFFF4F5F7);
   static const Color text_100 = Color(0xFFE6E8EB);
   static const Color text_200 = Color(0xFFC9CDD3);
   static const Color text_300 = Color(0xFFACB2BB);
@@ -318,7 +203,7 @@ class AppColors {
   static const Color text_900 = Color(0xFF353942);
   static const Color text_950 = Color(0xFF23262C);
 
-  static const Color green_50 = Color(0xFFF0FDF4);
+  static const Color green_50  = Color(0xFFF0FDF4);
   static const Color green_100 = Color(0xFFDCFCE7);
   static const Color green_200 = Color(0xFFBBF7D0);
   static const Color green_300 = Color(0xFF86EFAC);
