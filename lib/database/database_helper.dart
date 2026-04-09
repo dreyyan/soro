@@ -88,6 +88,42 @@ class DatabaseHelper {
     await box.put(userKey, {...existing, ...updates});
   }
 
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final email = await _loggedInEmail();
+    if (email == null) return false;
+
+    final box = await Hive.openBox(usersBox);
+
+    // Find the user by email
+    dynamic userKey;
+    Map<String, dynamic>? userData;
+
+    for (final key in box.keys) {
+      final u = box.get(key) as Map?;
+      if (u != null && (u['email'] as String).toLowerCase() == email) {
+        userKey = key;
+        userData = Map<String, dynamic>.from(u);
+        break;
+      }
+    }
+
+    if (userKey == null || userData == null) return false;
+
+    // Verify current password
+    if (userData['password'] != currentPassword) {
+      return false;
+    }
+
+    // Update with new password
+    userData['password'] = newPassword;
+
+    await box.put(userKey, userData);
+    return true;
+  }
+
   Future<void> logoutUser() async {
     final b = await Hive.openBox(sessionBox);
     await b.delete('loggedInEmail');
