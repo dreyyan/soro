@@ -4,9 +4,6 @@ import 'package:flutter/material.dart';
 // [IMPORT] App
 import 'package:soro/main.dart';
 
-// [IMPORT] Screens
-import 'package:soro/screens/deck_details.dart';
-
 // [IMPORT] Widgets
 import 'package:soro/widgets/cards/deck_card.dart';
 import 'package:soro/widgets/cards/deck_form.dart';
@@ -87,16 +84,6 @@ class _CardsState extends State<Cards> {
     await _loadDecks();
   }
 
-  // [OPEN] Navigate to DeckDetails page
-  void _openDeck(Map<String, dynamic> deck) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => DeckDetails(deck: deck, onUpdated: _loadDecks),
-      ),
-    );
-  }
-
   // [DIALOG] Show the DeckForm dialog to create a new deck
   void _showCreateDeckDialog() {
     showDialog(
@@ -116,14 +103,14 @@ class _CardsState extends State<Cards> {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.secondary_100,
+      backgroundColor: AppColors.secondary_200,
       body: SafeArea(
         child: Column(
           children: [
-            // [COMPONENT] Header
+            // [COMPONENT] Header (Title + Count only)
             _buildHeader(totalCards),
 
-            // [COMPONENT] Deck list / empty state
+            // [COMPONENT] Deck List / Empty State
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
@@ -142,73 +129,132 @@ class _CardsState extends State<Cards> {
                           ),
                         ),
             ),
+
+            // [COMPONENT] Action Buttons (Sort + Add Deck)
+            _buildActionButtons(),
           ],
         ),
       ),
     );
   }
 
-  // [WIDGET] Top header row - title, count, sort, add button
+  // [WIDGET] Top Header Row - Title + Card Count only
   Widget _buildHeader(int totalCards) {
-    return Container(
+    return Material(
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      elevation: 3,
+      shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        alignment: Alignment.centerLeft,
+        child: RichText(
+          text: TextSpan(
+            style: const TextStyle(
+              fontFamily: 'Baloo',
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text_800,
+            ),
+            children: [
+              const TextSpan(text: 'My Cards '),
+              TextSpan(
+                text: '($totalCards)',
+                style: const TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.text_400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // [WIDGET] Bottom Action Buttons (Sort + Add Deck)
+  Widget _buildActionButtons() {
+    final sortKey = GlobalKey();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      color: Colors.white,
       child: Row(
         children: [
-          // [TEXT] Title + card count
+          // [BUTTON] Sort Menu
           Expanded(
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                  fontFamily: 'Baloo',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.text_800,
-                ),
-                children: [
-                  const TextSpan(text: 'My Flashcards '),
-                  TextSpan(
-                    text: '($totalCards)',
-                    style: const TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.text_400,
-                    ),
+            child: ElevatedButton.icon(
+              key: sortKey,
+              onPressed: () async {
+                // Show menu anchored to the button
+                final selected = await showMenu<String>(
+                  context: context,
+                  position: RelativeRect.fromLTRB(
+                    60, 528, 100, 100
                   ),
-                ],
+                  items: const [
+                    PopupMenuItem(value: 'newest', child: Text('Newest first')),
+                    PopupMenuItem(value: 'oldest', child: Text('Oldest first')),
+                    PopupMenuItem(value: 'alpha', child: Text('A → Z')),
+                  ],
+                );
+
+                if (selected != null) setState(() => _sortBy = selected);
+              },
+              icon: const Icon(Icons.sort),
+              label: const Text(
+                'Sort',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.secondary_100,
+                foregroundColor: AppColors.text_700,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 2,
+                padding: const EdgeInsets.symmetric(vertical: 24),
               ),
             ),
           ),
 
-          // [BUTTON] Sort menu
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.sort, color: AppColors.text_500),
-            tooltip: 'Sort by',
-            onSelected: (val) => setState(() => _sortBy = val),
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'newest', child: Text('Newest first')),
-              PopupMenuItem(value: 'oldest', child: Text('Oldest first')),
-              PopupMenuItem(value: 'alpha',  child: Text('A → Z')),
-            ],
-          ),
+          const SizedBox(width: 12),
 
-          // [BUTTON] Create new deck
-          IconButton(
-            icon: const Icon(
-              Icons.add_circle,
-              color: AppColors.primary_600,
-              size: 28,
+          // [BUTTON] Add Deck
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: _showCreateDeckDialog,
+              icon: const Icon(Icons.add),
+              label: const Text(
+                'Add Deck',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary_600,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 3,
+                padding: const EdgeInsets.symmetric(vertical: 24),
+              ),
             ),
-            tooltip: 'New Deck',
-            onPressed: _showCreateDeckDialog,
           ),
         ],
       ),
     );
   }
 
-  // [WIDGET] Shown when no decks exist yet
+  // [WIDGET] Empty State
   Widget _buildEmptyState() {
     return Center(
       child: Column(
