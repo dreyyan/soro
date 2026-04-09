@@ -8,11 +8,12 @@ import 'package:soro/main.dart';
 import 'package:soro/screens/deck_details.dart';
 
 class DeckCard extends StatelessWidget {
-  // [PROPS]
+  // Attributes
   final Map<String, dynamic> deck;
   final VoidCallback onDeleted;
   final VoidCallback onUpdated;
 
+  // Constructor
   const DeckCard({
     super.key,
     required this.deck,
@@ -22,14 +23,15 @@ class DeckCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // [DATA] Extract deck fields
+    // [STATES] Deck Fields
     final cardCount   = (deck['cards'] as List?)?.length ?? 0;
     final title       = deck['title']       as String;
     final description = deck['description'] as String? ?? '';
 
     return Card(
+      color: AppColors.secondary_50,
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
+      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -56,12 +58,12 @@ class DeckCard extends StatelessWidget {
 
               const SizedBox(width: 14),
 
-              // [TEXT] Title, description, card count
+              // [TEXT] Title, Description, and Card Count
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // [TEXT] Deck title
+                    // [TEXT] Deck Title
                     Text(
                       title,
                       style: const TextStyle(
@@ -72,7 +74,7 @@ class DeckCard extends StatelessWidget {
                       ),
                     ),
 
-                    // [TEXT] Description (if present)
+                    // [TEXT] Description (opt.)
                     if (description.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
@@ -89,7 +91,7 @@ class DeckCard extends StatelessWidget {
 
                     const SizedBox(height: 4),
 
-                    // [TEXT] Card count label
+                    // [TEXT] Card Count Label
                     Text(
                       '$cardCount card${cardCount == 1 ? '' : 's'}',
                       style: const TextStyle(
@@ -103,9 +105,9 @@ class DeckCard extends StatelessWidget {
                 ),
               ),
 
-              // [BUTTON] Delete deck
+              // [BUTTON] Delete Deck
               IconButton(
-                icon: const Icon(Icons.delete_outline, color: AppColors.text_300),
+                icon: const Icon(Icons.delete_outline, color: AppColors.primary_600),
                 onPressed: onDeleted,
               ),
             ],
