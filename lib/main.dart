@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 
 // [IMPORT] Screens
+import 'package:soro/screens/auth/login_page.dart';
+import 'package:soro/screens/auth/signup_page.dart';
 import 'package:soro/screens/home_page.dart';
 import 'package:soro/screens/cards.dart';
 import 'package:soro/screens/quiz.dart';
@@ -35,146 +37,244 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(),
 
       // [ROUTES] User
-      initialRoute: '/',
+      initialRoute: '/login',
       routes: {
-        '/': (_) => const HomeWithNav(),               // Home Page
-        '/cards': (_) => const Cards(),                // Flashcards
-
-        '/quiz': (_) => const Quiz(),                  // Quiz: Main
+        '/login': (_) => const LoginPage(),         // Login
+        '/signup': (_) => const SignupPage(),       // Signup
+        '/': (_) => const HomePage(),            // Home Page
+        '/cards': (_) => const Cards(),             // Flashcards
+        '/quiz': (_) => const Quiz(),               // Quiz: Main
         '/quiz/settings': (_) => const QuizSettings(), // Quiz: Settings
-        '/quiz/start': (_) => const QuizStart(),       // Quiz: Start
-        
-        '/quest': (_) => const Quest(),                // Quest
-        '/profile': (_) => const Profile(),            // Profile
+        '/quiz/start': (_) => const QuizStart(),    // Quiz: Start
+        '/quest': (_) => const Quest(),             // Quest
+        '/profile': (_) => const Profile(),         // Profile
       },
     );
   }
 }
 
-// [CLASS] Home w/ Bottom Navigation Bar
-class HomeWithNav extends StatefulWidget {
-  const HomeWithNav({super.key});
-
-  @override
-  State<HomeWithNav> createState() => _HomeWithNavState();
-}
-
-class _HomeWithNavState extends State<HomeWithNav> {
-  int _selectedIndex = 0;
-
-  // [SCREENS] Screens for each tab
-  final List<Widget> _screens = [
-    const HomePage(),
-    const Cards(),
-    const SizedBox.shrink(),
-    const Quest(),
-    const Profile(),
-  ];
-
-  // [FUNCTION] Change selected tab
-  void _onTabSelected(int index) {
-    if (index == 2) {
-      // Navigate to "Create" page via FAB
-      Navigator.pushNamed(context, '/create');
-      return;
-    }
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+// [CLASS] Login Page
+class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // [BODY] Display current screen
-      body: _screens[_selectedIndex],
+      backgroundColor: AppColors.secondary_200,
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "Login",
+              style: TextStyle(
+                fontFamily: "Baloo",
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
+                color: AppColors.text_800,
+              ),
+            ),
 
-      // [COMPONENT] Bottom Navigation Bar
-      bottomNavigationBar: Stack(
-        alignment: Alignment.center,
-        children: [
-          // [BAR BACKGROUND]
-          Container(
-            height: 70,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, -2),
+            const SizedBox(height: 24),
+
+            // [INPUT] Email
+            TextField(
+              decoration: InputDecoration(
+                hintText: "Email",
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
                 ),
-              ],
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(24), // Rounded top corners
               ),
             ),
-          ),
 
-          // [NAVIGATION ITEMS]
-          BottomNavigationBar(
-            currentIndex: _selectedIndex > 2 ? _selectedIndex - 1 : _selectedIndex,
-            onTap: _onTabSelected,
-            selectedItemColor: AppColors.primary_600,
-            unselectedItemColor: AppColors.text_400,
-            showUnselectedLabels: true,
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
+            const SizedBox(height: 16),
 
-            // [TEXT STYLE] Set font size
-            selectedLabelStyle: const TextStyle(
-              fontFamily: "Nunito",
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontFamily: "Nunito",
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+            // [INPUT] Password
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                hintText: "Password",
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+              ),
             ),
 
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: "Home",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.style),
-                label: "Cards",
-              ),
-              BottomNavigationBarItem(
-                icon: SizedBox.shrink(), // Placeholder for center "+" button
-                label: "",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.star),
-                label: "Quest",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: "Profile",
-              ),
-            ],
-          ),
+            const SizedBox(height: 24),
 
-          // [CENTER + BUTTON]
-          Positioned(
-            bottom: 10,
-            child: FloatingActionButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/quiz'); // or a dedicated CreatePage
+            // [BUTTON] Login
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/'); // Go to Home
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary_600,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  "Login",
+                  style: TextStyle(
+                    fontFamily: "Nunito",
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // [NAVIGATION] Go to Signup
+            GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/signup');
               },
-              backgroundColor: AppColors.primary_600,
-              elevation: 4,
-              child: const Icon(
-                Icons.add,
-                size: 32,
-                color: Colors.white,
+              child: const Text(
+                "Don't have an account? Sign up",
+                style: TextStyle(
+                  fontFamily: "Nunito",
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.primary_600,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// [CLASS] Signup Page
+class SignupPage extends StatelessWidget {
+  const SignupPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.secondary_200,
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "Sign Up",
+              style: TextStyle(
+                fontFamily: "Baloo",
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
+                color: AppColors.text_800,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // [INPUT] Name
+            TextField(
+              decoration: InputDecoration(
+                hintText: "Full Name",
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // [INPUT] Email
+            TextField(
+              decoration: InputDecoration(
+                hintText: "Email",
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // [INPUT] Password
+            TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                hintText: "Password",
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // [BUTTON] Sign Up
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushReplacementNamed(context, '/'); // Go to Home
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary_600,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  "Sign Up",
+                  style: TextStyle(
+                    fontFamily: "Nunito",
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // [NAVIGATION] Go to Login
+            GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/login');
+              },
+              child: const Text(
+                "Already have an account? Log in",
+                style: TextStyle(
+                  fontFamily: "Nunito",
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.primary_600,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
