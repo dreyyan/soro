@@ -2,10 +2,18 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-// [IMPORT] Screens
+// [IMPORT] App
 import 'package:soro/main.dart';
+
+// [IMPORT] Screens
 import 'package:soro/screens/cards.dart';
 import 'package:soro/screens/quiz.dart';
+
+// [IMPORT] Widgets
+import 'package:soro/widgets/header.dart';
+
+// [IMPORT] Database
+import 'package:soro/database/database_helper.dart';
 
 // Trivia list
 final List<String> triviaList = [
@@ -16,65 +24,130 @@ final List<String> triviaList = [
   "Fun fact: Your stomach gets a new lining every 3–4 days.",
 ];
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  // [METHOD] Get random trivia
-  String getRandomTrivia() {
-    final random = Random();
-    return triviaList[random.nextInt(triviaList.length)];
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  // [STATE]
+  String _firstName = "there"; // fallback until loaded
+  int _cardsCreated = 0;
+  int? _accuracy;   // null means no quizzes taken yet
+  int _streak = 0;
+  bool _isLoading = true;
+
+  // Random trivia — picked once per build
+  final String _trivia = triviaList[Random().nextInt(triviaList.length)];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  // [ACTION] Load user profile + stats from Hive
+  Future<void> _loadData() async {
+    final db = DatabaseHelper();
+
+    final user  = await db.getLoggedInUser();
+    final stats = await db.getUserStats();
+
+    if (!mounted) return;
+
+    // Extract first name only for the greeting
+    final fullName = (user?['fullName'] as String? ?? '').trim();
+    final firstName = fullName.isNotEmpty
+        ? fullName.split(' ').first
+        : (user?['email'] as String? ?? 'there').split('@').first;
+
+    setState(() {
+      _firstName    = firstName;
+      _cardsCreated = stats['cardsCreated'] as int;
+      _accuracy     = stats['accuracy'] as int?;
+      _streak       = stats['streakDays'] as int;
+      _isLoading    = false;
+    });
+  }
+
+  // [HELPER] Time-based greeting
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return "Good Morning";
+    if (hour < 17) return "Good Afternoon";
+    return "Good Evening";
+  }
+
+  // [WIDGET] A single stat column inside the progress card
+  Widget _statItem(String value, String label) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primary_600,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: "Nunito",
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: AppColors.text_600,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final accuracyLabel = _accuracy != null ? '$_accuracy%' : '—';
+    final streakLabel   = _streak > 0 ? '$_streak🔥' : '0';
+
     return Scaffold(
       backgroundColor: AppColors.secondary_200,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // [COMPONENT] Header
-          Container(
-            width: double.infinity,
-            height: 84,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AppColors.primary_500,
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(60), // round bottom corners
-              ),
-            ),
-            child: const Text(
-              "Soro",
-              style: TextStyle(
-                color: AppColors.secondary_300,
-                fontFamily: "TheFoxTail",
-                fontSize: 62,
-              ),
-            ),
-          ),
+          Header(),
 
-          // [SPACE]
           const SizedBox(height: 40),
 
-          // [SECTION] Welcome/Greeting Message
+          // [SECTION] Greeting
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                // [TEXT] Greeting
-                Text(
-                  "Good Morning Adrian!",
-                  style: TextStyle(
-                    fontFamily: "Baloo",
-                    fontSize: 26,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.text_800,
-                  ),
-                ),
+              children: [
+                // [TEXT] Greeting — shows real first name
+                _isLoading
+                    ? Container(
+                        height: 30,
+                        width: 200,
+                        decoration: BoxDecoration(
+                          color: AppColors.text_100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      )
+                    : Text(
+                        "${_greeting()} $_firstName!",
+                        style: const TextStyle(
+                          fontFamily: "Baloo",
+                          fontSize: 26,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.text_800,
+                        ),
+                      ),
 
-                // [TEXT] Motivational line
-                Text(
+                const Text(
                   "Ready to study?",
                   style: TextStyle(
                     fontFamily: "Nunito",
@@ -87,57 +160,12 @@ class HomePage extends StatelessWidget {
             ),
           ),
 
-          // [SPACE]
           const SizedBox(height: 24),
 
-          // [COMPONENT] Trivia w/ mascot
           Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // [BUBBLE] Trivia text
-              Container(
-                margin: const EdgeInsets.only(bottom: 8, left: 24, right: 24),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  getRandomTrivia(), // return a random trivia string
-                  style: const TextStyle(
-                    fontFamily: "Nunito",
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.text_800,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-
-              // [SPACE]
-              const SizedBox(height: 8),
-
-              // [MASCOT IMAGE] w/ right margin
-              Container(
-                margin: const EdgeInsets.only(right: 8),
-                child: Image.asset(
-                  'assets/images/soro-mascot.png',
-                  width: 120,
-                  height: 120,
-                ),
-              ),
-
-              // [SPACE]
-              const SizedBox(height: 24),
-
               // [COMPONENT] Quick Access Buttons
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -147,12 +175,10 @@ class HomePage extends StatelessWidget {
                     // [BUTTON] Create Flashcards
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const Cards()),
-                          );
-                        },
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const Cards()),
+                        ),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           margin: const EdgeInsets.only(right: 8),
@@ -160,8 +186,8 @@ class HomePage extends StatelessWidget {
                             color: AppColors.primary_600,
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Column(
-                            children: const [
+                          child: const Column(
+                            children: [
                               Icon(Icons.edit, color: Colors.white, size: 28),
                               SizedBox(height: 6),
                               Text(
@@ -182,22 +208,22 @@ class HomePage extends StatelessWidget {
                     // [BUTTON] Start Quiz
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const Quiz()),
-                          );
-                        },
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const Quiz()),
+                        ),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          margin:
+                              const EdgeInsets.symmetric(horizontal: 4),
                           decoration: BoxDecoration(
                             color: AppColors.primary_500,
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Column(
-                            children: const [
-                              Icon(Icons.psychology, color: Colors.white, size: 28),
+                          child: const Column(
+                            children: [
+                              Icon(Icons.psychology,
+                                  color: Colors.white, size: 28),
                               SizedBox(height: 6),
                               Text(
                                 "Quiz",
@@ -217,12 +243,10 @@ class HomePage extends StatelessWidget {
                     // [BUTTON] View Cards
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const Cards()),
-                          );
-                        },
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const Cards()),
+                        ),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           margin: const EdgeInsets.only(left: 8),
@@ -230,9 +254,10 @@ class HomePage extends StatelessWidget {
                             color: AppColors.primary_700,
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Column(
-                            children: const [
-                              Icon(Icons.style, color: Colors.white, size: 28),
+                          child: const Column(
+                            children: [
+                              Icon(Icons.style,
+                                  color: Colors.white, size: 28),
                               SizedBox(height: 6),
                               Text(
                                 "Cards",
@@ -252,7 +277,6 @@ class HomePage extends StatelessWidget {
                 ),
               ),
 
-              // [SPACE]
               const SizedBox(height: 32),
 
               // [SECTION] Progress Overview
@@ -261,8 +285,7 @@ class HomePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // [TEXT] Section title
-                    Text(
+                    const Text(
                       "Your Progress",
                       style: TextStyle(
                         fontFamily: "Baloo",
@@ -272,15 +295,16 @@ class HomePage extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
 
-                    // [CARD] Progress container
+                    // [CARD] Stats container
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 16),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.1),
@@ -289,86 +313,106 @@ class HomePage extends StatelessWidget {
                           ),
                         ],
                       ),
+                      child: _isLoading
+                          // Skeleton loader while data is fetching
+                          ? Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceEvenly,
+                              children: List.generate(
+                                3,
+                                (_) => Column(
+                                  children: [
+                                    Container(
+                                      width: 40,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.text_100,
+                                        borderRadius:
+                                            BorderRadius.circular(6),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Container(
+                                      width: 52,
+                                      height: 12,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.text_100,
+                                        borderRadius:
+                                            BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                _statItem(
+                                    '$_cardsCreated', 'Cards'),
+                                _statItem(accuracyLabel, 'Accuracy'),
+                                _statItem(streakLabel, 'Streak'),
+                              ],
+                            ),
+                    ),
 
-                      // [ROW] Stats
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          // [ITEM] Cards studied
-                          Column(
-                            children: [
-                              Text(
-                                "12",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary_600,
-                                ),
-                              ),
-                              SizedBox(height: 2),
-                              Text(
-                                "Cards",
-                                style: TextStyle(
-                                  fontFamily: "Nunito",
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.text_600,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          // [ITEM] Quiz accuracy
-                          Column(
-                            children: [
-                              Text(
-                                "85%",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary_600,
-                                ),
-                              ),
-                              SizedBox(height: 2),
-                              Text(
-                                "Accuracy",
-                                style: TextStyle(
-                                  fontFamily: "Nunito",
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.text_600,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          // [ITEM] Streak
-                          Column(
-                            children: [
-                              Text(
-                                "3🔥",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary_600,
-                                ),
-                              ),
-                              SizedBox(height: 2),
-                              Text(
-                                "Streak",
-                                style: TextStyle(
-                                  fontFamily: "Nunito",
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.text_600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                    // ? [HINT] No quizzes taken
+                    if (!_isLoading && _accuracy == null) ...[
+                      const SizedBox(height: 8),
+                      const Text(
+                        "Take a quiz to track your accuracy!",
+                        style: TextStyle(
+                          fontFamily: "Nunito",
+                          fontSize: 12,
+                          color: AppColors.text_400,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
+                    ],
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 16),
+
+              // [BUBBLE] Trivia Text
+              Container(
+                margin:
+                    const EdgeInsets.only(bottom: 8, left: 24, right: 24),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
                     ),
                   ],
+                ),
+                child: Text(
+                  _trivia,
+                  style: const TextStyle(
+                    fontFamily: "Nunito",
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.text_800,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // [MASCOT IMAGE]
+              Container(
+                margin: const EdgeInsets.only(right: 8),
+                child: Image.asset(
+                  'assets/images/soro-mascot.png',
+                  width: 120,
+                  height: 120,
                 ),
               ),
             ],
