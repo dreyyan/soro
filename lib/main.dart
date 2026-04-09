@@ -89,9 +89,11 @@ class _HomeWithNavState extends State<HomeWithNav> {
       body: _screens[_selectedIndex],
 
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex >= 4 ? 0 : _selectedIndex, // prevent navbar highlighting Quiz
+        currentIndex: (_selectedIndex <= 3) ? _selectedIndex : 0, // just default to 0
         onTap: (i) => _onTabSelected(i),
-        selectedItemColor: AppColors.primary_600,
+        selectedItemColor: (_selectedIndex <= 3)
+            ? AppColors.primary_600
+            : AppColors.text_400, // make it same as unselected when Quiz open
         unselectedItemColor: AppColors.text_400,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
