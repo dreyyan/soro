@@ -7,14 +7,16 @@ import 'package:soro/main.dart';
 class QuizDetailSheet extends StatelessWidget {
   // [PROPS]
   final Map<String, dynamic> quiz;
-  final VoidCallback onDelete;
   final VoidCallback onPlay;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   const QuizDetailSheet({
     super.key,
     required this.quiz,
-    required this.onDelete,
     required this.onPlay,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   @override
@@ -24,11 +26,12 @@ class QuizDetailSheet extends StatelessWidget {
     final description = quiz['description']   as String? ?? '';
     final count       = quiz['questionCount'] as int?    ?? 0;
     final mode        = quiz['mode']          as String? ?? 'Multiple Choice';
+    final gameMode    = quiz['gameMode']      as String? ?? 'Classic';
     final deckTitle   = quiz['deckTitle']     as String? ?? '—';
     final timeLimit   = quiz['timeLimitSecs'] as int?;
     final createdAt   = quiz['createdAt']     as String? ?? '';
 
-    // [FORMAT] Parse ISO date into readable format
+    // [FORMAT] Parse ISO date into readable MM/DD/YYYY
     String dateLabel = '';
     if (createdAt.isNotEmpty) {
       final dt = DateTime.tryParse(createdAt);
@@ -36,9 +39,9 @@ class QuizDetailSheet extends StatelessWidget {
     }
 
     return DraggableScrollableSheet(
-      initialChildSize: 0.55,
+      initialChildSize: 0.65,
       minChildSize: 0.4,
-      maxChildSize: 0.9,
+      maxChildSize: 0.92,
       builder: (_, controller) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -46,7 +49,7 @@ class QuizDetailSheet extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // [HANDLE] Drag indicator
+            // [HANDLE] Drag indicator pill
             const SizedBox(height: 12),
             Container(
               width: 40,
@@ -93,10 +96,15 @@ class QuizDetailSheet extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // [DETAILS] Quiz metadata rows
-                  _buildDetailRow(Icons.quiz_outlined, 'Questions',
-                      '$count question${count == 1 ? '' : 's'}'),
+                  _buildDetailRow(
+                    Icons.quiz_outlined,
+                    'Questions',
+                    '$count question${count == 1 ? '' : 's'}',
+                  ),
                   const SizedBox(height: 10),
                   _buildDetailRow(Icons.category_outlined, 'Mode', mode),
+                  const SizedBox(height: 10),
+                  _buildDetailRow(Icons.sports_esports_outlined, 'Game Mode', gameMode),
                   const SizedBox(height: 10),
                   _buildDetailRow(Icons.style_outlined, 'Deck', deckTitle),
                   const SizedBox(height: 10),
@@ -107,12 +115,16 @@ class QuizDetailSheet extends StatelessWidget {
                   ),
                   if (dateLabel.isNotEmpty) ...[
                     const SizedBox(height: 10),
-                    _buildDetailRow(Icons.calendar_today_outlined, 'Created', dateLabel),
+                    _buildDetailRow(
+                      Icons.calendar_today_outlined,
+                      'Created',
+                      dateLabel,
+                    ),
                   ],
 
                   const SizedBox(height: 28),
 
-                  // [BUTTON] Start quiz
+                  // [BUTTON] Start Quiz — launches quiz immediately
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -131,15 +143,49 @@ class QuizDetailSheet extends StatelessWidget {
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 3,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // [BUTTON] Edit Quiz — opens QuizSettings with existing data
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: onEdit,
+                      icon: const Icon(
+                        Icons.edit_outlined,
+                        color: AppColors.primary_600,
+                      ),
+                      label: const Text(
+                        'Edit Quiz',
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary_600,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(
+                          color: AppColors.primary_600,
+                          width: 1,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
 
-                  // [BUTTON] Delete quiz
+                  // [BUTTON] Delete Quiz — removes quiz from saved list
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -150,6 +196,7 @@ class QuizDetailSheet extends StatelessWidget {
                         style: TextStyle(
                           fontFamily: 'Nunito',
                           fontSize: 15,
+                          fontWeight: FontWeight.w600,
                           color: Colors.red,
                         ),
                       ),
@@ -157,13 +204,13 @@ class QuizDetailSheet extends StatelessWidget {
                         side: const BorderSide(color: Colors.red, width: 1),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
                 ],
               ),
             ),
@@ -173,7 +220,7 @@ class QuizDetailSheet extends StatelessWidget {
     );
   }
 
-  // [WIDGET] A single icon + label + value row
+  // [WIDGET] A single icon + label + value metadata row
   Widget _buildDetailRow(IconData icon, String label, String value) {
     return Row(
       children: [
