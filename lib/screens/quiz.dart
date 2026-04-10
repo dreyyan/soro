@@ -104,16 +104,39 @@ class _QuizState extends State<Quiz> {
       backgroundColor: Colors.transparent,
       builder: (_) => QuizDetailSheet(
         quiz: quiz,
-        onDelete: () {
-          Navigator.pop(context);
-          _deleteQuiz(quiz['id'] as String, quiz['title'] as String);
-        },
+
+        // [PLAY] Navigate to QuizStart with the saved questions
         onPlay: () {
           Navigator.pop(context);
-          Navigator.push(
+          final questions =
+              (quiz['questions'] as List? ?? []).cast<Map<String, dynamic>>();
+          Navigator.pushNamed(
+            context,
+            '/quiz/start',
+            arguments: {
+              'numberOfQuestions':  quiz['questionCount'] ?? questions.length,
+              'mode':               quiz['mode']          ?? 'Multiple Choice',
+              'identificationMode': quiz['identificationMode'] ?? 'Definition',
+              'gameMode':           quiz['gameMode']      ?? 'Classic',
+              'questions':          questions,
+            },
+          );
+        },
+
+        // [EDIT] Open QuizSettings then refresh the list on return
+        onEdit: () async {
+          Navigator.pop(context);
+          await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const QuizSettings()),
           );
+          await _loadQuizzes();
+        },
+
+        // [DELETE] Close sheet then run the delete confirmation flow
+        onDelete: () {
+          Navigator.pop(context);
+          _deleteQuiz(quiz['id'] as String, quiz['title'] as String);
         },
       ),
     );
@@ -124,14 +147,14 @@ class _QuizState extends State<Quiz> {
     final quizzes = _sortedQuizzes;
 
     return Scaffold(
-      backgroundColor: AppColors.secondary_100,
+      backgroundColor: AppColors.secondary_200,
       body: SafeArea(
         child: Column(
           children: [
-            // [COMPONENT] Header
+            // [COMPONENT] Header (Title + Count only)
             _buildHeader(),
 
-            // [COMPONENT] Quiz list or empty state
+            // [COMPONENT] Quiz List / Empty State
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
@@ -150,66 +173,118 @@ class _QuizState extends State<Quiz> {
                           ),
                         ),
             ),
+
+            // [COMPONENT] Action Buttons (Sort + Create Quiz)
+            _buildActionButtons(),
           ],
         ),
       ),
     );
   }
 
-  // [WIDGET] Top header row — title, count, sort, add button
+  // [WIDGET] Top Header Row — Title + Quiz Count only
   Widget _buildHeader() {
-    return Container(
+    return Material(
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      elevation: 3,
+      shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        alignment: Alignment.centerLeft,
+        child: RichText(
+          text: TextSpan(
+            style: const TextStyle(
+              fontFamily: 'Baloo',
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text_800,
+            ),
+            children: [
+              const TextSpan(text: 'My Quizzes '),
+              TextSpan(
+                text: '(${_quizzes.length})',
+                style: const TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.text_400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // [WIDGET] Bottom Action Buttons — Sort + Create Quiz
+  Widget _buildActionButtons() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      color: Colors.white,
       child: Row(
         children: [
-          // [TEXT] Title + quiz count
+          // [BUTTON] Sort Menu
           Expanded(
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                  fontFamily: 'Baloo',
-                  fontSize: 20,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final selected = await showMenu<String>(
+                  context: context,
+                  position: const RelativeRect.fromLTRB(60, 528, 100, 100),
+                  items: const [
+                    PopupMenuItem(value: 'newest', child: Text('Newest first')),
+                    PopupMenuItem(value: 'oldest', child: Text('Oldest first')),
+                    PopupMenuItem(value: 'alpha',  child: Text('A → Z')),
+                  ],
+                );
+                if (selected != null) setState(() => _sortBy = selected);
+              },
+              icon: const Icon(Icons.sort),
+              label: const Text(
+                'Sort',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontFamily: 'Nunito',
                   fontWeight: FontWeight.w700,
-                  color: AppColors.text_800,
                 ),
-                children: [
-                  const TextSpan(text: 'My Quizzes '),
-                  TextSpan(
-                    text: '(${_quizzes.length})',
-                    style: const TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.text_400,
-                    ),
-                  ),
-                ],
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.secondary_100,
+                foregroundColor: AppColors.text_700,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 2,
+                padding: const EdgeInsets.symmetric(vertical: 24),
               ),
             ),
           ),
 
-          // [BUTTON] Sort menu
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.sort, color: AppColors.text_500),
-            tooltip: 'Sort by',
-            onSelected: (val) => setState(() => _sortBy = val),
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'newest', child: Text('Newest first')),
-              PopupMenuItem(value: 'oldest', child: Text('Oldest first')),
-              PopupMenuItem(value: 'alpha',  child: Text('A → Z')),
-            ],
-          ),
+          const SizedBox(width: 12),
 
-          // [BUTTON] Create new quiz
-          IconButton(
-            icon: const Icon(
-              Icons.add_circle,
-              color: AppColors.primary_600,
-              size: 28,
+          // [BUTTON] Create Quiz
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: _createQuiz,
+              icon: const Icon(Icons.add),
+              label: const Text(
+                'Create Quiz',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary_600,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 3,
+                padding: const EdgeInsets.symmetric(vertical: 24),
+              ),
             ),
-            tooltip: 'Create Quiz',
-            onPressed: _createQuiz,
           ),
         ],
       ),
@@ -234,24 +309,11 @@ class _QuizState extends State<Quiz> {
           ),
           const SizedBox(height: 6),
           const Text(
-            'Tap + to create your first quiz',
+            'Tap "Create Quiz" to get started',
             style: TextStyle(
               fontFamily: 'Nunito',
               fontSize: 14,
               color: AppColors.text_300,
-            ),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton.icon(
-            onPressed: _createQuiz,
-            icon:  const Icon(Icons.add),
-            label: const Text('Create Quiz'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary_600,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
             ),
           ),
         ],
