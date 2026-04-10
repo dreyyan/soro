@@ -49,7 +49,7 @@ class QuizCard extends StatelessWidget {
 
               const SizedBox(width: 14),
 
-              // [TEXT] Title, description, chips
+              // [TEXT] Title, description, info chips
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,16 +85,24 @@ class QuizCard extends StatelessWidget {
                     // [ROW] Info chips
                     Row(
                       children: [
-                        _buildChip('$count Q', AppColors.primary_100, AppColors.primary_600),
+                        _buildChip(
+                          '$count Q',
+                          AppColors.primary_100,
+                          AppColors.primary_600,
+                        ),
                         const SizedBox(width: 6),
-                        _buildChip(mode, AppColors.secondary_200, AppColors.text_600),
+                        _buildChip(
+                          mode,
+                          AppColors.secondary_200,
+                          AppColors.text_600,
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
 
-              // [ICON] Chevron
+              // [ICON] Tap hint chevron
               const Icon(Icons.chevron_right, color: AppColors.text_300),
             ],
           ),
@@ -103,7 +111,7 @@ class QuizCard extends StatelessWidget {
     );
   }
 
-  // [WIDGET] Small pill-shaped label chip
+  // [WIDGET] Small pill-shaped info label
   Widget _buildChip(String label, Color bg, Color fg) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
