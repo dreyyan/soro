@@ -5,9 +5,6 @@ import 'dart:math';
 // [IMPORT] App
 import 'package:soro/main.dart';
 
-// [IMPORT] Screens
-import 'package:soro/screens/quiz_start.dart';
-
 // [IMPORT] Database
 import 'package:soro/database/database_helper.dart';
 
@@ -30,6 +27,7 @@ class _QuizSettingsState extends State<QuizSettings> {
   List<Question> questions = [];
 
   // [CONTROLLER] Pasteable Q&A input
+  final TextEditingController titleController = TextEditingController();
   final TextEditingController questionsController = TextEditingController();
 
   // [OPTIONS] Available quiz modes
@@ -57,6 +55,7 @@ class _QuizSettingsState extends State<QuizSettings> {
 
   @override
   void dispose() {
+    titleController.dispose();
     questionsController.dispose();
     super.dispose();
   }
@@ -66,17 +65,17 @@ class _QuizSettingsState extends State<QuizSettings> {
     final saved = await DatabaseHelper().getQuizSettings();
     if (saved == null) return;
     setState(() {
-      numberOfQuestions        = saved['numberOfQuestions'] ?? 5;
-      selectedMode             = saved['mode']              ?? "Multiple Choice";
+      numberOfQuestions        = saved['numberOfQuestions']  ?? 5;
+      selectedMode             = saved['mode']               ?? "Multiple Choice";
       identificationAnswerMode = saved['identificationMode'] ?? "Definition";
-      selectedGameMode         = saved['gameMode']          ?? "Classic";
+      selectedGameMode         = saved['gameMode']           ?? "Classic";
     });
   }
 
   // [SAVE] Persist current quiz settings to Hive
   Future<void> _saveSettings() async {
     await DatabaseHelper().saveQuizSettings({
-      'numberOfQuestions': numberOfQuestions,
+      'numberOfQuestions':  numberOfQuestions,
       'mode':               selectedMode,
       'identificationMode': identificationAnswerMode,
       'gameMode':           selectedGameMode,
@@ -124,8 +123,16 @@ class _QuizSettingsState extends State<QuizSettings> {
     );
   }
 
-  // [START] Validate, process, save, and navigate to QuizStart
-  Future<void> _startQuiz() async {
+  // [CREATE] Validate, parse, save quiz to DB, then pop back to Quiz screen
+  Future<void> _createQuiz() async {
+    final title = titleController.text.trim();
+
+    // [VALIDATION] Title required
+    if (title.isEmpty) {
+      _showError("Please enter a quiz title.");
+      return;
+    }
+
     _parseQuestions();
 
     // [VALIDATION] Ensure enough questions were provided
@@ -145,25 +152,31 @@ class _QuizSettingsState extends State<QuizSettings> {
 
     await _saveSettings();
 
+    // [SAVE] Persist quiz to the user's saved quizzes list
+    await DatabaseHelper().addSavedQuiz({
+      'id':            DateTime.now().millisecondsSinceEpoch.toString(),
+      'title':         title,
+      'description':   '',
+      'createdAt':     DateTime.now().toIso8601String(),
+      'questionCount': questions.length,
+      'mode':          selectedMode,
+      'gameMode':      selectedGameMode,
+      'identificationMode': identificationAnswerMode,
+      'deckTitle':     '—',
+      'timeLimitSecs': selectedGameMode == "Time Attack" ? 120 : null,
+      'questions': questions
+          .map((q) => {
+                'question': q.question,
+                'answer':   q.answer,
+                'choices':  q.choices,
+              })
+          .toList(),
+    });
+
     if (!mounted) return;
 
-    Navigator.pushNamed(
-      context,
-      '/quiz/start',
-      arguments: {
-        "numberOfQuestions":  numberOfQuestions,
-        "mode":               selectedMode,
-        "identificationMode": identificationAnswerMode,
-        "gameMode":           selectedGameMode,
-        "questions": questions
-            .map((q) => {
-                  "question": q.question,
-                  "answer":   q.answer,
-                  "choices":  q.choices,
-                })
-            .toList(),
-      },
-    );
+    // [NAVIGATE] Return to Quiz screen so the new quiz appears in the list
+    Navigator.pop(context);
   }
 
   @override
@@ -172,7 +185,7 @@ class _QuizSettingsState extends State<QuizSettings> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          "Quiz Settings",
+          "Create Quiz",
           style: TextStyle(fontFamily: 'Baloo', fontWeight: FontWeight.w700),
         ),
         backgroundColor: AppColors.primary_600,
@@ -184,6 +197,24 @@ class _QuizSettingsState extends State<QuizSettings> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // [INPUT] Quiz title
+            _buildLabel("Quiz Title"),
+            const SizedBox(height: 8),
+            TextField(
+              controller: titleController,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                hintText: "e.g. Biology Chapter 3",
+                filled: true,
+                fillColor: AppColors.secondary_100,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
             // [INPUT] Number of questions
             _buildLabel("Number of Questions"),
             const SizedBox(height: 8),
@@ -214,7 +245,7 @@ class _QuizSettingsState extends State<QuizSettings> {
             ),
             const SizedBox(height: 24),
 
-            // [INPUT] Identification answer type (only when Identification is selected)
+            // [INPUT] Identification answer type (only when mode is Identification)
             if (selectedMode == "Identification") ...[
               _buildLabel("Answer Type"),
               const SizedBox(height: 8),
@@ -225,7 +256,9 @@ class _QuizSettingsState extends State<QuizSettings> {
                     .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                     .toList(),
                 onChanged: (val) {
-                  if (val != null) setState(() => identificationAnswerMode = val);
+                  if (val != null) {
+                    setState(() => identificationAnswerMode = val);
+                  }
                 },
               ),
               const SizedBox(height: 24),
@@ -264,9 +297,9 @@ class _QuizSettingsState extends State<QuizSettings> {
             ),
             const SizedBox(height: 16),
 
-            // [BUTTON] Start Quiz
+            // [BUTTON] Create Quiz
             ElevatedButton(
-              onPressed: _startQuiz,
+              onPressed: _createQuiz,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary_600,
                 foregroundColor: Colors.white,
@@ -274,9 +307,10 @@ class _QuizSettingsState extends State<QuizSettings> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                elevation: 3,
               ),
               child: const Text(
-                "Start Quiz",
+                "Create Quiz",
                 style: TextStyle(
                   fontFamily: 'Nunito',
                   fontSize: 18,
