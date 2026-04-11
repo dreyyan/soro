@@ -54,6 +54,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/images/soro-mascot.png
+    - assets/images/soro-mascot-head.png
     - assets/images/soro-mascot-navbar.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
