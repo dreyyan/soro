@@ -5,10 +5,6 @@ import 'dart:math';
 // [IMPORT] App
 import 'package:soro/main.dart';
 
-// [IMPORT] Screens
-import 'package:soro/screens/cards.dart';
-import 'package:soro/screens/quiz.dart';
-
 // [IMPORT] Widgets
 import 'package:soro/widgets/header.dart';
 
@@ -113,286 +109,288 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       backgroundColor: AppColors.secondary_200,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // [COMPONENT] Header
-          Header(),
+      body: SingleChildScrollView(
+      child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+            // [COMPONENT] Header
+            Header(),
 
-          const SizedBox(height: 40),
+            const SizedBox(height: 40),
 
-          // [SECTION] Greeting
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // [TEXT] Greeting — shows real first name
-                _isLoading
-                    ? Container(
-                        height: 30,
-                        width: 200,
-                        decoration: BoxDecoration(
-                          color: AppColors.text_100,
-                          borderRadius: BorderRadius.circular(8),
+            // [SECTION] Greeting
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // [TEXT] Greeting — shows real first name
+                  _isLoading
+                      ? Container(
+                          height: 30,
+                          width: 200,
+                          decoration: BoxDecoration(
+                            color: AppColors.text_100,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        )
+                      : Text(
+                          "${_greeting()} $_firstName!",
+                          style: const TextStyle(
+                            fontFamily: "Baloo",
+                            fontSize: 26,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.text_800,
+                          ),
                         ),
-                      )
-                    : Text(
-                        "${_greeting()} $_firstName!",
-                        style: const TextStyle(
+
+                  const Text(
+                    "Ready to study?",
+                    style: TextStyle(
+                      fontFamily: "Nunito",
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text_500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // [COMPONENT] Quick Access Buttons
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            homeNavKey.currentState?.onTabSelected(2);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary_500,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Column(
+                              children: [
+                                Icon(Icons.psychology, color: Colors.white, size: 28),
+                                SizedBox(height: 6),
+                                Text(
+                                  "Study Now",
+                                  style: TextStyle(
+                                    fontFamily: "Baloo",
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.text_50,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      // [BUTTON] Create Deck (Secondary)
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            homeNavKey.currentState?.onTabSelected(1);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
+                              color: AppColors.secondary_200,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: AppColors.primary_500,
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: const Column(
+                              children: [
+                                Icon(
+                                  Icons.style,
+                                  color: AppColors.primary_600,
+                                  size: 28,
+                                ),
+                                SizedBox(height: 6),
+                                Text(
+                                  "Create Deck",
+                                  style: TextStyle(
+                                    fontFamily: "Baloo",
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary_600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // [SECTION] Progress Overview
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Your Progress",
+                        style: TextStyle(
                           fontFamily: "Baloo",
-                          fontSize: 26,
+                          fontSize: 20,
                           fontWeight: FontWeight.w600,
                           color: AppColors.text_800,
                         ),
                       ),
 
-                const Text(
-                  "Ready to study?",
-                  style: TextStyle(
-                    fontFamily: "Nunito",
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.text_500,
+                      SizedBox(height: 8),
+
+                      // [CARD] Stats container
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 6,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: _isLoading
+                            // Skeleton loader while data is fetching
+                            ? Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: List.generate(
+                                  3,
+                                  (_) => Column(
+                                    children: [
+                                      Container(
+                                        width: 40,
+                                        height: 20,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.text_100,
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Container(
+                                        width: 52,
+                                        height: 12,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.text_100,
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  _statItem(
+                                      '$_cardsCreated', 'Cards'),
+                                  _statItem(accuracyLabel, 'Accuracy'),
+                                  _statItem(streakLabel, 'Streak'),
+                                ],
+                              ),
+                      ),
+
+                      // ? [HINT] No quizzes taken
+                      if (!_isLoading && _accuracy == null) ...[
+                        const SizedBox(height: 8),
+                        const Text(
+                          "Take a quiz to track your accuracy!",
+                          style: TextStyle(
+                            fontFamily: "Nunito",
+                            fontSize: 12,
+                            color: AppColors.text_400,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: 16),
+
+                // [BUBBLE] Trivia Text
+                Container(
+                  margin:
+                      const EdgeInsets.only(bottom: 8, left: 24, right: 24),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    _trivia,
+                    style: const TextStyle(
+                      fontFamily: "Nunito",
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.text_800,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // [MASCOT IMAGE]
+                Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  child: Image.asset(
+                    'assets/images/soro-mascot.png',
+                    width: 120,
+                    height: 120,
                   ),
                 ),
               ],
             ),
-          ),
-
-          const SizedBox(height: 24),
-
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // [COMPONENT] Quick Access Buttons
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          homeNavKey.currentState?.onTabSelected(2);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary_500,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Column(
-                            children: [
-                              Icon(Icons.psychology, color: Colors.white, size: 28),
-                              SizedBox(height: 6),
-                              Text(
-                                "Study Now",
-                                style: TextStyle(
-                                  fontFamily: "Baloo",
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.text_50,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 12),
-
-                    // [BUTTON] Create Deck (Secondary)
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          homeNavKey.currentState?.onTabSelected(1);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary_200,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: AppColors.primary_500,
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 6,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: const Column(
-                            children: [
-                              Icon(
-                                Icons.style,
-                                color: AppColors.primary_600,
-                                size: 28,
-                              ),
-                              SizedBox(height: 6),
-                              Text(
-                                "Create Deck",
-                                style: TextStyle(
-                                  fontFamily: "Baloo",
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primary_600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // [SECTION] Progress Overview
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Your Progress",
-                      style: TextStyle(
-                        fontFamily: "Baloo",
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.text_800,
-                      ),
-                    ),
-
-                    SizedBox(height: 8),
-
-                    // [CARD] Stats container
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: _isLoading
-                          // Skeleton loader while data is fetching
-                          ? Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceEvenly,
-                              children: List.generate(
-                                3,
-                                (_) => Column(
-                                  children: [
-                                    Container(
-                                      width: 40,
-                                      height: 20,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.text_100,
-                                        borderRadius:
-                                            BorderRadius.circular(6),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Container(
-                                      width: 52,
-                                      height: 12,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.text_100,
-                                        borderRadius:
-                                            BorderRadius.circular(4),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          : Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: [
-                                _statItem(
-                                    '$_cardsCreated', 'Cards'),
-                                _statItem(accuracyLabel, 'Accuracy'),
-                                _statItem(streakLabel, 'Streak'),
-                              ],
-                            ),
-                    ),
-
-                    // ? [HINT] No quizzes taken
-                    if (!_isLoading && _accuracy == null) ...[
-                      const SizedBox(height: 8),
-                      const Text(
-                        "Take a quiz to track your accuracy!",
-                        style: TextStyle(
-                          fontFamily: "Nunito",
-                          fontSize: 12,
-                          color: AppColors.text_400,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-
-              SizedBox(height: 16),
-
-              // [BUBBLE] Trivia Text
-              Container(
-                margin:
-                    const EdgeInsets.only(bottom: 8, left: 24, right: 24),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  _trivia,
-                  style: const TextStyle(
-                    fontFamily: "Nunito",
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.text_800,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // [MASCOT IMAGE]
-              Container(
-                margin: const EdgeInsets.only(right: 8),
-                child: Image.asset(
-                  'assets/images/soro-mascot.png',
-                  width: 120,
-                  height: 120,
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
