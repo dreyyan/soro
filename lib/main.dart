@@ -124,16 +124,16 @@ class MyApp extends StatelessWidget {
         ),
 
         // [THEME] Input Fields
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: AppColors.text_900,
-          hintStyle: const TextStyle(color: AppColors.text_400),
-          labelStyle: const TextStyle(color: AppColors.text_300),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-        ),
+        // inputDecorationTheme: InputDecorationTheme(
+        //   filled: true,
+        //   fillColor: AppColors.text_900,
+        //   hintStyle: const TextStyle(color: AppColors.text_400),
+        //   labelStyle: const TextStyle(color: AppColors.text_300),
+        //   border: OutlineInputBorder(
+        //     borderRadius: BorderRadius.circular(12),
+        //     borderSide: BorderSide.none,
+        //   ),
+        // ),
 
         // [THEME] Text
         textTheme: const TextTheme(
