@@ -26,6 +26,7 @@ void main() async {
 }
 
 // [CLASS] Main App
+// [CLASS] Main App
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -33,7 +34,116 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(),
+
+      // [THEME]
+      theme: ThemeData(
+        useMaterial3: true,
+        // brightness: Brightness.dark,
+
+        // // [COLORS] Base
+        // primaryColor: AppColors.primary_500,
+        // scaffoldBackgroundColor: AppColors.text_950,
+
+        // colorScheme: ColorScheme.dark(
+        //   primary: AppColors.primary_500,
+        //   onPrimary: Colors.white,
+
+        //   secondary: AppColors.secondary_400,
+        //   onSecondary: Colors.black,
+
+        //   surface: AppColors.text_900,
+        //   onSurface: AppColors.text_100,
+
+        //   error: Colors.redAccent,
+        //   onError: Colors.white,
+        // ),
+
+        // [THEME] Dialogs
+        dialogTheme: DialogThemeData(
+          backgroundColor: AppColors.text_900,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          titleTextStyle: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.text_50,
+          ),
+          contentTextStyle: const TextStyle(
+            fontSize: 16,
+            color: AppColors.text_300,
+          ),
+        ),
+
+        // [THEME] Bottom Sheets
+        bottomSheetTheme: const BottomSheetThemeData(
+          backgroundColor: AppColors.text_900,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(24),
+            ),
+          ),
+        ),
+
+        // [THEME] Snackbars
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: AppColors.text_800,
+          contentTextStyle: const TextStyle(
+            color: AppColors.text_100,
+            fontSize: 14,
+          ),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+
+        // [THEME] Cards
+        cardTheme: CardThemeData(
+          color: AppColors.text_900,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 4,
+        ),
+
+        // [THEME] Buttons
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary_500,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 14,
+            ),
+          ),
+        ),
+
+        // [THEME] Input Fields
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: AppColors.text_900,
+          hintStyle: const TextStyle(color: AppColors.text_400),
+          labelStyle: const TextStyle(color: AppColors.text_300),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+
+        // [THEME] Text
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(color: AppColors.text_100),
+          bodySmall: TextStyle(color: AppColors.text_400),
+          titleLarge: TextStyle(
+            color: AppColors.text_50,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
 
       // [ROUTES]
       initialRoute: '/login',
