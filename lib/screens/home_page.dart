@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                       style: TextStyle(
                         color: AppColors.secondary_50,
                         fontFamily: "TheFoxTail",
-                        fontSize: 48,
+                        fontSize: 44,
                       ),
                     ),
                   ],
@@ -208,7 +208,7 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: AppColors.secondary_100,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.15),
