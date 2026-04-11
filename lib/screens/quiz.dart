@@ -185,7 +185,7 @@ class _QuizState extends State<Quiz> {
   // [WIDGET] Top Header Row — Title + Quiz Count only
   Widget _buildHeader() {
     return Material(
-      color: Colors.white,
+      color: AppColors.primary_600,
       elevation: 3,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
@@ -197,7 +197,7 @@ class _QuizState extends State<Quiz> {
               fontFamily: 'Baloo',
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: AppColors.text_800,
+              color: AppColors.text_50,
             ),
             children: [
               const TextSpan(text: 'My Quizzes '),
@@ -207,7 +207,7 @@ class _QuizState extends State<Quiz> {
                   fontFamily: 'Nunito',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.text_400,
+                  color: AppColors.text_100,
                 ),
               ),
             ],
