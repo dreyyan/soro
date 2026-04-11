@@ -195,49 +195,94 @@ class HomeWithNavState extends State<HomeWithNav> {
     });
   }
 
+  // [SECTION] Home Scaffold
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_selectedIndex],
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: onTabSelected,
-        selectedItemColor: AppColors.primary_600,
-        unselectedItemColor: AppColors.text_400,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          // [TAB] Home
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
+      // [SECTION] Bottom Navigation Bar
+      bottomNavigationBar: Theme(
+        data: Theme.of(context).copyWith(
+        splashFactory: NoSplash.splashFactory, // remove ripple circle
+        splashColor: Colors.transparent, // remove splash color
+        highlightColor: Colors.transparent, // remove default gray circle
+        hoverColor: Colors.transparent, // remove hover effect
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: const BoxDecoration(
+            color: AppColors.secondary_50,
+            border: Border(
+              top: BorderSide(
+                color: AppColors.secondary_300,
+                width: 1,
+              ),
+            ),
           ),
 
-          // [TAB] Cards
-          BottomNavigationBarItem(
-            icon: Icon(Icons.style),
-            label: "Cards",
-          ),
+          // [SECTION] Bottom Navigation Bar
+          child: BottomNavigationBar(
+            currentIndex: _selectedIndex,
+            onTap: onTabSelected,
 
-          // [TAB] Quiz (CENTER)
-          BottomNavigationBarItem(
-            icon: Icon(Icons.quiz),
-            label: "Quiz",
-          ),
+            // [STYLE] Background & elevation
+            backgroundColor: Colors.transparent,
+            elevation: 0,
 
-          // [TAB] Quest
-          BottomNavigationBarItem(
-            icon: Icon(Icons.star),
-            label: "Quest",
-          ),
+            // [STYLE] Colors
+            selectedItemColor: AppColors.primary_600,
+            unselectedItemColor: AppColors.text_300,
 
-          // [TAB] Profile
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profile",
+            // [STYLE] Typography
+            selectedLabelStyle: const TextStyle(
+              fontFamily: "Baloo",
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontFamily: "Baloo",
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+
+            // [CONFIG]
+            showUnselectedLabels: true,
+            type: BottomNavigationBarType.fixed,
+
+            items: const [
+              // [TAB] Home
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: "Home",
+              ),
+
+              // [TAB] Cards
+              BottomNavigationBarItem(
+                icon: Icon(Icons.style),
+                label: "Cards",
+              ),
+
+              // [TAB] Quiz
+              BottomNavigationBarItem(
+                icon: Icon(Icons.quiz),
+                label: "Quiz",
+              ),
+
+              // [TAB] Quest
+              BottomNavigationBarItem(
+                icon: Icon(Icons.star),
+                label: "Quest",
+              ),
+
+              // [TAB] Profile
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: "Profile",
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
