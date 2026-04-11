@@ -25,7 +25,8 @@ void main() async {
   runApp(const MyApp());
 }
 
-// [CLASS] Main App
+final GlobalKey<HomeWithNavState> homeNavKey = GlobalKey<HomeWithNavState>();
+
 // [CLASS] Main App
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -151,7 +152,7 @@ class MyApp extends StatelessWidget {
         '/login':                   (_) => const LoginPage(),
         '/signup':                  (_) => const SignupPage(),
         '/onboarding':              (_) => const OnboardingPage(),
-        '/':                        (_) => const HomeWithNav(),
+        '/':                        (_) => HomeWithNav(key: homeNavKey),
         '/cards':                   (_) => const Cards(),
         '/quiz':                    (_) => const Quiz(),
         '/quiz/settings':           (_) => const QuizSettings(),
@@ -171,10 +172,10 @@ class HomeWithNav extends StatefulWidget {
   const HomeWithNav({super.key});
 
   @override
-  State<HomeWithNav> createState() => _HomeWithNavState();
+  State<HomeWithNav> createState() => HomeWithNavState();
 }
 
-class _HomeWithNavState extends State<HomeWithNav> {
+class HomeWithNavState extends State<HomeWithNav> {
   int _selectedIndex = 0;
 
   // [SCREENS] Bottom Navigation Bar
@@ -187,7 +188,7 @@ class _HomeWithNavState extends State<HomeWithNav> {
   ];
 
   // [NAVIGATION] Handle tab change
-  void _onTabSelected(int index) {
+  void onTabSelected(int index) {
     if (index < 0 || index >= _screens.length) return;
     setState(() {
       _selectedIndex = index;
@@ -201,7 +202,7 @@ class _HomeWithNavState extends State<HomeWithNav> {
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: _onTabSelected,
+        onTap: onTabSelected,
         selectedItemColor: AppColors.primary_600,
         unselectedItemColor: AppColors.text_400,
         showUnselectedLabels: true,

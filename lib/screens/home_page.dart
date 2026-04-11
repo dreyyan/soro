@@ -170,67 +170,28 @@ class _HomePageState extends State<HomePage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // [BUTTON] Create Flashcards
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const Cards()),
-                        ),
+                        onTap: () {
+                          homeNavKey.currentState?.onTabSelected(2);
+                        },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          margin: const EdgeInsets.only(right: 8),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary_600,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Column(
-                            children: [
-                              Icon(Icons.edit, color: Colors.white, size: 28),
-                              SizedBox(height: 6),
-                              Text(
-                                "Create",
-                                style: TextStyle(
-                                  fontFamily: "Nunito",
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.text_50,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // [BUTTON] Start Quiz
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const Quiz()),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          margin:
-                              const EdgeInsets.symmetric(horizontal: 4),
                           decoration: BoxDecoration(
                             color: AppColors.primary_500,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: const Column(
                             children: [
-                              Icon(Icons.psychology,
-                                  color: Colors.white, size: 28),
+                              Icon(Icons.psychology, color: Colors.white, size: 28),
                               SizedBox(height: 6),
                               Text(
-                                "Quiz",
+                                "Study Now",
                                 style: TextStyle(
-                                  fontFamily: "Nunito",
+                                  fontFamily: "Baloo",
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w600,
                                   color: AppColors.text_50,
                                 ),
                               ),
@@ -240,32 +201,46 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
 
-                    // [BUTTON] View Cards
+                    const SizedBox(width: 12),
+
+                    // [BUTTON] Create Deck (Secondary)
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const Cards()),
-                        ),
+                        onTap: () {
+                          homeNavKey.currentState?.onTabSelected(1);
+                        },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          margin: const EdgeInsets.only(left: 8),
                           decoration: BoxDecoration(
-                            color: AppColors.primary_700,
+                            color: AppColors.secondary_200,
                             borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppColors.primary_500,
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
                           ),
                           child: const Column(
                             children: [
-                              Icon(Icons.style,
-                                  color: Colors.white, size: 28),
+                              Icon(
+                                Icons.style,
+                                color: AppColors.primary_600,
+                                size: 28,
+                              ),
                               SizedBox(height: 6),
                               Text(
-                                "Cards",
+                                "Create Deck",
                                 style: TextStyle(
-                                  fontFamily: "Nunito",
+                                  fontFamily: "Baloo",
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.text_50,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary_600,
                                 ),
                               ),
                             ],
