@@ -13,14 +13,14 @@ import 'package:soro/database/database_helper.dart';
 // Email & password are already stored from signup.
 // ─────────────────────────────────────────────────────────────────────────────
 
-class OnboardingPage extends StatefulWidget {
-  const OnboardingPage({super.key});
+class ProfileOnboarding extends StatefulWidget {
+  const ProfileOnboarding({super.key});
 
   @override
-  State<OnboardingPage> createState() => _OnboardingPageState();
+  State<ProfileOnboarding> createState() => _ProfileOnboardingState();
 }
 
-class _OnboardingPageState extends State<OnboardingPage> {
+class _ProfileOnboardingState extends State<ProfileOnboarding> {
   // [CONTROLLERS]
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();

@@ -61,6 +61,18 @@ class DatabaseHelper {
     }
   }
 
+  // [ACTION] Check if first launch
+  Future<bool> isFirstLaunch() async {
+    final prefs = await _prefs;
+    return prefs.getBool('hasSeenOnboarding') != true;
+  }
+
+  // [ACTION] Mark onboarding as seen
+  Future<void> setOnboardingSeen() async {
+    final prefs = await _prefs;
+    await prefs.setBool('hasSeenOnboarding', true);
+  }
+
   // * [AUTHENTICATION]
   // [REGISTER] Returns null on success, error string on failure
   Future<String?> registerUser(Map<String, dynamic> userData) async {

@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 // [IMPORT] Screens
 import 'package:soro/screens/auth/login_page.dart';
 import 'package:soro/screens/auth/signup_page.dart';
-import 'package:soro/screens/onboarding.dart';
+import 'package:soro/screens/hero_onboarding.dart';
+import 'package:soro/screens/profile_onboarding.dart';
 import 'package:soro/screens/home_page.dart';
 import 'package:soro/screens/cards.dart';
 import 'package:soro/screens/profile/change_password.dart';
@@ -26,6 +27,63 @@ void main() async {
 }
 
 final GlobalKey<HomeWithNavState> homeNavKey = GlobalKey<HomeWithNavState>();
+
+// [CLASS] App Entry Point - Decides initial screen based on first launch
+class AppEntry extends StatefulWidget {
+  const AppEntry({super.key});
+
+  @override
+  State<AppEntry> createState() => _AppEntryState();
+}
+
+class _AppEntryState extends State<AppEntry> {
+  bool? _isFirstLaunch;
+  bool? _isLoggedIn;
+
+  @override
+  void initState() {
+    super.initState();
+    _init();
+  }
+
+  // [ACTION] Load onboarding + session state
+  Future<void> _init() async {
+    final db = DatabaseHelper();
+
+    final firstLaunch = await db.isFirstLaunch();
+    final loggedIn = await db.isLoggedIn();
+
+    if (!mounted) return;
+
+    setState(() {
+      _isFirstLaunch = firstLaunch;
+      _isLoggedIn = loggedIn;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // [LOADING]
+    if (_isFirstLaunch == null || _isLoggedIn == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    // [1] FIRST TIME USER → HERO ONBOARDING
+    if (_isFirstLaunch == true) {
+      return const HeroOnboarding();
+    }
+
+    // [2] NOT LOGGED IN → LOGIN PAGE
+    if (_isLoggedIn == false) {
+      return const LoginPage();
+    }
+
+    // [3] LOGGED IN → HOME
+    return HomeWithNav();
+  }
+}
 
 // [CLASS] Main App
 class MyApp extends StatelessWidget {
@@ -147,12 +205,12 @@ class MyApp extends StatelessWidget {
       ),
 
       // [ROUTES]
-      initialRoute: '/login',
+      home: const AppEntry(),
       routes: {
         '/login':                   (_) => const LoginPage(),
         '/signup':                  (_) => const SignupPage(),
-        '/onboarding':              (_) => const OnboardingPage(),
-        '/':                        (_) => HomeWithNav(key: homeNavKey),
+        '/profile-onboarding':              (_) => const ProfileOnboarding(),
+        '/hero-onboarding':              (_) => const HeroOnboarding(),
         '/cards':                   (_) => const Cards(),
         '/quiz':                    (_) => const Quiz(),
         '/quiz/settings':           (_) => const QuizSettings(),
