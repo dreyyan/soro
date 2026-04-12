@@ -201,79 +201,13 @@ class _HomePageState extends State<HomePage> {
         
               const SizedBox(height: 16),
 
-              // [SECTION] Level
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.secondary_100,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // TODO [COMPONENT] Icon w/ Level Progress Bar
-                    Container(
-                      width: 72, height: 72,
-                      color: AppColors.text_300,
-                    ),
-
-                    SizedBox(width: 16),
-
-                    // [SECTION] Level Information
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Level 1",
-                          style: TextStyle(
-                            fontFamily: "Nunito",
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.text_500,
-                          ),
-                        ),
-                        const Text(
-                          "Novice",
-                          style: TextStyle(
-                            fontFamily: "Baloo",
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.text_700,
-                          ),
-                        ),
-                        const Text(
-                          "5/500 XP",
-                          style: TextStyle(
-                            fontFamily: "Nunito",
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.text_500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // [SECTION] Progress
+              // [SECTION] Progress Dashboard (Level + Stats + Streak)
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: AppColors.secondary_200,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.15),
@@ -285,88 +219,77 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Your Progress",
-                      style: TextStyle(
-                        fontFamily: "Baloo",
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.text_800,
-                      ),
+
+                    // [SECTION] Level
+                    Row(
+                      children: [
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary_500,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              "Level 1",
+                              style: TextStyle(
+                                fontFamily: "Nunito",
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.text_500,
+                              ),
+                            ),
+                            Text(
+                              "Novice",
+                              style: TextStyle(
+                                fontFamily: "Baloo",
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.text_800,
+                              ),
+                            ),
+                            Text(
+                              "5 / 500 XP",
+                              style: TextStyle(
+                                fontFamily: "Nunito",
+                                fontSize: 12,
+                                color: AppColors.text_500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
 
-                    // [STATS]
+                    // [SECTION] Statistics
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
                         color: AppColors.secondary_100,
                         borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.12), // shadow color
-                            blurRadius: 8, // softness
-                            offset: const Offset(0, 4), // vertical lift
-                          ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _statItem('$_cardsCreated', 'Cards'),
+                          _statItem(accuracyLabel, 'Accuracy'),
                         ],
                       ),
-                      child: _isLoading
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: List.generate(
-                                3,
-                                (_) => Column(
-                                  children: [
-                                    Container(
-                                      width: 40,
-                                      height: 20,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.text_100,
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Container(
-                                      width: 52,
-                                      height: 12,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.text_100,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                _statItem('$_cardsCreated', 'Cards'),
-                                _statItem(accuracyLabel, 'Accuracy'),
-                                _statItem(streakLabel, 'Streak'),
-                              ],
-                            ),
                     ),
 
-                    // [HINT]
-                    if (!_isLoading && _accuracy == null) ...[
-                      const SizedBox(height: 10),
-                      const Text(
-                        "Take a quiz to track your accuracy!",
-                        style: TextStyle(
-                          fontFamily: "Nunito",
-                          fontSize: 12,
-                          color: AppColors.text_400,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
+                    const SizedBox(height: 16),
 
-                    SizedBox(height: 16),
-
-                    // [COMPONENT] Streak w/ Calendar
+                    // [COMPONENT] Streak Calendar
                     StreakCalendar(streak: _streak),
                   ],
                 ),
