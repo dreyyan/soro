@@ -61,10 +61,7 @@ class DatabaseHelper {
     }
   }
 
-  // ═══════════════════════════════════════════════
-  // [AUTHENTICATION]
-  // ═══════════════════════════════════════════════
-
+  // * [AUTHENTICATION]
   // [REGISTER] Returns null on success, error string on failure
   Future<String?> registerUser(Map<String, dynamic> userData) async {
     final prefs = await _prefs;
@@ -182,10 +179,7 @@ class DatabaseHelper {
     return prefs.containsKey('session_loggedInEmail');
   }
 
-  // ═══════════════════════════════════════════════
-  // [STATISTICS]  (scoped per user: "<email>_<field>")
-  // ═══════════════════════════════════════════════
-
+  // * [STATISTICS]  (scoped per user: "<email>_<field>")
   Future<Map<String, dynamic>> getUserStats() async {
     final email = await _loggedInEmail();
     if (email == null) {
@@ -262,10 +256,7 @@ class DatabaseHelper {
     await prefs.setString('${email}_lastStudyDate', today);
   }
 
-  // ═══════════════════════════════════════════════
-  // [FLASHCARDS]
-  // ═══════════════════════════════════════════════
-
+  // * [FLASHCARDS]
   Future<List<Map<String, dynamic>>> getFlashcardDecks() async {
     final email = await _loggedInEmail();
     if (email == null) return [];
@@ -325,10 +316,7 @@ class DatabaseHelper {
     return all;
   }
 
-  // ═══════════════════════════════════════════════
-  // [QUIZZES]
-  // ═══════════════════════════════════════════════
-
+  // * [QUIZZES]
   Future<List<Map<String, dynamic>>> getSavedQuizzes() async {
     final email = await _loggedInEmail();
     if (email == null) return [];
@@ -358,10 +346,7 @@ class DatabaseHelper {
     await _saveQuizzes(quizzes);
   }
 
-  // ═══════════════════════════════════════════════
-  // [CURRENCY]  (coins, EXP, achievements)
-  // ═══════════════════════════════════════════════
-
+  // * [CURRENCY]  (coins, EXP, achievements)
   static const List<Map<String, dynamic>> rankTiers = [
     {'title': 'Novice',     'minExp': 0,    'icon': '🌱'},
     {'title': 'Apprentice', 'minExp': 500,  'icon': '📖'},
@@ -443,11 +428,7 @@ class DatabaseHelper {
     };
   }
 
-  // ═══════════════════════════════════════════════
-  // [DAILY QUESTS]
-  // 3 quests generated per day, reset at midnight.
-  // ═══════════════════════════════════════════════
-
+  // * [DAILY QUESTS] 3 quests generated per day, reset at midnight.
   static const List<Map<String, dynamic>> _questDefs = [
     {
       'id':          'createCard',
@@ -574,10 +555,7 @@ class DatabaseHelper {
     return true;
   }
 
-  // ═══════════════════════════════════════════════
-  // [QUIZ SETTINGS]  (single shared record)
-  // ═══════════════════════════════════════════════
-
+  // * [QUIZ SETTINGS] (single shared record)
   Future<int> saveQuizSettings(Map<String, dynamic> settings) async {
     final prefs = await _prefs;
     await prefs.setString('quiz_settings', _encodeMap(settings));
@@ -589,10 +567,7 @@ class DatabaseHelper {
     return _decodeMap(prefs.getString('quiz_settings'));
   }
 
-  // ═══════════════════════════════════════════════
-  // [LEGACY NOTES]
-  // ═══════════════════════════════════════════════
-
+  // * [LEGACY NOTES]
   Future<int> insertNote(Map<String, dynamic> row) async {
     final prefs = await _prefs;
     final raw   = prefs.getString('notes');
