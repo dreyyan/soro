@@ -6,7 +6,7 @@ import 'dart:math';
 import 'package:soro/main.dart';
 
 // [IMPORT] Widgets
-import 'package:soro/widgets/header.dart';
+import 'package:soro/widgets/streak_calendar.dart';
 
 // [IMPORT] Database
 import 'package:soro/database/database_helper.dart';
@@ -31,11 +31,11 @@ class _HomePageState extends State<HomePage> {
   // [STATE]
   String _firstName = "there"; // fallback until loaded
   int _cardsCreated = 0;
-  int? _accuracy;   // null means no quizzes taken yet
+  int? _accuracy; // null means no quizzes taken yet
   int _streak = 0;
   bool _isLoading = true;
 
-  // Random trivia — picked once per build
+  // Random trivia (picked once per build)
   final String _trivia = triviaList[Random().nextInt(triviaList.length)];
 
   @override
@@ -307,7 +307,7 @@ class _HomePageState extends State<HomePage> {
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.12), // shadow color
-                            blurRadius: 8,   // softness
+                            blurRadius: 8, // softness
                             offset: const Offset(0, 4), // vertical lift
                           ),
                         ],
@@ -363,6 +363,11 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ],
+
+                    SizedBox(height: 16),
+
+                    // [COMPONENT] Streak w/ Calendar
+                    StreakCalendar(streak: _streak),
                   ],
                 ),
               ),
@@ -386,7 +391,7 @@ class _HomePageState extends State<HomePage> {
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               decoration: BoxDecoration(
                                 color: AppColors.primary_500,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Column(
                                 children: [
@@ -417,7 +422,7 @@ class _HomePageState extends State<HomePage> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: AppColors.text_50,
                                   width: 1.5,
