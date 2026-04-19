@@ -107,46 +107,58 @@ class _HeroOnboardingState extends State<HeroOnboarding> {
   // [WIDGET] Circle Content (ALL INSIDE)
   Widget _buildCircleContent(int index) {
     final data = _pages[index];
-    final size = MediaQuery.of(context).size.width * 0.85;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final size = screenWidth * 1.2;
+    final imageSize = size * 0.38;
 
-    return Container(
-      width: size,
-      height: size,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: const BoxDecoration(
-        color: AppColors.secondary_50,
-        shape: BoxShape.circle,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // [SECTION] Mascot
-          Image.asset(
-            'assets/images/soro-mascot.png',
-            width: size * 0.35,
-            height: size * 0.35,
-            fit: BoxFit.contain,
-          ),
+    return SizedBox(
+      width: double.infinity,
+      child: Center(
+        child: OverflowBox(
+          maxWidth: size,
+          maxHeight: size,
+          alignment: Alignment.center,
+          child: Container(
+            width: size,
+            height: size,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: const BoxDecoration(
+              color: AppColors.secondary_50,
+              shape: BoxShape.circle,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // [SECTION] Mascot
+                Image.asset(
+                  'assets/images/soro-mascot.png',
+                  width: imageSize,
+                  height: imageSize,
+                  fit: BoxFit.contain,
+                ),
 
-          const SizedBox(height: 18),
+                const SizedBox(height: 18),
 
-          // [SECTION] Title (highlighted)
-          _buildTitle(index),
+                // [SECTION] Title (highlighted)
+                _buildTitle(index),
 
-          const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-          // [SECTION] Subtitle
-          Text(
-            data["subtitle"]!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontFamily: "Nunito",
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.text_600,
+                // [SECTION] Subtitle
+                Text(
+                  data["subtitle"]!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontFamily: "Nunito",
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.text_600,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -194,9 +206,7 @@ class _HeroOnboardingState extends State<HeroOnboarding> {
                   setState(() => _currentPage = index);
                 },
                 itemBuilder: (_, index) {
-                  return Center(
-                    child: _buildCircleContent(index),
-                  );
+                  return Center(child: _buildCircleContent(index));
                 },
               ),
             ),
