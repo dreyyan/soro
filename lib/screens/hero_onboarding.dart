@@ -148,16 +148,20 @@ class _HeroOnboardingState extends State<HeroOnboarding> {
                     const SizedBox(height: 10),
 
                     // Subtitle - auto wraps to new line
-                    Text(
-                      data["subtitle"]!,
-                      textAlign: TextAlign.center,
-                      softWrap: true,           // ensures wrapping
-                      overflow: TextOverflow.visible,
-                      style: const TextStyle(
-                        fontFamily: "Nunito",
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.text_600,
+                    // Subtitle - auto wraps with max width
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 300),
+                      child: Text(
+                        data["subtitle"]!,
+                        textAlign: TextAlign.center,
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
+                        style: const TextStyle(
+                          fontFamily: "Nunito",
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.text_600,
+                        ),
                       ),
                     ),
                   ],
