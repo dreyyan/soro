@@ -87,7 +87,7 @@ class _QuestState extends State<Quest> {
       child: Row(
         children: [
           _currencyChip('🪙', '$coins', 'Coins',
-              AppColors.secondary_200, AppColors.secondary_700),
+              AppColors.secondary_50, AppColors.secondary_700),
           const SizedBox(width: 10),
           _currencyChip('⚡', '$exp', 'EXP',
               AppColors.primary_100, AppColors.primary_700),

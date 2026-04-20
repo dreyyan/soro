@@ -103,7 +103,7 @@ class _CardsState extends State<Cards> {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.secondary_200,
+      backgroundColor: AppColors.secondary_50,
       body: SafeArea(
         child: Column(
           children: [
@@ -231,7 +231,7 @@ class _CardsState extends State<Cards> {
               onPressed: _showCreateDeckDialog,
               icon: const Icon(Icons.add),
               label: const Text(
-                'Add Deck',
+                'Add Card',
                 style: TextStyle(
                   fontSize: 16,
                   fontFamily: 'Nunito',

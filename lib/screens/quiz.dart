@@ -147,7 +147,7 @@ class _QuizState extends State<Quiz> {
     final quizzes = _sortedQuizzes;
 
     return Scaffold(
-      backgroundColor: AppColors.secondary_200,
+      backgroundColor: AppColors.secondary_50,
       body: SafeArea(
         child: Column(
           children: [
