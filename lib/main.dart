@@ -119,14 +119,14 @@ class MyApp extends StatelessWidget {
 
         // [THEME] Dialogs
         dialogTheme: DialogThemeData(
-          backgroundColor: AppColors.text_900,
+          backgroundColor: AppColors.text_50,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
           titleTextStyle: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: AppColors.text_50,
+            color: AppColors.text_900,
           ),
           contentTextStyle: const TextStyle(
             fontSize: 16,
@@ -159,7 +159,7 @@ class MyApp extends StatelessWidget {
 
         // [THEME] Cards
         cardTheme: CardThemeData(
-          color: AppColors.text_900,
+          color: AppColors.text_50,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
