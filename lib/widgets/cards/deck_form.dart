@@ -52,18 +52,18 @@ class _DeckFormState extends State<DeckForm> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text(
-        'New Deck',
+        'New Card',
         style: TextStyle(fontFamily: 'Baloo', fontWeight: FontWeight.w700),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // [INPUT] Deck title
+          // [INPUT] Card title
           TextField(
             controller: _titleCtrl,
             textCapitalization: TextCapitalization.sentences,
             decoration: const InputDecoration(
-              labelText: 'Deck Title',
+              labelText: 'Card Title',
               hintText:  'e.g. Biology Chapter 3',
             ),
           ),
