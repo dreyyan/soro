@@ -123,26 +123,6 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // [BAR] Top with Title
-              Container(
-                width: double.infinity,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary_500,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text(
-                      "Soro",
-                      style: TextStyle(
-                        color: AppColors.secondary_50,
-                        fontFamily: "TheFoxTail",
-                        fontSize: 44,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
         
               const SizedBox(height: 24),
         
