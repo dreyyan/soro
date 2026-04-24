@@ -91,11 +91,48 @@ class _SignupPageState extends State<SignupPage> {
       return;
     }
 
-    await DatabaseHelper().loginUser(email, password);
-
+    // [UI] Show success popup
     if (!mounted) return;
-
-    Navigator.pushReplacementNamed(context, '/onboarding');
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          "Signup Complete!",
+          style: TextStyle(
+            fontFamily: "Baloo",
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: AppColors.text_900,
+          ),
+        ),
+        content: const Text(
+          "Your account has been created successfully.",
+          style: TextStyle(
+            fontFamily: "Nunito",
+            fontSize: 16,
+            color: AppColors.text_600,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+            child: const Text(
+              "OK",
+              style: TextStyle(
+                fontFamily: "Nunito",
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary_500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
