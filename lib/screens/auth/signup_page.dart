@@ -18,6 +18,7 @@ class SignupPage extends StatefulWidget {
 
 class _SignupPageState extends State<SignupPage> {
   // [CONTROLLERS]
+  final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -32,6 +33,7 @@ class _SignupPageState extends State<SignupPage> {
 
   @override
   void dispose() {
+    _fullNameController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -41,13 +43,19 @@ class _SignupPageState extends State<SignupPage> {
 
   // [ACTION] Signup
   Future<void> _handleSignup() async {
+    final fullName = _fullNameController.text.trim();
     final username = _usernameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final confirm = _confirmPasswordController.text;
 
-    if (username.isEmpty || email.isEmpty || password.isEmpty || confirm.isEmpty) {
+    if (fullName.isEmpty || username.isEmpty || email.isEmpty || password.isEmpty || confirm.isEmpty) {
       setState(() => _errorMessage = 'Please fill in all fields.');
+      return;
+    }
+
+    if (fullName.length < 2) {
+      setState(() => _errorMessage = 'Please enter your full name.');
       return;
     }
 
@@ -77,6 +85,7 @@ class _SignupPageState extends State<SignupPage> {
     });
 
     final error = await DatabaseHelper().registerUser({
+      'fullName': fullName,
       'username': username,
       'email': email,
       'password': password,
@@ -215,6 +224,15 @@ class _SignupPageState extends State<SignupPage> {
                             ),
                             const SizedBox(height: 16),
                           ],
+
+                          // [INPUT] Full Name
+                          _buildInputField(
+                            controller: _fullNameController,
+                            hintText: "Full Name",
+                            icon: Icons.badge_outlined,
+                          ),
+
+                          const SizedBox(height: 16),
 
                           // [INPUT] Username
                           _buildInputField(
