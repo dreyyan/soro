@@ -221,7 +221,7 @@ class _QuizState extends State<Quiz> {
   Widget _buildActionButtons() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: Colors.white,
+      color: AppColors.secondary_50,
       child: Row(
         children: [
           // [BUTTON] Sort Menu

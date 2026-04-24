@@ -179,7 +179,7 @@ class _CardsState extends State<Cards> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: Colors.white,
+      color: AppColors.secondary_50,
       child: Row(
         children: [
           // [BUTTON] Sort Menu
