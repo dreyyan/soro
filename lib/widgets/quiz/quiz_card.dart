@@ -19,15 +19,16 @@ class QuizCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // [DATA] Extract quiz fields
+    // [DATA]
     final title       = quiz['title']         as String? ?? 'Untitled Quiz';
     final description = quiz['description']   as String? ?? '';
     final count       = quiz['questionCount'] as int?    ?? 0;
     final mode        = quiz['mode']          as String? ?? 'Multiple Choice';
 
     return Card(
+      color: AppColors.secondary_50,
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
+      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -36,7 +37,7 @@ class QuizCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              // [ICON] Quiz icon
+              // [ICON]
               Container(
                 width: 48,
                 height: 48,
@@ -49,12 +50,12 @@ class QuizCard extends StatelessWidget {
 
               const SizedBox(width: 14),
 
-              // [TEXT] Title, description, info chips
+              // [TEXT SECTION]
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // [TEXT] Quiz title
+                    // Title
                     Text(
                       title,
                       style: const TextStyle(
@@ -65,7 +66,7 @@ class QuizCard extends StatelessWidget {
                       ),
                     ),
 
-                    // [TEXT] Description (if present)
+                    // Description
                     if (description.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
@@ -80,52 +81,32 @@ class QuizCard extends StatelessWidget {
                       ),
                     ],
 
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
 
-                    // [ROW] Info chips
-                    Row(
-                      children: [
-                        _buildChip(
-                          '$count Q',
-                          AppColors.primary_100,
-                          AppColors.primary_600,
-                        ),
-                        const SizedBox(width: 6),
-                        _buildChip(
-                          mode,
-                          AppColors.secondary_200,
-                          AppColors.text_600,
-                        ),
-                      ],
+                    // SAME STYLE AS DeckCard count line
+                    Text(
+                      '$count question${count == 1 ? '' : 's'} • $mode',
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary_600,
+                      ),
                     ),
                   ],
                 ),
               ),
 
-              // [ICON] Tap hint chevron
-              const Icon(Icons.chevron_right, color: AppColors.text_300),
+              // [ACTION BUTTON - MATCHES DECK STYLE]
+              IconButton(
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: AppColors.primary_600,
+                ),
+                onPressed: onDeleted,
+              ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  // [WIDGET] Small pill-shaped info label
-  Widget _buildChip(String label, Color bg, Color fg) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontFamily: 'Nunito',
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: fg,
         ),
       ),
     );
