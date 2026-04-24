@@ -10,6 +10,7 @@ import 'package:soro/screens/deck_details.dart';
 class DeckCard extends StatelessWidget {
   // Attributes
   final Map<String, dynamic> deck;
+  final bool showCards; // Toggle to show/hide individual cards
   final VoidCallback onDeleted;
   final VoidCallback onUpdated;
 
@@ -17,6 +18,7 @@ class DeckCard extends StatelessWidget {
   const DeckCard({
     super.key,
     required this.deck,
+    required this.showCards,
     required this.onDeleted,
     required this.onUpdated,
   });
@@ -101,6 +103,81 @@ class DeckCard extends StatelessWidget {
                         color: AppColors.primary_600,
                       ),
                     ),
+
+                    // [LIST] Show individual cards if toggle is enabled
+                    if (showCards && cardCount > 0) ...[
+                      const SizedBox(height: 8),
+                      const Divider(height: 1),
+                      const SizedBox(height: 8),
+                      ...((deck['cards'] as List?)?.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final card = entry.value as Map<String, dynamic>;
+                        final question = card['question'] as String? ?? '';
+                        final answer = card['answer'] as String? ?? '';
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColors.text_50,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.text_100),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary_100,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        'Q${index + 1}',
+                                        style: const TextStyle(
+                                          fontFamily: 'Nunito',
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.primary_700,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        question,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontFamily: 'Nunito',
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.text_700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  answer,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontFamily: 'Nunito',
+                                    fontSize: 11,
+                                    color: AppColors.text_500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }) ?? []),
+                    ],
                   ],
                 ),
               ),

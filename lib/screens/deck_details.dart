@@ -21,6 +21,7 @@ class DeckDetails extends StatefulWidget {
 class _DeckDetailsState extends State<DeckDetails> {
   // [STATES]
   late Map<String, dynamic> _deck;
+  bool _showCards = false;
 
   // [CONTROLLERS]
   final _termCtrl = TextEditingController();
@@ -94,6 +95,7 @@ class _DeckDetailsState extends State<DeckDetails> {
         backgroundColor: AppColors.primary_600,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [],
       ),
       body: Column(
         children: [
@@ -114,6 +116,18 @@ class _DeckDetailsState extends State<DeckDetails> {
                     color: AppColors.text_400,
                   ),
                 ),
+                const Spacer(),
+                IconButton(
+                  icon: Icon(
+                    _showCards ? Icons.visibility_off : Icons.visibility,
+                    size: 20,
+                  ),
+                  onPressed: () => setState(() => _showCards = !_showCards),
+                  tooltip: _showCards ? 'Hide cards' : 'Show cards',
+                  padding: EdgeInsets.zero,
+                  color: AppColors.text_400,
+                  constraints: const BoxConstraints(),
+                ),
               ],
             ),
           ),
@@ -130,11 +144,42 @@ class _DeckDetailsState extends State<DeckDetails> {
                       ),
                     ),
                   )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: cards.length,
-                    itemBuilder: (ctx, i) => _buildCardTile(cards[i], i),
-                  ),
+                : _showCards
+                    ? ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: cards.length,
+                        itemBuilder: (ctx, i) => _buildCardTile(cards[i], i),
+                      )
+                    : Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.visibility_off,
+                              size: 48,
+                              color: AppColors.text_300,
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Cards are hidden',
+                              style: TextStyle(
+                                fontFamily: 'Nunito',
+                                fontSize: 16,
+                                color: AppColors.text_400,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Tap the eye icon to show them',
+                              style: TextStyle(
+                                fontFamily: 'Nunito',
+                                fontSize: 13,
+                                color: AppColors.text_300,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
           ),
         ],
       ),

@@ -121,6 +121,7 @@ class _CardsState extends State<Cards> {
                           itemCount: decks.length,
                           itemBuilder: (ctx, i) => DeckCard(
                             deck: decks[i],
+                            showCards: false,
                             onDeleted: () => _deleteDeck(
                               decks[i]['id'] as String,
                               decks[i]['title'] as String,
