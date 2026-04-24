@@ -510,6 +510,7 @@ class _QuizStartState extends State<QuizStart> {
           Text.rich(
             TextSpan(
               style: const TextStyle(
+                color: AppColors.text_800,
                 fontFamily: "Nunito",
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -541,6 +542,7 @@ class _QuizStartState extends State<QuizStart> {
                         : currentQuestion.answer)   // Show definition, answer is term
                     : currentQuestion.question,
             style: const TextStyle(
+              color: AppColors.text_800,
               fontFamily: "Baloo",
               fontSize: 18,
               fontWeight: FontWeight.w500,
