@@ -18,6 +18,7 @@ class SignupPage extends StatefulWidget {
 
 class _SignupPageState extends State<SignupPage> {
   // [CONTROLLERS]
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
@@ -31,6 +32,7 @@ class _SignupPageState extends State<SignupPage> {
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -39,12 +41,18 @@ class _SignupPageState extends State<SignupPage> {
 
   // [ACTION] Signup
   Future<void> _handleSignup() async {
+    final username = _usernameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final confirm = _confirmPasswordController.text;
 
-    if (email.isEmpty || password.isEmpty || confirm.isEmpty) {
+    if (username.isEmpty || email.isEmpty || password.isEmpty || confirm.isEmpty) {
       setState(() => _errorMessage = 'Please fill in all fields.');
+      return;
+    }
+
+    if (username.length < 3) {
+      setState(() => _errorMessage = 'Username must be at least 3 characters.');
       return;
     }
 
@@ -69,6 +77,7 @@ class _SignupPageState extends State<SignupPage> {
     });
 
     final error = await DatabaseHelper().registerUser({
+      'username': username,
       'email': email,
       'password': password,
       'onboardingComplete': false,
@@ -169,6 +178,15 @@ class _SignupPageState extends State<SignupPage> {
                             ),
                             const SizedBox(height: 16),
                           ],
+
+                          // [INPUT] Username
+                          _buildInputField(
+                            controller: _usernameController,
+                            hintText: "Username",
+                            icon: Icons.person_outline,
+                          ),
+
+                          const SizedBox(height: 16),
 
                           // [INPUT] Email
                           _buildInputField(
