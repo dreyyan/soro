@@ -182,7 +182,7 @@ class _QuizSettingsState extends State<QuizSettings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.secondary_50,
       appBar: AppBar(
         title: const Text(
           "Create Quiz",
