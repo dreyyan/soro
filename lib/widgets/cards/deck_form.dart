@@ -20,25 +20,21 @@ class DeckForm extends StatefulWidget {
 class _DeckFormState extends State<DeckForm> {
   // [CONTROLLERS]
   final _titleCtrl = TextEditingController();
-  final _descCtrl  = TextEditingController();
 
   @override
   void dispose() {
     _titleCtrl.dispose();
-    _descCtrl.dispose();
     super.dispose();
   }
 
   // [SUBMIT] Validate, save deck to Hive, then close dialog
   Future<void> _submit() async {
     final title = _titleCtrl.text.trim();
-    final desc  = _descCtrl.text.trim();
     if (title.isEmpty) return;
 
     final deck = {
       'id':          DateTime.now().millisecondsSinceEpoch.toString(),
       'title':       title,
-      'description': desc,
       'createdAt':   DateTime.now().toIso8601String(),
       'cards':       <Map<String, dynamic>>[],
     };
@@ -68,16 +64,6 @@ class _DeckFormState extends State<DeckForm> {
             ),
           ),
 
-          const SizedBox(height: 12),
-
-          // [INPUT] Optional description
-          TextField(
-            controller: _descCtrl,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              labelText: 'Description (optional)',
-            ),
-          ),
         ],
       ),
       actions: [

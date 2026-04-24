@@ -28,7 +28,6 @@ class DeckCard extends StatelessWidget {
     // [STATES] Deck Fields
     final cardCount   = (deck['cards'] as List?)?.length ?? 0;
     final title       = deck['title']       as String;
-    final description = deck['description'] as String? ?? '';
 
     return Card(
       color: AppColors.secondary_50,
@@ -75,21 +74,6 @@ class DeckCard extends StatelessWidget {
                         color: AppColors.text_800,
                       ),
                     ),
-
-                    // [TEXT] Description (opt.)
-                    if (description.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        description,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 13,
-                          color: AppColors.text_400,
-                        ),
-                      ),
-                    ],
 
                     const SizedBox(height: 4),
 

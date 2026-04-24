@@ -26,6 +26,7 @@ class _DeckDetailsState extends State<DeckDetails> {
   // [CONTROLLERS]
   final _termCtrl = TextEditingController();
   final _defCtrl  = TextEditingController();
+  final _titleCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _DeckDetailsState extends State<DeckDetails> {
   void dispose() {
     _termCtrl.dispose();
     _defCtrl.dispose();
+    _titleCtrl.dispose();
     super.dispose();
   }
 
@@ -85,13 +87,6 @@ class _DeckDetailsState extends State<DeckDetails> {
     return Scaffold(
       backgroundColor: AppColors.secondary_200,
       appBar: AppBar(
-        title: Text(
-          _deck['title'] as String,
-          style: const TextStyle(
-            fontFamily: 'Baloo',
-            fontWeight: FontWeight.w700,
-          ),
-        ),
         backgroundColor: AppColors.primary_600,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -99,6 +94,9 @@ class _DeckDetailsState extends State<DeckDetails> {
       ),
       body: Column(
         children: [
+          // [COMPONENT] Edit title form
+          _buildEditTitleForm(),
+
           // [COMPONENT] Add card form
           _buildAddCardForm(),
 
@@ -184,6 +182,87 @@ class _DeckDetailsState extends State<DeckDetails> {
         ],
       ),
     );
+  }
+
+  // [WIDGET] Inline form to edit the deck title
+  Widget _buildEditTitleForm() {
+    return Material(
+      color: AppColors.secondary_50,
+      elevation: 4,
+      shadowColor: AppColors.secondary_500.withValues(alpha: 0.3),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // [LABEL] Section title
+            const Text(
+              'Edit Title',
+              style: TextStyle(
+                fontFamily: 'Baloo',
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.text_700,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // [INPUT] Title (full width)
+            TextField(
+              controller: _titleCtrl..text = _deck['title'] as String,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                hintText: 'Deck Title',
+                filled: true,
+                fillColor: AppColors.secondary_100,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            // [BUTTON] Save title (full width)
+            SizedBox(
+              height: 48,
+              child: ElevatedButton.icon(
+                onPressed: _saveTitle,
+                icon: const Icon(Icons.save),
+                label: const Text(
+                  'Save Title',
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary_600,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // [SAVE] Persist title changes to Hive and notify parent
+  Future<void> _saveTitle() async {
+    final title = _titleCtrl.text.trim();
+    if (title.isEmpty) return;
+
+    setState(() {
+      _deck = {..._deck, 'title': title};
+    });
+
+    _save();
   }
 
   // [WIDGET] Inline form to add a new term/definition pair
