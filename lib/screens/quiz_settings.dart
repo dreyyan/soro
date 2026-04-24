@@ -292,6 +292,9 @@ class _QuizSettingsState extends State<QuizSettings> {
                   border: OutlineInputBorder(),
                   hintText:
                       "Mitochondria\n- powerhouse of the cell\nCell\n- basic unit of life",
+                  hintStyle: TextStyle(
+                  color: AppColors.text_400, 
+                  ),// hint text color (gray)
                 ),
               ),
             ),
