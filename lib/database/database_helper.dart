@@ -5,6 +5,9 @@
 // shared_preferences on web uses window.localStorage which is scoped only to
 // the hostname, so data persists across server restarts and port changes.
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:math'; // Required for sqrt()
+import 'package:soro/models/user_stats.dart';
+
 
 // [IMPORT] JSON
 import 'dart:convert';
@@ -191,8 +194,8 @@ class DatabaseHelper {
     return prefs.containsKey('session_loggedInEmail');
   }
 
-  // * [STATISTICS]  (scoped per user: "<email>_<field>")
-  Future<Map<String, dynamic>> getUserStats() async {
+  // [STATISTICS] Academic Stats
+  Future<Map<String, dynamic>> getAcademicStats() async {
     final email = await _loggedInEmail();
     if (email == null) {
       return {
@@ -208,6 +211,7 @@ class DatabaseHelper {
     final correct = prefs.getInt('${email}_quizCorrect')  ?? 0;
     final total   = prefs.getInt('${email}_quizTotal')    ?? 0;
     final streak  = prefs.getInt('${email}_streakDays')   ?? 0;
+    
     return {
       'cardsCreated': cards,
       'quizCorrect':  correct,
@@ -217,6 +221,49 @@ class DatabaseHelper {
     };
   }
 
+  // [REWARDS] Player Progression Stats (EXP, Coins, Level)
+  Future<UserStats> getProgressionStats() async {
+    final email = await _loggedInEmail();
+    if (email == null) {
+      return UserStats(
+        totalExp: 0,
+        totalCoins: 0,
+      );
+    }
+    final prefs = await _prefs;
+    return UserStats(
+      totalExp: prefs.getInt('${email}_totalExp') ?? 0,
+      totalCoins: prefs.getInt('${email}_totalCoins') ?? 0,
+    );
+  }
+
+  // [SAVE] Adds EXP and Coins, returns true if the user leveled up
+  Future<bool> saveRewards(int exp, int coins) async {
+    final email = await _loggedInEmail();
+    if (email == null) return false;
+    
+    final prefs = await _prefs;
+    
+    // 1. Get current stats using your renamed function
+    final current = await getProgressionStats();
+    final oldLevel = current.level;
+    
+    // 2. Calculate new totals
+    final newExp = current.totalExp + exp;
+    final newCoins = current.totalCoins + coins;
+    
+    // 3. Persist the updated values to SharedPreferences
+    await prefs.setInt('${email}_totalExp', newExp);
+    await prefs.setInt('${email}_totalCoins', newCoins);
+
+    // 4. Create a temporary object with the NEW data to check the level
+    // This uses the internal logic of your UserStats class automatically
+    final updatedStats = UserStats(totalExp: newExp, totalCoins: newCoins);
+    
+    // 5. Return true if the new level is higher than the old level
+    return updatedStats.level > oldLevel;
+  }
+  
   Future<void> incrementCardsCreated() async {
     final email = await _loggedInEmail();
     if (email == null) return;
@@ -234,17 +281,37 @@ class DatabaseHelper {
     await prefs.setInt('${email}_cardsCreated', (current - 1).clamp(0, 999999));
   }
 
-  Future<void> recordQuizResult(int correct, int total) async {
+  Future<Map<String, dynamic>> recordQuizResult(int correct, int total) async {
     final email = await _loggedInEmail();
-    if (email == null) return;
+    if (email == null) {
+      return {'expEarned': 0, 'coinsEarned': 0, 'leveledUp': false};
+    }
+    
     final prefs       = await _prefs;
     final prevCorrect = prefs.getInt('${email}_quizCorrect') ?? 0;
     final prevTotal   = prefs.getInt('${email}_quizTotal')   ?? 0;
     await prefs.setInt('${email}_quizCorrect', prevCorrect + correct);
     await prefs.setInt('${email}_quizTotal',   prevTotal   + total);
     await _refreshStreak();
-    await addExp(20 + correct * 2);
+    
+    // [CALCULATE] Accuracy-based rewards
+    final accuracy = total > 0 ? (correct / total) : 0.0;
+    final baseExp = 20;
+    final bonusExp = ((correct / total) * 30).toInt(); // 0-30 bonus XP based on accuracy
+    final expEarned = baseExp + bonusExp;
+    final coinsEarned = (accuracy * 10).toInt(); // 0-10 coins based on accuracy
+    
+    // [AWARD] Rewards and check for level up
+    final leveledUp = await saveRewards(expEarned, coinsEarned);
+    
     await _progressQuest('completeQuiz');
+    
+    return {
+      'expEarned': expEarned,
+      'coinsEarned': coinsEarned,
+      'leveledUp': leveledUp,
+      'accuracy': (accuracy * 100).toInt(),
+    };
   }
 
   // [INTERNAL] Increment or reset the study streak based on today's date
@@ -527,7 +594,7 @@ class DatabaseHelper {
       int progress;
       if (questId == 'studyStreak') {
         // [STREAK] Use actual streak value instead of incrementing
-        final stats = await getUserStats();
+        final stats = await getAcademicStats();
         progress = stats['streakDays'] as int? ?? 0;
       } else {
         progress = ((quests[i]['progress'] as int?) ?? 0) + 1;
