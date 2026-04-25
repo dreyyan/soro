@@ -34,6 +34,15 @@ class _HomePageState extends State<HomePage> {
   int? _accuracy; // null means no quizzes taken yet
   int _streak = 0;
   bool _isLoading = true;
+  
+  // [PROGRESSION]
+  String _rankTitle = "Novice";
+  String _rankIcon = "🌱";
+  int _totalExp = 0;
+  int _totalCoins = 0;
+  int _currentLevelExp = 0;
+  int _nextLevelExp = 500;
+  double _expProgress = 0.0;
 
   // Random trivia (picked once per build)
   final String _trivia = triviaList[Random().nextInt(triviaList.length)];
@@ -49,7 +58,8 @@ class _HomePageState extends State<HomePage> {
     final db = DatabaseHelper();
 
     final user  = await db.getLoggedInUser();
-    final stats = await db.getUserStats();
+    final stats = await db.getProgressionStats();
+    final academic = await db.getAcademicStats();
 
     if (!mounted) return;
 
@@ -59,12 +69,24 @@ class _HomePageState extends State<HomePage> {
         ? fullName.split(' ').first
         : (user?['email'] as String? ?? 'there').split('@').first;
 
+    // [RANK] Calculate rank from total EXP
+    final rankInfo = DatabaseHelper.getRankFromExp(stats.totalExp);
+
     setState(() {
       _firstName    = firstName;
-      _cardsCreated = stats['cardsCreated'] as int;
-      _accuracy     = stats['accuracy'] as int?;
-      _streak       = stats['streakDays'] as int;
+      _cardsCreated = academic['cardsCreated'] as int;
+      _accuracy     = academic['accuracy'] as int?;
+      _streak       = academic['streakDays'] as int;
       _isLoading    = false;
+      
+      // [PROGRESSION]
+      _rankTitle = rankInfo['title'] as String;
+      _rankIcon = rankInfo['icon'] as String;
+      _totalExp = stats.totalExp;
+      _totalCoins = stats.totalCoins;
+      _currentLevelExp = rankInfo['minExp'] as int;
+      _nextLevelExp = rankInfo['nextExp'] as int? ?? _currentLevelExp;
+      _expProgress = rankInfo['progress'] as double;
     });
   }
 
@@ -210,16 +232,22 @@ class _HomePageState extends State<HomePage> {
                             color: AppColors.primary_500,
                             borderRadius: BorderRadius.circular(12),
                           ),
+                          child: Center(
+                            child: Text(
+                              _rankIcon,
+                              style: const TextStyle(fontSize: 32),
+                            ),
+                          ),
                         ),
 
                         const SizedBox(width: 12),
 
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             Text(
-                              "Level 1",
-                              style: TextStyle(
+                              "Level ${(_totalExp ~/ 500) + 1}",
+                              style: const TextStyle(
                                 fontFamily: "Nunito",
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
@@ -227,8 +255,8 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             Text(
-                              "Novice",
-                              style: TextStyle(
+                              _rankTitle,
+                              style: const TextStyle(
                                 fontFamily: "Baloo",
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
@@ -236,8 +264,8 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             Text(
-                              "5 / 500 XP",
-                              style: TextStyle(
+                              "$_totalExp / $_nextLevelExp XP",
+                              style: const TextStyle(
                                 fontFamily: "Nunito",
                                 fontSize: 12,
                                 color: AppColors.text_500,
@@ -246,6 +274,93 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                       ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // [PROGRESS BAR] XP Progress
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "Experience Progress",
+                              style: TextStyle(
+                                fontFamily: "Nunito",
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.text_600,
+                              ),
+                            ),
+                            Text(
+                              "${(_expProgress * 100).toStringAsFixed(1)}%",
+                              style: const TextStyle(
+                                fontFamily: "Nunito",
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.text_600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: LinearProgressIndicator(
+                            value: _expProgress.clamp(0.0, 1.0),
+                            minHeight: 8,
+                            backgroundColor: AppColors.text_100,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              _expProgress >= 1.0 ? Colors.amber : AppColors.primary_500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // [COINS] Display total coins earned
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text(
+                            "🪙",
+                            style: TextStyle(fontSize: 20),
+                          ),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Total Coins",
+                                style: TextStyle(
+                                  fontFamily: "Nunito",
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.text_600,
+                                ),
+                              ),
+                              Text(
+                                "$_totalCoins",
+                                style: const TextStyle(
+                                  fontFamily: "Baloo",
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.orange,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 16),
