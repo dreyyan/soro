@@ -197,11 +197,13 @@ class _QuizStartState extends State<QuizStart> {
   }
 
   // [SUBMIT] End the quiz and show the score dialog
-  void _submitQuiz() {
+  Future<void> _submitQuiz() async {
     timer?.cancel();
 
     // [RECORD] Save quiz result to stats and award EXP
-    DatabaseHelper().recordQuizResult(score, questions.length);
+    final rewards = await DatabaseHelper().recordQuizResult(score, questions.length);
+
+    if (!mounted) return;
 
     showDialog(
       context: context,
@@ -210,7 +212,47 @@ class _QuizStartState extends State<QuizStart> {
         title: Text(
           selectedGameMode == "Time Attack" ? "Time's Up!" : "Quiz Complete!",
         ),
-        content: Text("Your score: $score / ${questions.length}"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Your score: $score / ${questions.length}"),
+            Text("Accuracy: ${rewards['accuracy']}%"),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Text("⚡ XP Earned: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text("+${rewards['expEarned']}", style: const TextStyle(color: Colors.blue)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Text("🪙 Coins Earned: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text("+${rewards['coinsEarned']}", style: const TextStyle(color: Colors.orange)),
+                    ],
+                  ),
+                  if (rewards['leveledUp'] as bool) ...[
+                    const SizedBox(height: 8),
+                    const Row(
+                      children: [
+                        Text("🎉 Level Up!", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
         actions: [
           // [RESTART] Reset and replay
           TextButton(
