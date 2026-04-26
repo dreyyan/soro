@@ -148,42 +148,31 @@ class _HomePageState extends State<HomePage> {
         
               const SizedBox(height: 24),
         
-              // [SECTION] Greeting
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.secondary_50,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _isLoading
-                        ? Container(
-                            height: 30,
-                            width: 200,
-                            decoration: BoxDecoration(
-                              color: AppColors.text_100,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          )
-                        : Text(
-                            "${_greeting()} $_firstName!",
-                            style: const TextStyle(
-                              fontFamily: "Baloo",
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.text_800,
-                            ),
+             // [SECTION] Greeting
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _isLoading
+                      ? Container(
+                          height: 30,
+                          width: 200,
+                          decoration: BoxDecoration(
+                            color: AppColors.text_100,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        )
+                      : Text(
+                          "${_greeting()} $_firstName!",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontFamily: "Baloo",
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
                           ),
                         ),
 
