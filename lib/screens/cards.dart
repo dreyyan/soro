@@ -264,7 +264,7 @@ class _CardsState extends State<Cards> {
           const Icon(Icons.style_outlined, size: 64, color: AppColors.text_200),
           const SizedBox(height: 12),
           const Text(
-            'No decks yet',
+            'No cards yet',
             style: TextStyle(
               fontFamily: 'Baloo',
               fontSize: 18,
@@ -273,7 +273,7 @@ class _CardsState extends State<Cards> {
           ),
           const SizedBox(height: 6),
           const Text(
-            'Tap + to create your first flashcard deck',
+            'Tap "Create Card" to get started',
             style: TextStyle(
               fontFamily: 'Nunito',
               fontSize: 14,
@@ -281,18 +281,6 @@ class _CardsState extends State<Cards> {
             ),
           ),
           const SizedBox(height: 20),
-          ElevatedButton.icon(
-            onPressed: _showCreateDeckDialog,
-            icon:  const Icon(Icons.add),
-            label: const Text('Create Deck'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary_600,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
         ],
       ),
     );
