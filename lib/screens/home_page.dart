@@ -129,21 +129,21 @@ class _HomePageState extends State<HomePage> {
     final accuracyLabel = _accuracy != null ? '$_accuracy%' : '—';
     final streakLabel   = _streak > 0 ? '$_streak🔥' : '0';
 
-    return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("assets/images/home-page-bg.png"),
-            fit: BoxFit.cover,
-          ),
-        ),
-
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      return Scaffold(
+          body: SingleChildScrollView(
+            child: Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage("assets/images/home-page-bg.png"),
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter, // start from top
+                ),
+              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 24),
               // [BAR] Top with Title
         
               const SizedBox(height: 24),
@@ -185,21 +185,23 @@ class _HomePageState extends State<HomePage> {
                               color: AppColors.text_800,
                             ),
                           ),
+                        ),
 
-                    const SizedBox(height: 4),
+                  const SizedBox(height: 4),
 
-                    const Text(
-                      "Ready to study?",
-                      style: TextStyle(
-                        fontFamily: "Nunito",
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.text_500,
-                      ),
+                  const Text(
+                    "Ready to study?",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: "Nunito",
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
         
               const SizedBox(height: 16),
 
@@ -278,7 +280,7 @@ class _HomePageState extends State<HomePage> {
 
                     const SizedBox(height: 12),
 
-                    // [PROGRESS BAR] XP Progress
+                    /*// [PROGRESS BAR] XP Progress
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -318,12 +320,12 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ],
-                    ),
+                    ), */
 
                     const SizedBox(height: 12),
 
                     // [COINS] Display total coins earned
-                    Container(
+                    /*Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.orange.shade50,
@@ -361,7 +363,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ],
                       ),
-                    ),
+                    ), */
 
                     const SizedBox(height: 16),
 
