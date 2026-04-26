@@ -489,7 +489,7 @@ class _QuestState extends State<Quest> {
               crossAxisCount: 3,
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
-              childAspectRatio: 0.85,
+              childAspectRatio: 0.75,
             ),
             itemCount: allAchievements.length,
             itemBuilder: (_, i) {
