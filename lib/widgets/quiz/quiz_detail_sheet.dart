@@ -44,7 +44,7 @@ class QuizDetailSheet extends StatelessWidget {
       maxChildSize: 0.92,
       builder: (_, controller) => Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.secondary_50,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
