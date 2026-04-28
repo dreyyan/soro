@@ -1,4 +1,4 @@
-# sora
+# soro
 
 A new Flutter project.
 
