@@ -190,11 +190,10 @@ class _QuizStartState extends State<QuizStart> {
 
   // [NAVIGATE] Return to QuizSettings
   void _handleBack() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const QuizSettings()),
-    );
-  }
+  // Pop twice to skip QuizSettings and return to quiz.dart
+  if (Navigator.canPop(context)) Navigator.pop(context); // Pop QuizStart
+  if (Navigator.canPop(context)) Navigator.pop(context); // Pop QuizSettings
+}
 
   // [SUBMIT] End the quiz and show the score dialog
   Future<void> _submitQuiz() async {
@@ -272,7 +271,7 @@ class _QuizStartState extends State<QuizStart> {
             child: const Text("Restart"),
           ),
 
-          // [BACK] Return to settings
+          // [BACK] Return to menu
           TextButton(
             onPressed: () {
               Navigator.pop(context);
