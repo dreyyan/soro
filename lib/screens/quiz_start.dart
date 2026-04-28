@@ -278,7 +278,7 @@ class _QuizStartState extends State<QuizStart> {
               Navigator.pop(context);
               _handleBack();
             },
-            child: const Text("Back to Settings"),
+            child: const Text("Back to Menu"),
           ),
         ],
       ),

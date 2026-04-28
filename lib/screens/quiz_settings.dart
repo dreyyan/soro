@@ -205,6 +205,8 @@ class _QuizSettingsState extends State<QuizSettings> {
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
                 hintText: "e.g. Biology Chapter 3",
+                hintStyle: TextStyle(color: AppColors.text_400, ),
+
                 filled: true,
                 fillColor: AppColors.secondary_100,
                 border: OutlineInputBorder(
