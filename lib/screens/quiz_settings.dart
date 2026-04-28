@@ -293,7 +293,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText:
-                      "Mitochondria\n- powerhouse of the cell\nCell\n- basic unit of life",
+                      "Powerhouse of the Cell\n- Mitochondria\nBasic Unit of Life\n- Cell",
                   hintStyle: TextStyle(
                   color: AppColors.text_400, 
                   ),// hint text color (gray)
