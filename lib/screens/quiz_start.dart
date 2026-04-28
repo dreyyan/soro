@@ -195,6 +195,52 @@ class _QuizStartState extends State<QuizStart> {
   if (Navigator.canPop(context)) Navigator.pop(context); // Pop QuizSettings
 }
 
+  // [CONFIRM] Show dialog before returning to menu
+void _confirmGoBack() {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // Force explicit choice
+    builder: (_) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text(
+        "Leave Quiz?",
+        style: TextStyle(fontFamily: "Baloo", fontWeight: FontWeight.w700),
+      ),
+      content: const Text(
+        "Your progress will not be saved. Are you sure you want to return to the menu?",
+        style: TextStyle(fontFamily: "Nunito"),
+      ),
+      actions: [
+        // [CANCEL] Stay in quiz
+        TextButton(
+          onPressed: () => Navigator.pop(context), // Just close dialog
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.text_600,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+          child: const Text("Cancel", style: TextStyle(fontFamily: "Nunito")),
+        ),
+        
+        // [CONFIRM] Go back to menu
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context); // Close confirmation dialog
+            _handleBack();          // Then execute the double-pop navigation
+          },
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primary_600,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+          child: const Text(
+            "Yes, Leave", 
+            style: TextStyle(fontFamily: "Nunito", fontWeight: FontWeight.w700),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
   // [SUBMIT] End the quiz and show the score dialog
   Future<void> _submitQuiz() async {
     timer?.cancel();
@@ -421,35 +467,36 @@ class _QuizStartState extends State<QuizStart> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // [BUTTON] Back to settings
-          SizedBox(
-            width: 48,
-            child: ElevatedButton(
-              onPressed: _handleBack,
-              style: ButtonStyle(
-                padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-                splashFactory: NoSplash.splashFactory,
-                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-                backgroundColor: const WidgetStatePropertyAll(AppColors.secondary_50),
-                foregroundColor: const WidgetStatePropertyAll(AppColors.text_700),
-                shape: WidgetStatePropertyAll(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(color: AppColors.text_100, width: 2),
-                  ),
-                ),
-              ),
-              child: const Center(
-                child: Text(
-                  "<",
-                  style: TextStyle(
-                    fontFamily: "Nunito",
-                    fontWeight: FontWeight.w700,
-                    fontSize: 24,
-                  ),
-                ),
-              ),
+          // [BUTTON] Back to menu (with confirmation)
+    SizedBox(
+      width: 48,
+      child: ElevatedButton(
+        onPressed: _confirmGoBack,  // ← NEW: shows "Are you sure?" first
+        style: ButtonStyle(
+          padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+          splashFactory: NoSplash.splashFactory,
+          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+          backgroundColor: const WidgetStatePropertyAll(AppColors.secondary_50),
+          foregroundColor: const WidgetStatePropertyAll(AppColors.text_700),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: const BorderSide(color: AppColors.text_100, width: 2),
             ),
           ),
+        ),
+        child: const Center(
+          child: Text(
+            "<",
+            style: TextStyle(
+              fontFamily: "Nunito",
+              fontWeight: FontWeight.w700,
+              fontSize: 24,
+            ),
+          ),
+        ),
+      ),
+    ),
 
           const SizedBox(width: 16),
 
