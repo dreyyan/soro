@@ -180,154 +180,155 @@ class _QuizSettingsState extends State<QuizSettings> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.secondary_50,
-      appBar: AppBar(
-        title: const Text(
-          "Create Quiz",
-          style: TextStyle(fontFamily: 'Baloo', fontWeight: FontWeight.w700),
-        ),
-        backgroundColor: AppColors.primary_600,
-        foregroundColor: Colors.white,
-        elevation: 0,
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: AppColors.secondary_50,
+    appBar: AppBar(
+      title: const Text(
+        "Create Quiz",
+        style: TextStyle(fontFamily: 'Baloo', fontWeight: FontWeight.w700),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // [INPUT] Quiz title
-            _buildLabel("Quiz Title"),
-            const SizedBox(height: 8),
-            TextField(
-              controller: titleController,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                hintText: "e.g. Biology Chapter 3",
-                hintStyle: TextStyle(color: AppColors.text_400, ),
-
-                filled: true,
-                fillColor: AppColors.secondary_100,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
+      backgroundColor: AppColors.primary_600,
+      foregroundColor: Colors.white,
+      elevation: 0,
+    ),
+    // [FIX] Use SingleChildScrollView to prevent overflow and compression
+    body: SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // [INPUT] Quiz title
+          _buildLabel("Quiz Title"),
+          const SizedBox(height: 8),
+          TextField(
+            controller: titleController,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(
+              hintText: "e.g. Biology Chapter 3",
+              hintStyle: TextStyle(color: AppColors.text_400),
+              filled: true,
+              fillColor: AppColors.secondary_100,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
               ),
             ),
-            const SizedBox(height: 24),
+          ),
+          const SizedBox(height: 24),
 
-            // [INPUT] Number of questions
-            _buildLabel("Number of Questions"),
-            const SizedBox(height: 8),
-            DropdownButton<int>(
-              value: numberOfQuestions,
-              isExpanded: true,
-              items: [5, 10, 15, 20]
-                  .map((n) => DropdownMenuItem(value: n, child: Text("$n")))
-                  .toList(),
-              onChanged: (val) {
-                if (val != null) setState(() => numberOfQuestions = val);
-              },
-            ),
-            const SizedBox(height: 24),
+          // [INPUT] Number of questions
+          _buildLabel("Number of Questions"),
+          const SizedBox(height: 8),
+          DropdownButton<int>(
+            value: numberOfQuestions,
+            isExpanded: true,
+            items: [5, 10, 15, 20]
+                .map((n) => DropdownMenuItem(value: n, child: Text("$n")))
+                .toList(),
+            onChanged: (val) {
+              if (val != null) setState(() => numberOfQuestions = val);
+            },
+          ),
+          const SizedBox(height: 24),
 
-            // [INPUT] Quiz mode
-            _buildLabel("Mode"),
+          // [INPUT] Quiz mode
+          _buildLabel("Mode"),
+          const SizedBox(height: 8),
+          DropdownButton<String>(
+            value: selectedMode,
+            isExpanded: true,
+            items: modes
+                .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                .toList(),
+            onChanged: (val) {
+              if (val != null) setState(() => selectedMode = val);
+            },
+          ),
+          const SizedBox(height: 24),
+
+          // [INPUT] Identification answer type
+          if (selectedMode == "Identification") ...[
+            _buildLabel("Answer Type"),
             const SizedBox(height: 8),
             DropdownButton<String>(
-              value: selectedMode,
+              value: identificationAnswerMode,
               isExpanded: true,
-              items: modes
+              items: identificationModes
                   .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                   .toList(),
               onChanged: (val) {
-                if (val != null) setState(() => selectedMode = val);
+                if (val != null) {
+                  setState(() => identificationAnswerMode = val);
+                }
               },
             ),
             const SizedBox(height: 24),
-
-            // [INPUT] Identification answer type (only when mode is Identification)
-            if (selectedMode == "Identification") ...[
-              _buildLabel("Answer Type"),
-              const SizedBox(height: 8),
-              DropdownButton<String>(
-                value: identificationAnswerMode,
-                isExpanded: true,
-                items: identificationModes
-                    .map((m) => DropdownMenuItem(value: m, child: Text(m)))
-                    .toList(),
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() => identificationAnswerMode = val);
-                  }
-                },
-              ),
-              const SizedBox(height: 24),
-            ],
-
-            // [INPUT] Game mode
-            _buildLabel("Game Mode"),
-            const SizedBox(height: 8),
-            DropdownButton<String>(
-              value: selectedGameMode,
-              isExpanded: true,
-              items: gameModes
-                  .map((m) => DropdownMenuItem(value: m, child: Text(m)))
-                  .toList(),
-              onChanged: (val) {
-                if (val != null) setState(() => selectedGameMode = val);
-              },
-            ),
-            const SizedBox(height: 24),
-
-            // [INPUT] Pasteable Q&A text field
-            _buildLabel("Paste Questions (Q / -A format):"),
-            const SizedBox(height: 8),
-            Expanded(
-              child: TextField(
-                controller: questionsController,
-                keyboardType: TextInputType.multiline,
-                maxLines: null,
-                expands: true,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText:
-                      "Powerhouse of the Cell\n- Mitochondria\nBasic Unit of Life\n- Cell",
-                  hintStyle: TextStyle(
-                  color: AppColors.text_400, 
-                  ),// hint text color (gray)
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // [BUTTON] Create Quiz
-            ElevatedButton(
-              onPressed: _createQuiz,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary_600,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 3,
-              ),
-              child: const Text(
-                "Create Quiz",
-                style: TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
           ],
-        ),
+
+          // [INPUT] Game mode
+          _buildLabel("Game Mode"),
+          const SizedBox(height: 8),
+          DropdownButton<String>(
+            value: selectedGameMode,
+            isExpanded: true,
+            items: gameModes
+                .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                .toList(),
+            onChanged: (val) {
+              if (val != null) setState(() => selectedGameMode = val);
+            },
+          ),
+          const SizedBox(height: 24),
+
+          // [INPUT] Pasteable Q&A text field
+          _buildLabel("Paste Questions (Q / -A format):"),
+          const SizedBox(height: 8),
+          // [FIX] Removed Expanded. Added minLines and maxLines instead.
+          TextField(
+            controller: questionsController,
+            keyboardType: TextInputType.multiline,
+            minLines: 6, // Set a base height
+            maxLines: null, // Allow it to grow downward
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              hintText:
+                  "Powerhouse of the Cell\n- Mitochondria\nBasic Unit of Life\n- Cell",
+              hintStyle: TextStyle(
+                color: AppColors.text_400,
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // [BUTTON] Create Quiz
+          ElevatedButton(
+            onPressed: _createQuiz,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary_600,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 3,
+            ),
+            child: const Text(
+              "Create Quiz",
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          // Extra space at bottom to ensure the button isn't cramped
+          //const SizedBox(height: 24),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   // [WIDGET] Section label text
   Widget _buildLabel(String text) {
