@@ -36,6 +36,7 @@ class _QuizStartState extends State<QuizStart> {
   // [STATES] Timer (Time Attack mode)
   Timer? timer;
   int timeLeft = 120;
+  int _originalTimeLimit = 120;
 
   // [STATES] Quiz configuration
   int numberOfQuestions = 5;
@@ -88,6 +89,14 @@ class _QuizStartState extends State<QuizStart> {
       selectedMode      = args['mode']              ?? "Multiple Choice";
       identificationMode = args['identificationMode'] ?? "Definition";
       selectedGameMode  = args['gameMode']          ?? "Classic";
+
+      if (selectedGameMode == "Time Attack") {
+        timeLeft = args['timeLimitSecs'] as int? ?? 120;
+        _originalTimeLimit = timeLeft; // ← NEW: Save original for restarts
+      } else {
+        timeLeft = 120;
+        _originalTimeLimit = 120;
+      }
 
       final rawList = args['questions'] as List?;
       if (rawList != null && rawList.isNotEmpty) {
@@ -309,7 +318,7 @@ void _confirmGoBack() {
                 selectedAnswer = "";
                 identificationController.clear();
                 identificationSubmitted = false;
-                timeLeft = 120;
+                timeLeft = _originalTimeLimit; // ← Reset to original time limit
               });
               _generateChoices();
               if (selectedGameMode == "Time Attack") _startTimer();
@@ -321,7 +330,7 @@ void _confirmGoBack() {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _handleBack();
+              _confirmGoBack();
             },
             child: const Text("Back to Menu"),
           ),

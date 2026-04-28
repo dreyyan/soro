@@ -24,6 +24,7 @@ class _QuizSettingsState extends State<QuizSettings> {
   String selectedMode = "Multiple Choice";
   String identificationAnswerMode = "Definition";
   String selectedGameMode = "Classic";
+  int timeLimitSeconds = 120;
   List<Question> questions = [];
 
   // [CONTROLLER] Pasteable Q&A input
@@ -69,6 +70,7 @@ class _QuizSettingsState extends State<QuizSettings> {
       selectedMode             = saved['mode']               ?? "Multiple Choice";
       identificationAnswerMode = saved['identificationMode'] ?? "Definition";
       selectedGameMode         = saved['gameMode']           ?? "Classic";
+      timeLimitSeconds         = saved['timeLimitSeconds']   ?? 120;
     });
   }
 
@@ -79,6 +81,7 @@ class _QuizSettingsState extends State<QuizSettings> {
       'mode':               selectedMode,
       'identificationMode': identificationAnswerMode,
       'gameMode':           selectedGameMode,
+      'timeLimitSeconds':   selectedGameMode == "Time Attack" ? timeLimitSeconds : null,
     });
   }
 
@@ -163,7 +166,7 @@ class _QuizSettingsState extends State<QuizSettings> {
       'gameMode':      selectedGameMode,
       'identificationMode': identificationAnswerMode,
       'deckTitle':     '—',
-      'timeLimitSecs': selectedGameMode == "Time Attack" ? 120 : null,
+      'timeLimitSecs': selectedGameMode == "Time Attack" ? timeLimitSeconds : null,
       'questions': questions
           .map((q) => {
                 'question': q.question,
@@ -178,6 +181,43 @@ class _QuizSettingsState extends State<QuizSettings> {
     // [NAVIGATE] Return to Quiz screen so the new quiz appears in the list
     Navigator.pop(context);
   }
+
+  // [HELPER] Format seconds into readable time string
+String _formatDuration(int seconds) {
+  if (seconds >= 60 && seconds % 60 == 0) {
+    return "${seconds ~/ 60} min";
+  }
+  final mins = (seconds ~/ 60).toString().padLeft(2, '0');
+  final secs = (seconds % 60).toString().padLeft(2, '0');
+  return "$mins:$secs";
+}
+
+// [WIDGET] Quick-select time preset button
+Widget _buildTimePreset(int seconds, String label) {
+  final isSelected = timeLimitSeconds == seconds;
+  return ChoiceChip(
+    label: Text(
+      label,
+      style: TextStyle(
+        fontFamily: 'Nunito',
+        fontSize: 12,
+        color: isSelected ? Colors.white : AppColors.text_700,
+      ),
+    ),
+    selected: isSelected,
+    onSelected: (_) {
+      setState(() => timeLimitSeconds = seconds);
+    },
+    selectedColor: AppColors.primary_600,
+    backgroundColor: AppColors.secondary_50,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+      side: BorderSide(
+        color: isSelected ? AppColors.primary_600 : AppColors.text_200,
+      ),
+    ),
+  );
+}
 
   @override
 Widget build(BuildContext context) {
@@ -280,6 +320,76 @@ Widget build(BuildContext context) {
             },
           ),
           const SizedBox(height: 24),
+
+// [INPUT] Time Limit (only for Time Attack mode)
+          if (selectedGameMode == "Time Attack") ...[
+            _buildLabel("Time Limit"),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.secondary_100,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.text_200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // [SLIDER] 30s to 600s (10 minutes)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Slider(
+                          value: timeLimitSeconds.toDouble(),
+                          min: 30,
+                          max: 600,
+                          divisions: 19,
+                          label: _formatDuration(timeLimitSeconds),
+                          onChanged: (val) {
+                            setState(() => timeLimitSeconds = val.round());
+                          },
+                          activeColor: AppColors.primary_600,
+                          inactiveColor: AppColors.text_200,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // [DISPLAY] Current time value
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary_100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          _formatDuration(timeLimitSeconds),
+                          style: const TextStyle(
+                            fontFamily: 'Nunito',
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary_700,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  // [PRESETS] Quick-select buttons
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildTimePreset(60, "1 min"),
+                      _buildTimePreset(120, "2 min"),
+                      _buildTimePreset(180, "3 min"),
+                      _buildTimePreset(300, "5 min"),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
 
           // [INPUT] Pasteable Q&A text field
           _buildLabel("Paste Questions (Q / -A format):"),
