@@ -81,7 +81,7 @@ class _AppEntryState extends State<AppEntry> {
     }
 
     // [3] LOGGED IN → HOME
-    return HomeWithNav();
+    return HomeWithNav(key: homeNavKey);
   }
 }
 
