@@ -330,7 +330,7 @@ void _confirmGoBack() {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _confirmGoBack();
+              _handleBack();
             },
             child: const Text("Back to Menu"),
           ),
