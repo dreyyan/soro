@@ -9,9 +9,14 @@ import 'package:soro/database/database_helper.dart';
 
 class DeckForm extends StatefulWidget {
   // [PROPS]
-  final VoidCallback onCreated; // Callback to refresh the deck list after creation
+  final VoidCallback onCreated;
+  final Map<String, dynamic>? deck; // ← ADD THIS (optional for edit mode)
 
-  const DeckForm({super.key, required this.onCreated});
+  const DeckForm({
+    super.key,
+    required this.onCreated,
+    this.deck, // ← ADD THIS
+  });
 
   @override
   State<DeckForm> createState() => _DeckFormState();
@@ -19,51 +24,104 @@ class DeckForm extends StatefulWidget {
 
 class _DeckFormState extends State<DeckForm> {
   // [CONTROLLERS]
-  final _titleCtrl = TextEditingController();
+  late final TextEditingController _titleCtrl;
+  late final TextEditingController _descriptionCtrl; // ← ADD DESCRIPTION
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // [INIT] Pre-fill controllers if editing existing deck
+    _titleCtrl = TextEditingController(
+      text: widget.deck?['title'] as String? ?? '',
+    );
+    _descriptionCtrl = TextEditingController(
+      text: widget.deck?['description'] as String? ?? '',
+    );
+  }
 
   @override
   void dispose() {
     _titleCtrl.dispose();
+    _descriptionCtrl.dispose();
     super.dispose();
   }
 
-  // [SUBMIT] Validate, save deck to Hive, then close dialog
+  // [SUBMIT] Validate, save deck to database, then close dialog
   Future<void> _submit() async {
     final title = _titleCtrl.text.trim();
-    if (title.isEmpty) return;
+    final description = _descriptionCtrl.text.trim();
+    
+    if (title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Title is required')),
+      );
+      return;
+    }
 
-    final deck = {
-      'id':          DateTime.now().millisecondsSinceEpoch.toString(),
-      'title':       title,
-      'createdAt':   DateTime.now().toIso8601String(),
-      'cards':       <Map<String, dynamic>>[],
-    };
+    if (widget.deck != null) {
+      // [UPDATE] Existing deck
+      await DatabaseHelper().updateFlashcardDeck(
+        widget.deck!['id'] as String,
+        {
+          'title': title,
+          'description': description,
+          'updatedAt': DateTime.now().toIso8601String(),
+        },
+      );
+    } else {
+      // [CREATE] New deck
+      final deck = {
+        'id':          DateTime.now().millisecondsSinceEpoch.toString(),
+        'title':       title,
+        'description': description,
+        'createdAt':   DateTime.now().toIso8601String(),
+        'cards':       <Map<String, dynamic>>[],
+      };
+      await DatabaseHelper().addFlashcardDeck(deck);
+    }
 
-    await DatabaseHelper().addFlashcardDeck(deck);
-    widget.onCreated();
-    if (mounted) Navigator.pop(context); // [CLOSE] Dismiss the dialog
+    widget.onCreated(); // Refresh parent list
+    if (mounted) Navigator.pop(context); // Close dialog
   }
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.deck != null;
+    
     return AlertDialog(
-      title: const Text(
-        'New Card',
-        style: TextStyle(fontFamily: 'Baloo', fontWeight: FontWeight.w700),
+      title: Text(
+        isEditing ? 'Edit Deck' : 'New Deck', // ← FIX: Was "New Card"
+        style: const TextStyle(
+          fontFamily: 'Baloo',
+          fontWeight: FontWeight.w700,
+        ),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // [INPUT] Card title
+          // [INPUT] Deck title
           TextField(
             controller: _titleCtrl,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              labelText: 'Card Title',
-              hintText:  'e.g. Biology Chapter 3',
+            decoration: InputDecoration(
+              labelText: 'Deck Title', // ← FIX: Was "Card Title"
+              hintText: isEditing ? 'Enter new title' : 'e.g. Biology Chapter 3',
             ),
           ),
-
+          const SizedBox(height: 12),
+          
+          // [INPUT] Deck description (NEW)
+          TextField(
+            controller: _descriptionCtrl,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: const InputDecoration(
+              labelText: 'Description (optional)',
+              hintText: 'Brief description of this deck',
+              alignLabelWithHint: true,
+            ),
+            maxLines: 3,
+          ),
         ],
       ),
       actions: [
@@ -73,14 +131,14 @@ class _DeckFormState extends State<DeckForm> {
           child: const Text('Cancel'),
         ),
 
-        // [BUTTON] Create deck
+        // [BUTTON] Save/Create
         ElevatedButton(
           onPressed: _submit,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary_600,
             foregroundColor: Colors.white,
           ),
-          child: const Text('Create'),
+          child: Text(isEditing ? 'Save Changes' : 'Create'), // ← Dynamic label
         ),
       ],
     );

@@ -13,6 +13,7 @@ class DeckCard extends StatelessWidget {
   final bool showCards; // Toggle to show/hide individual cards
   final VoidCallback onDeleted;
   final VoidCallback onUpdated;
+  final VoidCallback? onTap;
 
   // Constructor
   const DeckCard({
@@ -21,6 +22,7 @@ class DeckCard extends StatelessWidget {
     required this.showCards,
     required this.onDeleted,
     required this.onUpdated,
+    this.onTap,
   });
 
   @override
@@ -36,12 +38,8 @@ class DeckCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => DeckDetails(deck: deck, onUpdated: onUpdated),
-          ),
-        ),
+        onTap: onTap,
+          
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(

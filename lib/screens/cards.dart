@@ -7,6 +7,7 @@ import 'package:soro/main.dart';
 // [IMPORT] Widgets
 import 'package:soro/widgets/cards/deck_card.dart';
 import 'package:soro/widgets/cards/deck_form.dart';
+import 'package:soro/widgets/cards/deck_detail_sheet.dart';
 
 // [IMPORT] Database
 import 'package:soro/database/database_helper.dart';
@@ -29,6 +30,7 @@ class _CardsState extends State<Cards> {
     super.initState();
     _loadDecks();
   }
+
 
   // [LOAD] Fetch all decks for the logged-in user
   Future<void> _loadDecks() async {
@@ -92,6 +94,42 @@ class _CardsState extends State<Cards> {
     );
   }
 
+  // [DIALOG] Show DeckDetailSheet as modal bottom sheet
+void _showDeckDetailSheet(Map<String, dynamic> deck) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    useSafeArea: true,
+    enableDrag: true,
+    builder: (_) => DeckDetailSheet(
+      deck: deck,
+      onEdit: () {
+        Navigator.pop(context); // Close sheet first
+        _showEditDeckDialog(deck); // Then open edit form
+      },
+      onDelete: () {
+        Navigator.pop(context); // Close sheet first
+        _deleteDeck(deck['id'] as String, deck['title'] as String);
+      },
+    ),
+  );
+}
+
+// [DIALOG] Show DeckForm in edit mode
+void _showEditDeckDialog(Map<String, dynamic> deck) {
+  showDialog(
+    context: context,
+    builder: (_) => DeckForm(
+      deck: deck, // Pass existing data for editing
+      onCreated: () {
+        _loadDecks(); // Refresh list
+        if (context.mounted) Navigator.pop(context); // Close dialog
+      },
+    ),
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     final decks = _sortedDecks;
@@ -127,6 +165,7 @@ class _CardsState extends State<Cards> {
                               decks[i]['title'] as String,
                             ),
                             onUpdated: _loadDecks,
+                            onTap: () => _showDeckDetailSheet(decks[i]),
                           ),
                         ),
             ),
