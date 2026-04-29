@@ -8,7 +8,7 @@ class QuizDetailSheet extends StatelessWidget {
   // [PROPS]
   final Map<String, dynamic> quiz;
   final VoidCallback onPlay;
-  final VoidCallback onEdit;
+  final Function(Map<String, dynamic>) onEdit;
   final VoidCallback onDelete;
 
   const QuizDetailSheet({
@@ -156,7 +156,7 @@ class QuizDetailSheet extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: onEdit,
+                      onPressed: () => onEdit(quiz),
                       icon: const Icon(
                         Icons.edit_outlined,
                         color: AppColors.primary_600,

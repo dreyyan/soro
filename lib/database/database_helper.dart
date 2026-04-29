@@ -425,6 +425,14 @@ class DatabaseHelper {
     await _saveQuizzes(quizzes);
   }
 
+  Future<void> updateSavedQuiz(Map<String, dynamic> quiz) async {
+  final quizzes = await getSavedQuizzes();
+  final idx = quizzes.indexWhere((q) => q['id'] == quiz['id']);
+  if (idx == -1) return;
+  quizzes[idx] = quiz;
+  await _saveQuizzes(quizzes);
+}
+
   // * [CURRENCY]  (coins, EXP, achievements)
   static const List<Map<String, dynamic>> rankTiers = [
     {'title': 'Novice',     'minExp': 0,    'icon': '🌱'},

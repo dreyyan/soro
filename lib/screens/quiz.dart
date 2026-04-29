@@ -14,6 +14,8 @@ import 'package:soro/widgets/quiz/quiz_detail_sheet.dart';
 // [IMPORT] Database
 import 'package:soro/database/database_helper.dart';
 
+import 'package:soro/screens/quiz_edit.dart';
+
 class Quiz extends StatefulWidget {
   const Quiz({super.key});
 
@@ -125,14 +127,14 @@ class _QuizState extends State<Quiz> {
         },
 
         // [EDIT] Open QuizSettings then refresh the list on return
-        onEdit: () async {
+        onEdit: (quizData) async {
           Navigator.pop(context);
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const QuizSettings()),
+            MaterialPageRoute(builder: (_) => QuizEdit(quiz: quizData)),
           );
           await _loadQuizzes();
-        },
+      },
 
         // [DELETE] Close sheet then run the delete confirmation flow
         onDelete: () {
