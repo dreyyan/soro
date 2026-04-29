@@ -20,7 +20,7 @@ class QuizSettings extends StatefulWidget {
 
 class _QuizSettingsState extends State<QuizSettings> {
   // [STATES] Quiz settings
-  int numberOfQuestions = 5;
+  int numberOfQuestions = 0;
   String selectedMode = "Multiple Choice";
   String identificationAnswerMode = "Definition";
   String selectedGameMode = "Classic";
@@ -30,6 +30,7 @@ class _QuizSettingsState extends State<QuizSettings> {
   // [CONTROLLER] Pasteable Q&A input
   final TextEditingController titleController = TextEditingController();
   final TextEditingController questionsController = TextEditingController();
+  final TextEditingController numberOfQuestionsController = TextEditingController();
 
   // [OPTIONS] Available quiz modes
   final List<String> modes = [
@@ -58,6 +59,7 @@ class _QuizSettingsState extends State<QuizSettings> {
   void dispose() {
     titleController.dispose();
     questionsController.dispose();
+    numberOfQuestionsController.dispose();
     super.dispose();
   }
 
@@ -66,7 +68,7 @@ class _QuizSettingsState extends State<QuizSettings> {
     final saved = await DatabaseHelper().getQuizSettings();
     if (saved == null) return;
     setState(() {
-      numberOfQuestions        = saved['numberOfQuestions']  ?? 5;
+      numberOfQuestions        = 0;
       selectedMode             = saved['mode']               ?? "Multiple Choice";
       identificationAnswerMode = saved['identificationMode'] ?? "Definition";
       selectedGameMode         = saved['gameMode']           ?? "Classic";
@@ -257,20 +259,68 @@ Widget build(BuildContext context) {
           ),
           const SizedBox(height: 24),
 
-          // [INPUT] Number of questions
-          _buildLabel("Number of Questions"),
-          const SizedBox(height: 8),
-          DropdownButton<int>(
-            value: numberOfQuestions,
-            isExpanded: true,
-            items: [5, 10, 15, 20]
-                .map((n) => DropdownMenuItem(value: n, child: Text("$n")))
-                .toList(),
-            onChanged: (val) {
-              if (val != null) setState(() => numberOfQuestions = val);
-            },
+          Container(
+  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+  decoration: BoxDecoration(
+    color: AppColors.secondary_100,
+    borderRadius: BorderRadius.circular(12),
+  ),
+  child: Row(
+    children: [
+      // [INPUT] Editable number field
+      Expanded(
+        child: TextField(
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            hintText: 'Enter number of Questions',
+            hintStyle: TextStyle(
+              fontFamily: 'Nunito',
+              fontSize: 16,
+              color: AppColors.text_300,
+            ),
           ),
-          const SizedBox(height: 24),
+          style: const TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: AppColors.text_700,
+          ),
+          controller: numberOfQuestionsController,
+          onChanged: (val) {
+            final parsed = int.tryParse(val);
+            if (parsed != null && parsed >= 1) {
+              setState(() => numberOfQuestions = parsed);
+            }
+          },
+        ),
+      ),
+      // [ARROWS] Up / Down
+      Column(
+        children: [
+          GestureDetector(
+  onTap: () {
+  setState(() {
+    numberOfQuestions++;
+    numberOfQuestionsController.text = '$numberOfQuestions';
+  });
+},
+            child: const Icon(Icons.arrow_drop_up, size: 28, color: AppColors.primary_600),
+          ),
+          GestureDetector(
+  onTap: () {
+    if (numberOfQuestions > 1) {
+      setState(() => numberOfQuestions--);
+      numberOfQuestionsController.text = '$numberOfQuestions';
+    }
+  },
+            child: const Icon(Icons.arrow_drop_down, size: 28, color: AppColors.primary_600),
+          ),
+        ],
+      ),
+    ],
+  ),
+),
 
           // [INPUT] Quiz mode
           _buildLabel("Mode"),
