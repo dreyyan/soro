@@ -127,7 +127,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final accuracyLabel = _accuracy != null ? '$_accuracy%' : '—';
-    final streakLabel   = _streak > 0 ? '$_streak🔥' : '0';
 
       return Scaffold(
           body: SingleChildScrollView(

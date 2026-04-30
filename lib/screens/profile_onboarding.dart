@@ -31,7 +31,6 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
   int _currentStep = 0; // 0 = name, 1 = username, 2 = birthday+bio
   bool _isLoading = false;
   String? _errorMessage;
-  DateTime? _selectedBirthday;
 
   @override
   void dispose() {
@@ -65,7 +64,6 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
 
     if (picked != null) {
       setState(() {
-        _selectedBirthday = picked;
         _birthdayController.text =
             '${picked.month.toString().padLeft(2, '0')}/'
             '${picked.day.toString().padLeft(2, '0')}/'

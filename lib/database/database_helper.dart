@@ -260,7 +260,10 @@ class DatabaseHelper {
     // This uses the internal logic of your UserStats class automatically
     final updatedStats = UserStats(totalExp: newExp, totalCoins: newCoins);
     
-    // 5. Return true if the new level is higher than the old level
+    // 5. Check for rank achievements
+    await _checkRankAchievements(newExp);
+    
+    // 6. Return true if the new level is higher than the old level
     return updatedStats.level > oldLevel;
   }
   
@@ -290,8 +293,11 @@ class DatabaseHelper {
     final prefs       = await _prefs;
     final prevCorrect = prefs.getInt('${email}_quizCorrect') ?? 0;
     final prevTotal   = prefs.getInt('${email}_quizTotal')   ?? 0;
-    await prefs.setInt('${email}_quizCorrect', prevCorrect + correct);
-    await prefs.setInt('${email}_quizTotal',   prevTotal   + total);
+    final newCorrect = prevCorrect + correct;
+    final newTotal = prevTotal + total;
+    
+    await prefs.setInt('${email}_quizCorrect', newCorrect);
+    await prefs.setInt('${email}_quizTotal', newTotal);
     await _refreshStreak();
     
     // [CALCULATE] Accuracy-based rewards
@@ -300,17 +306,43 @@ class DatabaseHelper {
     final bonusExp = ((correct / total) * 30).toInt(); // 0-30 bonus XP based on accuracy
     final expEarned = baseExp + bonusExp;
     final coinsEarned = (accuracy * 10).toInt(); // 0-10 coins based on accuracy
+    final accuracyPercent = (accuracy * 100).toInt();
     
     // [AWARD] Rewards and check for level up
     final leveledUp = await saveRewards(expEarned, coinsEarned);
     
-    await _progressQuest('completeQuiz');
+    // [QUEST PROGRESS] Update daily quests
+    await _progressQuest('dailyStudy');
+    await _updateQuestProgress('correctAnswers10', correct);
+    await _updateQuestProgress('completeQuiz2', 1);
+    
+    // [QUEST] Accuracy quest progress (store accuracy as progress value)
+    if (accuracyPercent >= 80) {
+      await _updateQuestProgress('accuracy80', accuracyPercent);
+    }
+    
+    // [ACHIEVEMENT] Check quiz milestone progression
+    for (int i = 0; i < quizMilestones.length; i++) {
+      if (newTotal >= quizMilestones[i] && prevTotal < quizMilestones[i]) {
+        await unlockAchievement('quizMilestone');
+      }
+    }
+    
+    // [ACHIEVEMENT] Check accuracy milestone progression
+    for (int i = 0; i < accuracyMilestones.length; i++) {
+      if (accuracyPercent >= accuracyMilestones[i] && prevCorrect < newCorrect) {
+        // Only check once per quiz
+        if (i == 0) {
+          await unlockAchievement('accuracyMilestone');
+        }
+      }
+    }
     
     return {
       'expEarned': expEarned,
       'coinsEarned': coinsEarned,
       'leveledUp': leveledUp,
-      'accuracy': (accuracy * 100).toInt(),
+      'accuracy': accuracyPercent,
     };
   }
 
@@ -333,6 +365,9 @@ class DatabaseHelper {
     }
     await prefs.setInt('${email}_streakDays',       streak);
     await prefs.setString('${email}_lastStudyDate', today);
+    
+    // [ACHIEVEMENTS] Check for streak milestones
+    await _checkStreakAchievements(streak);
   }
 
   // * [FLASHCARDS]
@@ -354,12 +389,31 @@ class DatabaseHelper {
   }
 
   Future<void> addFlashcardDeck(Map<String, dynamic> deck) async {
+    final email = await _loggedInEmail();
+    if (email == null) return;
+    
     final decks = await getFlashcardDecks();
+    final prevDecksCount = decks.length;
+    
     decks.add(deck);
     await _saveFlashcardDecks(decks);
     await incrementCardsCreated();
+    
+    // [CARDS] Count total cards in the deck
+    final cardCount = ((deck['cards'] as List?) ?? []).length;
+    
+    // [REWARDS] Add EXP and progress quests
     await addExp(5);
-    await _progressQuest('createCard');
+    await _progressQuest('dailyStudy');
+    await _updateQuestProgress('createCards5', cardCount);
+    
+    // [ACHIEVEMENTS] Check deck milestone progression
+    final decksCreated = decks.length;
+    for (int i = 0; i < deckMilestones.length; i++) {
+      if (decksCreated >= deckMilestones[i] && prevDecksCount < deckMilestones[i]) {
+        await unlockAchievement('deckMilestone');
+      }
+    }
   }
 
   Future<void> updateFlashcardDeck(
@@ -493,6 +547,143 @@ class DatabaseHelper {
     }
   }
 
+  // [GET] All achievements with unlock status and progressive milestone info
+  Future<List<Map<String, dynamic>>> getAllAchievements() async {
+    final email = await _loggedInEmail();
+    if (email == null) return [];
+    
+    final prefs = await _prefs;
+    
+    final rawAch = prefs.getString('${email}_achievements');
+    final unlockedIds = rawAch != null
+        ? List<String>.from(_decodeList(rawAch).cast<String>())
+        : <String>[];
+
+    // [GET] Stats for progressive milestones
+    final stats = await getAcademicStats();
+    final quizCount = stats['quizTotal'] as int;
+    final deckCount = stats['cardsCreated'] as int;
+    final accuracy = stats['accuracy'] as int? ?? 0;
+
+    // [BUILD] Achievement list with progressive milestone info
+    final result = <Map<String, dynamic>>[];
+    
+    for (final achDef in achievementDefs) {
+      final achId = achDef['id'] as String;
+      final isProgressive = achDef['isProgressive'] as bool? ?? false;
+      
+      if (!isProgressive) {
+        // [STATIC] Non-progressive achievements
+        result.add({
+          ...achDef,
+          'unlocked': unlockedIds.contains(achId),
+        });
+      } else {
+        // [PROGRESSIVE] Build current milestone info
+        final type = achDef['type'] as String;
+        int currentLevel = 0;
+        int currentMilestone = 0;
+        String currentTitle = '';
+        String currentIcon = '';
+        String currentRarity = '';
+        String currentDescription = '';
+        bool unlocked = false;
+
+        if (type == 'quiz') {
+          // [QUIZ] Find which milestone level they're at
+          for (int i = 0; i < quizMilestones.length; i++) {
+            if (quizCount >= quizMilestones[i]) {
+              currentLevel = i;
+              unlocked = true;
+            } else {
+              break;
+            }
+          }
+          currentMilestone = currentLevel < quizMilestones.length ? quizMilestones[currentLevel] : quizMilestones.last;
+          currentTitle = quizTitles[currentLevel];
+          currentIcon = quizIcons[currentLevel];
+          currentRarity = quizRarities[currentLevel];
+          currentDescription = 'Complete ${currentMilestone} quizzes';
+        } else if (type == 'deck') {
+          // [DECK] Find which milestone level they're at
+          for (int i = 0; i < deckMilestones.length; i++) {
+            if (deckCount >= deckMilestones[i]) {
+              currentLevel = i;
+              unlocked = true;
+            } else {
+              break;
+            }
+          }
+          currentMilestone = currentLevel < deckMilestones.length ? deckMilestones[currentLevel] : deckMilestones.last;
+          currentTitle = deckTitles[currentLevel];
+          currentIcon = deckIcons[currentLevel];
+          currentRarity = deckRarities[currentLevel];
+          currentDescription = 'Create ${currentMilestone} decks';
+        } else if (type == 'accuracy') {
+          // [ACCURACY] Find which milestone level they're at
+          for (int i = 0; i < accuracyMilestones.length; i++) {
+            if (accuracy >= accuracyMilestones[i]) {
+              currentLevel = i;
+              unlocked = true;
+            } else {
+              break;
+            }
+          }
+          currentMilestone = currentLevel < accuracyMilestones.length ? accuracyMilestones[currentLevel] : accuracyMilestones.last;
+          currentTitle = accuracyTitles[currentLevel];
+          currentIcon = accuracyIcons[currentLevel];
+          currentRarity = accuracyRarities[currentLevel];
+          currentDescription = 'Achieve ${currentMilestone}% accuracy';
+        }
+
+        result.add({
+          ...achDef,
+          'title': currentTitle,
+          'icon': currentIcon,
+          'rarity': currentRarity,
+          'description': currentDescription,
+          'currentMilestone': currentMilestone,
+          'currentLevel': currentLevel,
+          'unlocked': unlocked,
+        });
+      }
+    }
+    
+    return result;
+  }
+
+  // [CHECK] Rank achievements and unlock if applicable
+  Future<void> _checkRankAchievements(int totalExp) async {
+    if (totalExp >= (rankTiers[1]['minExp'] as int)) {
+      await unlockAchievement('rankApprentice');
+    }
+    if (totalExp >= (rankTiers[2]['minExp'] as int)) {
+      await unlockAchievement('rankScholar');
+    }
+    if (totalExp >= (rankTiers[3]['minExp'] as int)) {
+      await unlockAchievement('rankExpert');
+    }
+    if (totalExp >= (rankTiers[4]['minExp'] as int)) {
+      await unlockAchievement('rankMaster');
+    }
+  }
+
+  // [CHECK] Streak achievements and unlock if applicable
+  Future<void> _checkStreakAchievements(int streakDays) async {
+    if (streakDays >= 3) {
+      await unlockAchievement('streak3');
+    }
+    if (streakDays >= 7) {
+      await unlockAchievement('streak7');
+    }
+    if (streakDays >= 14) {
+      await unlockAchievement('streak14');
+    }
+    if (streakDays >= 30) {
+      await unlockAchievement('streak30');
+    }
+  }
+
   // [HELPER] Derive rank title, icon, and progress from total EXP
   static Map<String, dynamic> getRankFromExp(int exp) {
     Map<String, dynamic> current = rankTiers.first;
@@ -515,34 +706,98 @@ class DatabaseHelper {
     };
   }
 
-  // * [DAILY QUESTS] 3 quests generated per day, reset at midnight.
-  static const List<Map<String, dynamic>> _questDefs = [
+  // * [ACHIEVEMENTS] 20+ achievements with tracking
+  // [PROGRESSIVE] Quiz milestones: 1 → 5 → 10 → 50 → 100
+  static const List<int> quizMilestones = [1, 5, 10, 50, 100];
+  static const List<String> quizTitles = ['Quiz Master', 'Quiz Veteran', 'Quiz Warrior', 'Quiz Champion', 'Quiz Legend'];
+  static const List<String> quizIcons = ['📝', '📚', '⚔️', '🏆', '⭐'];
+  static const List<String> quizRarities = ['common', 'common', 'uncommon', 'rare', 'rare'];
+
+  // [PROGRESSIVE] Deck milestones: 1 → 5 → 10 → 50 → 100
+  static const List<int> deckMilestones = [1, 5, 10, 50, 100];
+  static const List<String> deckTitles = ['Creator', 'Content Creator', 'Deck Master', 'Deck Legend', 'Deck Architect'];
+  static const List<String> deckIcons = ['🃏', '📋', '🎨', '💎', '🏢'];
+  static const List<String> deckRarities = ['common', 'common', 'uncommon', 'rare', 'legendary'];
+
+  // [PROGRESSIVE] Accuracy milestones: 80% → 90% → 100%
+  static const List<int> accuracyMilestones = [80, 90, 100];
+  static const List<String> accuracyTitles = ['Accurate', 'Perfectionist', 'Flawless'];
+  static const List<String> accuracyIcons = ['🎯', '💯', '✨'];
+  static const List<String> accuracyRarities = ['common', 'uncommon', 'legendary'];
+
+  static const List<Map<String, dynamic>> achievementDefs = [
+    // [PROGRESSIVE ACHIEVEMENTS - Grid item updates as you progress]
+    {'id': 'quizMilestone', 'title': 'Quiz Progression', 'description': 'Progressive quizzes', 'icon': '📝', 'isRepeatable': false, 'rarity': 'common', 'isProgressive': true, 'type': 'quiz'},
+    {'id': 'deckMilestone', 'title': 'Deck Progression', 'description': 'Progressive decks', 'icon': '🃏', 'isRepeatable': false, 'rarity': 'common', 'isProgressive': true, 'type': 'deck'},
+    {'id': 'accuracyMilestone', 'title': 'Accuracy Progression', 'description': 'Progressive accuracy', 'icon': '🎯', 'isRepeatable': false, 'rarity': 'common', 'isProgressive': true, 'type': 'accuracy'},
+
+    // [RANK ACHIEVEMENTS]
+    {'id': 'rankApprentice', 'title': 'Rising Star', 'description': 'Reach Apprentice rank', 'icon': '📖', 'isRepeatable': false, 'rarity': 'common'},
+    {'id': 'rankScholar', 'title': 'Scholar', 'description': 'Reach Scholar rank', 'icon': '🎓', 'isRepeatable': false, 'rarity': 'uncommon'},
+    {'id': 'rankExpert', 'title': 'Expert', 'description': 'Reach Expert rank', 'icon': '⚡', 'isRepeatable': false, 'rarity': 'rare'},
+    {'id': 'rankMaster', 'title': 'Ultimate Master', 'description': 'Reach Master rank', 'icon': '👑', 'isRepeatable': false, 'rarity': 'legendary'},
+
+    // [STREAK ACHIEVEMENTS - NOT in daily quests]
+    {'id': 'streak3', 'title': 'Warm Up', 'description': 'Maintain a 3-day study streak', 'icon': '🔥', 'isRepeatable': true, 'rarity': 'common'},
+    {'id': 'streak7', 'title': 'On Fire', 'description': 'Maintain a 7-day study streak', 'icon': '🔥🔥', 'isRepeatable': true, 'rarity': 'uncommon'},
+    {'id': 'streak14', 'title': 'Unstoppable', 'description': 'Maintain a 14-day study streak', 'icon': '🌟', 'isRepeatable': true, 'rarity': 'rare'},
+    {'id': 'streak30', 'title': 'Legendary Grinder', 'description': 'Maintain a 30-day study streak', 'icon': '👑', 'isRepeatable': true, 'rarity': 'legendary'},
+  ];
+
+  // * [DAILY QUESTS] 3 quests generated per day: 1 fixed + 2 random from pool
+  static const List<Map<String, dynamic>> _fixedDailyQuest = [
     {
-      'id':          'createCard',
-      'title':       'Card Creator',
-      'description': 'Create at least 1 flashcard today',
-      'icon':        '🃏',
+      'id':          'dailyStudy',
+      'title':       'Daily Study',
+      'description': 'Complete a quiz or create a deck',
+      'icon':        '📖',
       'goal':        1,
-      'rewardExp':   30,
+      'rewardExp':   25,
       'rewardCoins': 10,
+      'difficulty':  'easy',
     },
+  ];
+
+  static const List<Map<String, dynamic>> _questPool = [
     {
-      'id':          'completeQuiz',
-      'title':       'Quiz Taker',
-      'description': 'Complete at least 1 quiz today',
-      'icon':        '📝',
-      'goal':        1,
+      'id':          'correctAnswers10',
+      'title':       'Accuracy Focused',
+      'description': 'Get 10 correct answers across quizzes',
+      'icon':        '✅',
+      'goal':        10,
       'rewardExp':   50,
       'rewardCoins': 20,
+      'difficulty':  'medium',
     },
     {
-      'id':          'studyStreak',
-      'title':       'On a Roll',
-      'description': 'Maintain a study streak of 2+ days',
-      'icon':        '🔥',
-      'goal':        2,
+      'id':          'createCards5',
+      'title':       'Card Maker',
+      'description': 'Create 5 flashcards today',
+      'icon':        '🃏',
+      'goal':        5,
       'rewardExp':   40,
       'rewardCoins': 15,
+      'difficulty':  'medium',
+    },
+    {
+      'id':          'completeQuiz2',
+      'title':       'Quiz Enthusiast',
+      'description': 'Complete 2 quizzes today',
+      'icon':        '📝📝',
+      'goal':        2,
+      'rewardExp':   60,
+      'rewardCoins': 25,
+      'difficulty':  'hard',
+    },
+    {
+      'id':          'accuracy80',
+      'title':       'Accuracy Master',
+      'description': 'Achieve 80%+ accuracy on a quiz',
+      'icon':        '🎯',
+      'goal':        80,
+      'rewardExp':   55,
+      'rewardCoins': 22,
+      'difficulty':  'hard',
     },
   ];
 
@@ -557,7 +812,19 @@ class DatabaseHelper {
 
     // [RESET] New day — wipe progress and start fresh
     if (savedDate != today) {
-      final fresh = _questDefs
+      // [FIXED] First quest is always the same
+      final quests = List<Map<String, dynamic>>.from(_fixedDailyQuest);
+      
+      // [RANDOM] Select 2 random quests from the pool
+      final random = Random();
+      final poolIndices = List.generate(_questPool.length, (i) => i);
+      poolIndices.shuffle(random);
+      for (int i = 0; i < 2 && i < poolIndices.length; i++) {
+        quests.add(_questPool[poolIndices[i]]);
+      }
+      
+      // [ADD STATE] Initialize progress fields
+      final fresh = quests
           .map((q) => {
                 ...q,
                 'progress':      0,
@@ -565,6 +832,7 @@ class DatabaseHelper {
                 'rewardClaimed': false,
               })
           .toList();
+          
       await prefs.setString('${email}_questDate',  today);
       await prefs.setString('${email}_quests',     _encodeList(fresh));
       return List<Map<String, dynamic>>.from(fresh);
@@ -573,7 +841,15 @@ class DatabaseHelper {
     // [LOAD] Return existing quest progress
     final raw = prefs.getString('${email}_quests');
     if (raw == null) {
-      return _questDefs
+      // Fallback if no quests saved for today
+      final quests = List<Map<String, dynamic>>.from(_fixedDailyQuest);
+      final random = Random();
+      final poolIndices = List.generate(_questPool.length, (i) => i);
+      poolIndices.shuffle(random);
+      for (int i = 0; i < 2 && i < poolIndices.length; i++) {
+        quests.add(_questPool[poolIndices[i]]);
+      }
+      return quests
           .map((q) => {
                 ...q,
                 'progress':      0,
@@ -600,8 +876,8 @@ class DatabaseHelper {
       if (quests[i]['completed'] == true) continue;
 
       int progress;
-      if (questId == 'studyStreak') {
-        // [STREAK] Use actual streak value instead of incrementing
+      if (questId == 'maintainStreak') {
+        // [STREAK] Use actual streak value
         final stats = await getAcademicStats();
         progress = stats['streakDays'] as int? ?? 0;
       } else {
@@ -612,6 +888,33 @@ class DatabaseHelper {
       final completed = progress >= goal;
       quests[i] = {...quests[i], 'progress': progress, 'completed': completed};
       changed = true;
+    }
+
+    if (changed) {
+      final prefs = await _prefs;
+      await prefs.setString('${email}_quests', _encodeList(quests));
+    }
+  }
+
+  // [QUEST PROGRESS] Update specific quest by type
+  Future<void> _updateQuestProgress(String questType, int amount) async {
+    final email = await _loggedInEmail();
+    if (email == null) return;
+
+    final quests = await getDailyQuests();
+    bool changed = false;
+
+    for (int i = 0; i < quests.length; i++) {
+      if (quests[i]['completed'] == true) continue;
+      
+      final questId = quests[i]['id'] as String;
+      if (questId == questType) {
+        final progress = ((quests[i]['progress'] as int?) ?? 0) + amount;
+        final goal = quests[i]['goal'] as int;
+        final completed = progress >= goal;
+        quests[i] = {...quests[i], 'progress': progress, 'completed': completed};
+        changed = true;
+      }
     }
 
     if (changed) {

@@ -22,6 +22,7 @@ class _QuestState extends State<Quest> {
   // [STATE]
   Map<String, dynamic> _currency  = {'coins': 0, 'exp': 0, 'achievements': []};
   List<Map<String, dynamic>> _quests = [];
+  List<Map<String, dynamic>> _achievements = [];
   bool _isLoading = true;
 
   @override
@@ -33,11 +34,13 @@ class _QuestState extends State<Quest> {
   Future<void> _load() async {
     final currency = await DatabaseHelper().getCurrency();
     final quests   = await DatabaseHelper().getDailyQuests();
+    final achievements = await DatabaseHelper().getAllAchievements();
     if (!mounted) return;
     setState(() {
-      _currency  = currency;
-      _quests    = quests;
-      _isLoading = false;
+      _currency     = currency;
+      _quests       = quests;
+      _achievements = achievements;
+      _isLoading    = false;
     });
   }
 
@@ -454,17 +457,34 @@ class _QuestState extends State<Quest> {
 
   // ── Achievements ──────────────────────────────────────────────────────────
   Widget _buildAchievements() {
-    final earned = List<String>.from(
-        _currency['achievements'] as List? ?? []);
+    // Color based on rarity
+    Color rarityColor(String rarity, bool unlocked) {
+      if (!unlocked) return AppColors.text_50;
+      switch (rarity) {
+        case 'legendary':
+          return const Color(0xFFFFD700).withOpacity(0.2);
+        case 'rare':
+          return const Color(0xFFFF69B4).withOpacity(0.2);
+        case 'uncommon':
+          return AppColors.primary_100;
+        default:
+          return AppColors.secondary_100;
+      }
+    }
 
-    // All defined achievements
-    const allAchievements = [
-      {'id': 'first_card',  'title': 'First Card',    'icon': '🃏', 'desc': 'Create your first flashcard'},
-      {'id': 'first_quiz',  'title': 'Quiz Starter',  'icon': '📝', 'desc': 'Complete your first quiz'},
-      {'id': 'streak_3',    'title': 'On Fire',        'icon': '🔥', 'desc': 'Reach a 3-day streak'},
-      {'id': 'scholar',     'title': 'Scholar',        'icon': '🎓', 'desc': 'Reach Scholar rank'},
-      {'id': 'card_10',     'title': 'Card Collector', 'icon': '📚', 'desc': 'Create 10 flashcards'},
-    ];
+    Color rarityBorder(String rarity, bool unlocked) {
+      if (!unlocked) return AppColors.text_100;
+      switch (rarity) {
+        case 'legendary':
+          return const Color(0xFFFFD700);
+        case 'rare':
+          return const Color(0xFFFF69B4);
+        case 'uncommon':
+          return AppColors.primary_300;
+        default:
+          return AppColors.secondary_300;
+      }
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -480,6 +500,15 @@ class _QuestState extends State<Quest> {
               color: AppColors.text_800,
             ),
           ),
+          const SizedBox(height: 4),
+          Text(
+            '${_achievements.where((a) => a['unlocked'] == true).length} / ${_achievements.length}',
+            style: TextStyle(
+              fontFamily: 'Nunito',
+              fontSize: 12,
+              color: AppColors.text_400,
+            ),
+          ),
           const SizedBox(height: 12),
           GridView.builder(
             shrinkWrap: true,
@@ -491,54 +520,56 @@ class _QuestState extends State<Quest> {
               crossAxisSpacing: 10,
               childAspectRatio: 0.75,
             ),
-            itemCount: allAchievements.length,
+            itemCount: _achievements.length,
             itemBuilder: (_, i) {
-              final ach      = allAchievements[i];
-              final unlocked = earned.contains(ach['id']);
+              final ach = _achievements[i];
+              final unlocked = ach['unlocked'] as bool? ?? false;
+              final rarity = ach['rarity'] as String? ?? 'common';
               return Container(
                 decoration: BoxDecoration(
-                  color: unlocked
-                      ? AppColors.primary_100
-                      : AppColors.text_50,
-                  borderRadius: BorderRadius.circular(16),
+                  color: rarityColor(rarity, unlocked),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: unlocked
-                        ? AppColors.primary_300
-                        : AppColors.text_100,
+                    color: rarityBorder(rarity, unlocked),
+                    width: unlocked ? 2 : 1,
                   ),
                 ),
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      unlocked ? ach['icon']! : '🔒',
-                      style: const TextStyle(fontSize: 28),
+                      unlocked ? (ach['icon'] as String? ?? '🏆') : '🔒',
+                      style: const TextStyle(fontSize: 24),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Text(
-                      ach['title']!,
+                      ach['title'] as String? ?? 'Unknown',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Baloo',
-                        fontSize: 12,
+                        fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: unlocked
-                            ? AppColors.primary_700
+                            ? AppColors.text_800
                             : AppColors.text_300,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 6),
                     Text(
-                      ach['desc']!,
+                      ach['description'] as String? ?? '',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Nunito',
-                        fontSize: 10,
+                        fontSize: 8,
                         color: unlocked
-                            ? AppColors.text_500
-                            : AppColors.text_200,
+                            ? AppColors.text_600
+                            : AppColors.text_300,
                       ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),

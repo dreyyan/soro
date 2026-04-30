@@ -16,7 +16,6 @@ class EditProfile extends StatefulWidget {
 
 class _EditProfileState extends State<EditProfile> {
   // [STATE]
-  Map<String, dynamic>? _userData;
   bool _isLoading = true;
   bool _isSaving = false;
 
@@ -39,7 +38,6 @@ class _EditProfileState extends State<EditProfile> {
     if (!mounted) return;
 
     setState(() {
-      _userData = user;
       _isLoading = false;
 
       _fullNameController = TextEditingController(text: user?['fullName'] ?? '');
