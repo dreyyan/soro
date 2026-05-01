@@ -338,7 +338,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                           Icon(Icons.quiz_outlined, size: 48, color: AppColors.text_200),
                           const SizedBox(height: 12),
                           Text(
-                            'No cards yet',
+                            'No items yet',
                             style: TextStyle(
                               fontFamily: 'Baloo',
                               fontSize: 16,
