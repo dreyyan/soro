@@ -22,6 +22,7 @@ class QuizEdit extends StatefulWidget {
 class _QuizEditState extends State<QuizEdit> {
   // [STATES] Quiz settings
   final TextEditingController titleController = TextEditingController();
+  bool _timerEnabled = false;
   int _hours   = 0;
   int _minutes = 10;
   int _seconds = 0;
@@ -43,11 +44,13 @@ class _QuizEditState extends State<QuizEdit> {
     // [PREFILL] Title
     titleController.text = q['title'] as String? ?? '';
 
-    // [PREFILL] Timer — convert saved totalSeconds back to h/m/s
-    final savedSecs = (q['timeLimitSecs'] as int?) ?? 600;
-    _hours   = savedSecs ~/ 3600;
-    _minutes = (savedSecs % 3600) ~/ 60;
-    _seconds = savedSecs % 60;
+    // [PREFILL] Timer — null or 0 means disabled
+    final savedSecs = q['timeLimitSecs'] as int?;
+    _timerEnabled = savedSecs != null && savedSecs > 0;
+    final secs = savedSecs ?? 600;
+    _hours   = secs ~/ 3600;
+    _minutes = (secs % 3600) ~/ 60;
+    _seconds = secs % 60;
 
     // [PREFILL] Questions — rebuild QuestionItem list from saved maps
     final saved = (q['questions'] as List? ?? []).cast<Map<String, dynamic>>();
@@ -130,8 +133,10 @@ class _QuizEditState extends State<QuizEdit> {
       }
     }
 
-    // [CALCULATE] Total seconds from picker
-    final totalSeconds = _hours * 3600 + _minutes * 60 + _seconds;
+    // [CALCULATE] Total seconds from picker (null if timer is off)
+    final totalSeconds = _timerEnabled
+        ? _hours * 3600 + _minutes * 60 + _seconds
+        : null;
 
     // [UPDATE] Keep original id and createdAt, overwrite everything else
     await DatabaseHelper().updateSavedQuiz({
@@ -286,41 +291,53 @@ class _QuizEditState extends State<QuizEdit> {
                   ),
                   const SizedBox(height: 24),
 
-                  // [INPUT] Timer — compact inline picker (same as quiz_settings)
-                  Text(
-                    "Timer",
-                    style: TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.text_700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary_100,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.secondary_300),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildTimeUnit(_hours,   "hr",  (v) => setState(() => _hours   = v.clamp(0, 23))),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
-                          child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
+                  // [INPUT] Timer — toggle + h:m:s picker
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Timer",
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.text_700,
                         ),
-                        _buildTimeUnit(_minutes, "min", (v) => setState(() => _minutes = v.clamp(0, 59))),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
-                          child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
-                        ),
-                        _buildTimeUnit(_seconds, "sec", (v) => setState(() => _seconds = v.clamp(0, 59))),
-                      ],
-                    ),
+                      ),
+                      Switch(
+                        value: _timerEnabled,
+                        onChanged: (v) => setState(() => _timerEnabled = v),
+                        activeColor: AppColors.primary_600,
+                      ),
+                    ],
                   ),
+                  if (_timerEnabled) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary_100,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.secondary_300),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildTimeUnit(_hours,   "hr",  (v) => setState(() => _hours   = v.clamp(0, 23))),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
+                            child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
+                          ),
+                          _buildTimeUnit(_minutes, "min", (v) => setState(() => _minutes = v.clamp(0, 59))),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
+                            child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
+                          ),
+                          _buildTimeUnit(_seconds, "sec", (v) => setState(() => _seconds = v.clamp(0, 59))),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
 
                   // [SECTION] Items

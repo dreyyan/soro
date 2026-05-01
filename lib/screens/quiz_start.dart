@@ -35,12 +35,13 @@ class _QuizStartState extends State<QuizStart> {
 
   // [STATES] Timer
   Timer? timer;
-  int timeLeft = 120;
-  int _originalTimeLimit = 120;
+  int? timeLeft;         // null = timer disabled
+  int? _originalTimeLimit;
 
   // [STATES] Quiz configuration
   int numberOfQuestions = 5;
   String selectedMode = "Multiple Choice";
+  String selectedGameMode = "Classic";
   String identificationMode = "Definition";
   bool isTermToDefinition = true; // Direction randomized per question in "Both" mode
 
@@ -84,11 +85,13 @@ class _QuizStartState extends State<QuizStart> {
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
     if (args != null) {
-      numberOfQuestions  = args['numberOfQuestions']    ?? 5;
-      selectedMode       = args['mode']                  ?? "Multiple Choice";
-      identificationMode = args['identificationMode']    ?? "Definition";
+      numberOfQuestions = args['numberOfQuestions'] ?? 5;
+      selectedMode      = args['mode']              ?? "Multiple Choice";
+      identificationMode = args['identificationMode'] ?? "Definition";
+      selectedGameMode  = args['gameMode']          ?? "Classic";
 
-      timeLeft = args['timeLimitSecs'] as int? ?? 600;
+      final savedSecs = args['timeLimitSecs'] as int?;
+      timeLeft           = (savedSecs != null && savedSecs > 0) ? savedSecs : null;
       _originalTimeLimit = timeLeft;
 
       final rawList = args['questions'] as List?;
@@ -109,7 +112,7 @@ class _QuizStartState extends State<QuizStart> {
     if (questions.isNotEmpty) {
       _generateChoices();
       _setIdentificationDirection();
-      _startTimer();
+      if (timeLeft != null) _startTimer();
     }
   }
 
@@ -171,8 +174,8 @@ class _QuizStartState extends State<QuizStart> {
   void _startTimer() {
     timer?.cancel();
     timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (timeLeft > 0) {
-        setState(() => timeLeft--);
+      if ((timeLeft ?? 0) > 0) {
+        setState(() => timeLeft = timeLeft! - 1);
       } else {
         t.cancel();
         _submitQuiz();
@@ -256,7 +259,9 @@ void _confirmGoBack() {
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        title: const Text("Quiz Complete!"),
+        title: Text(
+          selectedGameMode == "Time Attack" ? "Time's Up!" : "Quiz Complete!",
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,10 +314,10 @@ void _confirmGoBack() {
                 selectedAnswer = "";
                 identificationController.clear();
                 identificationSubmitted = false;
-                timeLeft = _originalTimeLimit; // ← Reset to original time limit
+                timeLeft = _originalTimeLimit;
               });
               _generateChoices();
-              _startTimer();
+              if (timeLeft != null) _startTimer();
             },
             child: const Text("Restart"),
           ),
@@ -459,7 +464,7 @@ void _confirmGoBack() {
     );
   }
 
-  // [WIDGET] Top row: back button + title chip + timer
+  // [WIDGET] Top row: back button + title chip + optional timer
   Widget _buildHeader() {
     return IntrinsicHeight(
       child: Row(
@@ -500,7 +505,7 @@ void _confirmGoBack() {
 
           const SizedBox(width: 16),
 
-          // [TITLE + TIMER] Quiz name and countdown
+          // [TITLE + TIMER] Quiz name and optional countdown
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -530,26 +535,28 @@ void _confirmGoBack() {
                     ),
                   ),
 
-                  // [TIMER] Countdown display
-                  const SizedBox(width: 12),
-                  Icon(
-                    Icons.timer,
-                    color: timeLeft <= 10
-                        ? AppColors.primary_600
-                        : AppColors.text_700,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _formatTime(timeLeft),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: timeLeft <= 10
+                  // [TIMER] Only shown when timer is enabled
+                  if (timeLeft != null) ...[
+                    const SizedBox(width: 12),
+                    Icon(
+                      Icons.timer,
+                      color: timeLeft! <= 10
                           ? AppColors.primary_600
-                          : AppColors.text_800,
+                          : AppColors.text_700,
+                      size: 18,
                     ),
-                  ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _formatTime(timeLeft!),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: timeLeft! <= 10
+                            ? AppColors.primary_600
+                            : AppColors.text_800,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
