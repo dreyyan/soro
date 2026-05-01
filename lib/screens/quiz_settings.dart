@@ -249,7 +249,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                           value: minutes,
                           child: Row(
                             children: [
-                              Icon(Icons.access_time, size: 20, color: AppColors.text_500),
+                              Icon(Icons.access_time, size: 20, color: AppColors.text_700),
                               const SizedBox(width: 12),
                               Text(
                                 "$minutes minute${minutes == 1 ? '' : 's'}",
@@ -349,7 +349,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                                       value: q.type,
                                       isExpanded: true,
                                       underline: const SizedBox(),
-                                      icon: Icon(Icons.arrow_drop_down, size: 20, color: AppColors.text_500),
+                                      icon: Icon(Icons.arrow_drop_down, size: 20, color: AppColors.text_700),
                                       items: questionTypes.map((type) {
                                         return DropdownMenuItem(
                                           value: type,
