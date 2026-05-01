@@ -90,13 +90,8 @@ class _QuizStartState extends State<QuizStart> {
       identificationMode = args['identificationMode'] ?? "Definition";
       selectedGameMode  = args['gameMode']          ?? "Classic";
 
-      if (selectedGameMode == "Time Attack") {
-        timeLeft = args['timeLimitSecs'] as int? ?? 120;
-        _originalTimeLimit = timeLeft; // ← NEW: Save original for restarts
-      } else {
-        timeLeft = 120;
-        _originalTimeLimit = 120;
-      }
+      timeLeft = args['timeLimitSecs'] as int? ?? 600;
+      _originalTimeLimit = timeLeft;
 
       final rawList = args['questions'] as List?;
       if (rawList != null && rawList.isNotEmpty) {
@@ -116,7 +111,7 @@ class _QuizStartState extends State<QuizStart> {
     if (questions.isNotEmpty) {
       _generateChoices();
       _setIdentificationDirection();
-      if (selectedGameMode == "Time Attack") _startTimer();
+      _startTimer();
     }
   }
 
@@ -321,7 +316,7 @@ void _confirmGoBack() {
                 timeLeft = _originalTimeLimit; // ← Reset to original time limit
               });
               _generateChoices();
-              if (selectedGameMode == "Time Attack") _startTimer();
+              _startTimer();
             },
             child: const Text("Restart"),
           ),
@@ -540,27 +535,25 @@ void _confirmGoBack() {
                   ),
 
                   // [TIMER] Only visible in Time Attack mode
-                  if (selectedGameMode == "Time Attack") ...[
-                    const SizedBox(width: 12),
-                    Icon(
-                      Icons.timer,
+                  const SizedBox(width: 12),
+                  Icon(
+                    Icons.timer,
+                    color: timeLeft <= 10
+                        ? AppColors.primary_600
+                        : AppColors.text_700,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _formatTime(timeLeft),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                       color: timeLeft <= 10
                           ? AppColors.primary_600
-                          : AppColors.text_700,
-                      size: 18,
+                          : AppColors.text_800,
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatTime(timeLeft),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: timeLeft <= 10
-                            ? AppColors.primary_600
-                            : AppColors.text_800,
-                      ),
-                    ),
-                  ],
+                  ),
                 ],
               ),
             ),

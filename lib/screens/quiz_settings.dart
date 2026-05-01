@@ -1,19 +1,15 @@
 // [IMPORT] Libraries
 import 'package:flutter/material.dart';
 import 'dart:math';
-
 // [IMPORT] App
 import 'package:soro/main.dart';
-
 // [IMPORT] Database
 import 'package:soro/database/database_helper.dart';
-
 // [IMPORT] Models
 import 'package:soro/models/question.dart';
 
 class QuizSettings extends StatefulWidget {
   const QuizSettings({super.key});
-
   @override
   State<QuizSettings> createState() => _QuizSettingsState();
 }
@@ -21,11 +17,11 @@ class QuizSettings extends StatefulWidget {
 class _QuizSettingsState extends State<QuizSettings> {
   // [STATES] Quiz settings
   final TextEditingController titleController = TextEditingController();
-  int timeLimitMinutes = 10;
-  List<QuestionItem> questions = [];
+  int _hours = 0;
+  int _minutes = 10;
+  int _seconds = 0;
   
-  // [OPTIONS] Time limit options
-  final List<int> timeOptions = [5, 10, 15, 20, 30, 45, 60];
+  List<QuestionItem> questions = [];
   
   // [OPTIONS] Question types
   final List<String> questionTypes = [
@@ -63,9 +59,7 @@ class _QuizSettingsState extends State<QuizSettings> {
   // [REORDER] Reorder questions
   void _reorderQuestions(int oldIndex, int newIndex) {
     setState(() {
-      if (newIndex > oldIndex) {
-        newIndex -= 1;
-      }
+      if (newIndex > oldIndex) newIndex -= 1;
       final item = questions.removeAt(oldIndex);
       questions.insert(newIndex, item);
     });
@@ -84,17 +78,14 @@ class _QuizSettingsState extends State<QuizSettings> {
   // [SAVE] Save quiz to database
   Future<void> _saveQuiz() async {
     final title = titleController.text.trim();
-
     if (title.isEmpty) {
       _showError("Please enter a quiz title.");
       return;
     }
-
     if (questions.isEmpty) {
       _showError("Please add at least one question.");
       return;
     }
-
     // [VALIDATE] Check all questions have content
     for (int i = 0; i < questions.length; i++) {
       if (questions[i].question.trim().isEmpty) {
@@ -106,6 +97,9 @@ class _QuizSettingsState extends State<QuizSettings> {
         return;
       }
     }
+    
+    // [CALCULATE] Total seconds from slider picker
+    final totalSeconds = _hours * 3600 + _minutes * 60 + _seconds;
 
     // [SAVE] Persist quiz to database
     await DatabaseHelper().addSavedQuiz({
@@ -118,7 +112,7 @@ class _QuizSettingsState extends State<QuizSettings> {
       'gameMode': 'Classic',
       'identificationMode': 'Definition',
       'deckTitle': '—',
-      'timeLimitSecs': timeLimitMinutes * 60,
+      'timeLimitSecs': totalSeconds, // [UPDATED] Uses calculated seconds
       'questions': questions.map((q) => {
         'question': q.question,
         'answer': q.correctAnswer,
@@ -127,7 +121,6 @@ class _QuizSettingsState extends State<QuizSettings> {
         'choices': q.choices,
       }).toList(),
     });
-
     if (!mounted) return;
     Navigator.pop(context);
   }
@@ -153,14 +146,53 @@ class _QuizSettingsState extends State<QuizSettings> {
   Widget _getTypeIcon(String type) {
     switch (type) {
       case "Multiple Choice":
-        return Icon(Icons.radio_button_checked, size: 20, color: AppColors.primary_600);
+        return Icon(Icons.radio_button_checked, size: 20, color: AppColors.text_700);
       case "Identification":
-        return Icon(Icons.format_list_bulleted, size: 20, color: AppColors.primary_600);
+        return Icon(Icons.text_fields, size: 20, color: AppColors.text_700);
       case "True or False":
-        return Icon(Icons.thumb_up_outlined, size: 20, color: AppColors.primary_600);
+        return Icon(Icons.thumb_up_outlined, size: 20, color: AppColors.text_700);
       default:
         return Icon(Icons.help_outline, size: 20);
     }
+  }
+
+  // [WIDGET] Compact time unit stepper (up/down arrows + value + label)
+  Widget _buildTimeUnit(int value, String label, ValueChanged<int> onChanged) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: () => onChanged(value + 1),
+          child: Icon(Icons.keyboard_arrow_up_rounded, size: 22, color: AppColors.primary_600),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value.toString().padLeft(2, '0'),
+          style: const TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: AppColors.text_700,
+          ),
+        ),
+        const SizedBox(height: 2),
+        GestureDetector(
+          onTap: () => onChanged(value - 1),
+          child: Icon(Icons.keyboard_arrow_down_rounded, size: 22, color: AppColors.primary_600),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: AppColors.text_400,
+            letterSpacing: 0.3,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -221,8 +253,8 @@ class _QuizSettingsState extends State<QuizSettings> {
                     ),
                   ),
                   const SizedBox(height: 24),
-
-                  // [INPUT] Timer
+                  
+                  // [INPUT] Timer — Compact inline picker
                   Text(
                     "Timer",
                     style: TextStyle(
@@ -234,44 +266,47 @@ class _QuizSettingsState extends State<QuizSettings> {
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.secondary_100,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.secondary_300),
                     ),
-                    child: DropdownButton<int>(
-                      value: timeLimitMinutes,
-                      isExpanded: true,
-                      underline: const SizedBox(),
-                      icon: Icon(Icons.arrow_drop_down, color: AppColors.text_700),
-                      items: timeOptions.map((minutes) {
-                        return DropdownMenuItem(
-                          value: minutes,
-                          child: Row(
-                            children: [
-                              Icon(Icons.access_time, size: 20, color: AppColors.text_700),
-                              const SizedBox(width: 12),
-                              Text(
-                                "$minutes minute${minutes == 1 ? '' : 's'}",
-                                style: TextStyle(
-                                  fontFamily: 'Nunito',
-                                  fontSize: 16,
-                                  color: AppColors.text_700,
-                                ),
-                              ),
-                            ],
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildTimeUnit(_hours, "hr", (v) => setState(() => _hours = v.clamp(0, 23))),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
+                          child: Text(
+                            ":",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary_600,
+                            ),
                           ),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() => timeLimitMinutes = val);
-                        }
-                      },
+                        ),
+                        _buildTimeUnit(_minutes, "min", (v) => setState(() => _minutes = v.clamp(0, 59))),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
+                          child: Text(
+                            ":",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary_600,
+                            ),
+                          ),
+                        ),
+                        _buildTimeUnit(_seconds, "sec", (v) => setState(() => _seconds = v.clamp(0, 59))),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 32),
-
+                  const SizedBox(height: 24),
+                  
                   // [SECTION] Items
                   Row(
                     children: [
@@ -287,7 +322,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                     ],
                   ),
                   const SizedBox(height: 12),
-
+                  
                   // [LIST] Questions
                   ReorderableListView.builder(
                     shrinkWrap: true,
@@ -370,14 +405,11 @@ class _QuizSettingsState extends State<QuizSettings> {
                                         );
                                       }).toList(),
                                       onChanged: (val) {
-                                        if (val != null) {
-                                          _updateQuestion(index, type: val);
-                                        }
+                                        if (val != null) _updateQuestion(index, type: val);
                                       },
                                     ),
                                   ),
                                   const SizedBox(height: 16),
-
                                   // [INPUT] Question
                                   Text(
                                     "Question",
@@ -407,7 +439,6 @@ class _QuizSettingsState extends State<QuizSettings> {
                                     ),
                                   ),
                                   const SizedBox(height: 16),
-
                                   // [INPUT] Correct Answer
                                   Text(
                                     "Correct Answer",
@@ -420,35 +451,34 @@ class _QuizSettingsState extends State<QuizSettings> {
                                   ),
                                   const SizedBox(height: 6),
                                   if (q.type == "True or False")
-                                  RadioGroup<bool>(
-                                    onChanged: (val) {
-                                      if (val != null) {
-                                        _updateQuestion(index, trueFalseAnswer: val);
-                                      }
-                                    },
-                                    // Add a key to preserve selection state across rebuilds
-                                    key: ValueKey(q.trueFalseAnswer),
-                                    child: Row(
+                                    Row(
                                       children: [
                                         Expanded(
                                           child: RadioListTile<bool>(
                                             title: const Text("True"),
                                             value: true,
+                                            groupValue: q.trueFalseAnswer,
                                             contentPadding: EdgeInsets.zero,
                                             visualDensity: VisualDensity.compact,
+                                            onChanged: (val) {
+                                              if (val != null) _updateQuestion(index, trueFalseAnswer: val);
+                                            },
                                           ),
                                         ),
                                         Expanded(
                                           child: RadioListTile<bool>(
                                             title: const Text("False"),
                                             value: false,
+                                            groupValue: q.trueFalseAnswer,
                                             contentPadding: EdgeInsets.zero,
                                             visualDensity: VisualDensity.compact,
+                                            onChanged: (val) {
+                                              if (val != null) _updateQuestion(index, trueFalseAnswer: val);
+                                            },
                                           ),
                                         ),
                                       ],
-                                    ),
-                                  )
+                                    )
                                   else
                                     Container(
                                       decoration: BoxDecoration(
@@ -471,18 +501,18 @@ class _QuizSettingsState extends State<QuizSettings> {
                               ),
                             ),
                             // [DELETE] Delete button
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                alignment: Alignment.centerRight,
-                                child: TextButton.icon(
-                                  onPressed: () => _removeQuestion(index),
-                                  icon: const Icon(Icons.delete_outline, size: 18),
-                                  label: const Text("Delete"),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.red[400],
-                                  ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              alignment: Alignment.centerRight,
+                              child: TextButton.icon(
+                                onPressed: () => _removeQuestion(index),
+                                icon: const Icon(Icons.delete_outline, size: 18),
+                                label: const Text("Delete"),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.red[400],
                                 ),
                               ),
+                            ),
                           ],
                         ),
                       );
@@ -492,7 +522,6 @@ class _QuizSettingsState extends State<QuizSettings> {
               ),
             ),
           ),
-
           // [BUTTON] Add Question
           Container(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -529,8 +558,7 @@ class _QuizSettingsState extends State<QuizSettings> {
               ),
             ),
           ),
-
-          // [BUTTON] Save Quiz (floating above Add Question)
+          // [BUTTON] Save Quiz
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
             child: ElevatedButton(
@@ -569,7 +597,6 @@ class QuestionItem {
   String correctAnswer;
   bool trueFalseAnswer;
   List<String> choices;
-
   QuestionItem({
     required this.id,
     required this.type,
