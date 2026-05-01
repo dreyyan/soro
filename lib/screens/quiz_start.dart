@@ -33,7 +33,7 @@ class _QuizStartState extends State<QuizStart> {
   bool answerSubmitted = false;
   String quizTitle = "Quiz";
 
-  // [STATES] Timer (Time Attack mode)
+  // [STATES] Timer
   Timer? timer;
   int timeLeft = 120;
   int _originalTimeLimit = 120;
@@ -41,7 +41,6 @@ class _QuizStartState extends State<QuizStart> {
   // [STATES] Quiz configuration
   int numberOfQuestions = 5;
   String selectedMode = "Multiple Choice";
-  String selectedGameMode = "Classic";
   String identificationMode = "Definition";
   bool isTermToDefinition = true; // Direction randomized per question in "Both" mode
 
@@ -85,10 +84,9 @@ class _QuizStartState extends State<QuizStart> {
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
     if (args != null) {
-      numberOfQuestions = args['numberOfQuestions'] ?? 5;
-      selectedMode      = args['mode']              ?? "Multiple Choice";
-      identificationMode = args['identificationMode'] ?? "Definition";
-      selectedGameMode  = args['gameMode']          ?? "Classic";
+      numberOfQuestions  = args['numberOfQuestions']    ?? 5;
+      selectedMode       = args['mode']                  ?? "Multiple Choice";
+      identificationMode = args['identificationMode']    ?? "Definition";
 
       timeLeft = args['timeLimitSecs'] as int? ?? 600;
       _originalTimeLimit = timeLeft;
@@ -169,7 +167,7 @@ class _QuizStartState extends State<QuizStart> {
     }
   }
 
-  // [TIMER] Start countdown for Time Attack mode
+  // [TIMER] Start countdown
   void _startTimer() {
     timer?.cancel();
     timer = Timer.periodic(const Duration(seconds: 1), (t) {
@@ -258,9 +256,7 @@ void _confirmGoBack() {
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        title: Text(
-          selectedGameMode == "Time Attack" ? "Time's Up!" : "Quiz Complete!",
-        ),
+        title: const Text("Quiz Complete!"),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -463,7 +459,7 @@ void _confirmGoBack() {
     );
   }
 
-  // [WIDGET] Top row: back button + title chip + optional timer
+  // [WIDGET] Top row: back button + title chip + timer
   Widget _buildHeader() {
     return IntrinsicHeight(
       child: Row(
@@ -504,7 +500,7 @@ void _confirmGoBack() {
 
           const SizedBox(width: 16),
 
-          // [TITLE + TIMER] Quiz name and optional countdown
+          // [TITLE + TIMER] Quiz name and countdown
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -534,7 +530,7 @@ void _confirmGoBack() {
                     ),
                   ),
 
-                  // [TIMER] Only visible in Time Attack mode
+                  // [TIMER] Countdown display
                   const SizedBox(width: 12),
                   Icon(
                     Icons.timer,
