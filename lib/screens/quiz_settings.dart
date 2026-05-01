@@ -322,7 +322,45 @@ class _QuizSettingsState extends State<QuizSettings> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  
+
+                  // [EMPTY STATE] Shown when no questions have been added yet
+                  if (questions.isEmpty)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary_100,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.secondary_300),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.quiz_outlined, size: 48, color: AppColors.text_200),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No cards yet',
+                            style: TextStyle(
+                              fontFamily: 'Baloo',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.text_300,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Tap + Add Question to create one',
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 13,
+                              color: AppColors.text_300,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+
                   // [LIST] Questions
                   ReorderableListView.builder(
                     shrinkWrap: true,
