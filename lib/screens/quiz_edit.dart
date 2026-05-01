@@ -543,7 +543,7 @@ class _QuizEditState extends State<QuizEdit> {
             ),
           ),
 
-          // [BUTTON] Add Question
+          // [BUTTON] Add Item
           Container(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             decoration: BoxDecoration(
@@ -560,7 +560,7 @@ class _QuizEditState extends State<QuizEdit> {
               onPressed: _addQuestion,
               icon: const Icon(Icons.add, size: 24),
               label: const Text(
-                "Add Question",
+                "Add Item",
                 style: TextStyle(fontFamily: 'Nunito', fontSize: 16, fontWeight: FontWeight.w700),
               ),
               style: ElevatedButton.styleFrom(

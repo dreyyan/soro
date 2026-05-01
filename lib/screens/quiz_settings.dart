@@ -348,7 +348,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Tap + Add Question to create one',
+                            'Tap + Add Item to create one',
                             style: TextStyle(
                               fontFamily: 'Nunito',
                               fontSize: 13,
@@ -559,7 +559,7 @@ class _QuizSettingsState extends State<QuizSettings> {
               ),
             ),
           ),
-          // [BUTTON] Add Question
+          // [BUTTON] Add Item
           Container(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             decoration: BoxDecoration(
@@ -576,7 +576,7 @@ class _QuizSettingsState extends State<QuizSettings> {
               onPressed: _addQuestion,
               icon: const Icon(Icons.add, size: 24),
               label: const Text(
-                "Add Question",
+                "Add Item",
                 style: TextStyle(
                   fontFamily: 'Nunito',
                   fontSize: 16,
