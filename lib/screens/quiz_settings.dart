@@ -198,7 +198,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                     "Quiz Name",
                     style: TextStyle(
                       fontFamily: 'Nunito',
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: AppColors.text_700,
                     ),
@@ -227,7 +227,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                     "Timer",
                     style: TextStyle(
                       fontFamily: 'Nunito',
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: AppColors.text_700,
                     ),
@@ -243,7 +243,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                       value: timeLimitMinutes,
                       isExpanded: true,
                       underline: const SizedBox(),
-                      icon: Icon(Icons.arrow_drop_down, color: AppColors.primary_600),
+                      icon: Icon(Icons.arrow_drop_down, color: AppColors.text_700),
                       items: timeOptions.map((minutes) {
                         return DropdownMenuItem(
                           value: minutes,
@@ -279,7 +279,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                         "Items",
                         style: TextStyle(
                           fontFamily: 'Nunito',
-                          fontSize: 14,
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: AppColors.text_700,
                         ),
@@ -495,9 +495,9 @@ class _QuizSettingsState extends State<QuizSettings> {
 
           // [BUTTON] Add Question
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.secondary_50,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -513,7 +513,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                 "Add Question",
                 style: TextStyle(
                   fontFamily: 'Nunito',
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -532,7 +532,7 @@ class _QuizSettingsState extends State<QuizSettings> {
 
           // [BUTTON] Save Quiz (floating above Add Question)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
             child: ElevatedButton(
               onPressed: _saveQuiz,
               style: ElevatedButton.styleFrom(
