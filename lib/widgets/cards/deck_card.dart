@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:soro/main.dart';
 
 // [IMPORT] Screens
-import 'package:soro/screens/cards_details.dart';
+import 'package:soro/screens/cards/cards_details.dart';
 
 class DeckCard extends StatelessWidget {
   // Attributes

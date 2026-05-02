@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:soro/main.dart';
 
 // [IMPORT] Screens
-import 'package:soro/screens/quiz_settings.dart';
+import 'package:soro/screens/quiz/quiz_settings.dart';
 
 // [IMPORT] Widgets
 import 'package:soro/widgets/quiz/quiz_card.dart';
@@ -14,7 +14,7 @@ import 'package:soro/widgets/quiz/quiz_detail_sheet.dart';
 // [IMPORT] Database
 import 'package:soro/database/database_helper.dart';
 
-import 'package:soro/screens/quiz_edit.dart';
+import 'package:soro/screens/quiz/quiz_edit.dart';
 
 class Quiz extends StatefulWidget {
   const Quiz({super.key});

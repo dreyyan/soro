@@ -8,7 +8,7 @@ import 'package:soro/main.dart';
 import 'package:soro/database/database_helper.dart';
 
 // [IMPORT] Screens
-import 'package:soro/screens/quiz_settings.dart'; // [REUSE] QuestionItem model
+import 'package:soro/screens/quiz/quiz_settings.dart'; // [REUSE] QuestionItem model
 
 class QuizEdit extends StatefulWidget {
   final Map<String, dynamic> quiz; // [PROP] Existing quiz to edit

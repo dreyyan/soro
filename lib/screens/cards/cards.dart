@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:soro/main.dart';
 
 // [IMPORT] Screens
-import 'package:soro/screens/cards_settings.dart';
-import 'package:soro/screens/cards_edit.dart';
-import 'package:soro/screens/cards_play.dart';
+import 'package:soro/screens/cards/cards_settings.dart';
+import 'package:soro/screens/cards/cards_edit.dart';
+import 'package:soro/screens/cards/cards_play.dart';
 
 // [IMPORT] Widgets
 import 'package:soro/widgets/cards/deck_card.dart';

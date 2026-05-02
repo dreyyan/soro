@@ -5,17 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:soro/screens/auth/login_page.dart';
 import 'package:soro/screens/auth/signup_page.dart';
 import 'package:soro/screens/hero_onboarding.dart';
-import 'package:soro/screens/profile_onboarding.dart';
+import 'package:soro/screens/profile/profile_onboarding.dart';
 import 'package:soro/screens/home_page.dart';
-import 'package:soro/screens/cards.dart';
+import 'package:soro/screens/cards/cards.dart';
 import 'package:soro/screens/profile/change_password.dart';
 import 'package:soro/screens/profile/edit_profile.dart';
 import 'package:soro/screens/profile/settings.dart';
-import 'package:soro/screens/quiz.dart';
-import 'package:soro/screens/quiz_settings.dart';
-import 'package:soro/screens/quiz_start.dart';
+import 'package:soro/screens/quiz/quiz.dart';
+import 'package:soro/screens/quiz/quiz_settings.dart';
+import 'package:soro/screens/quiz/quiz_start.dart';
 import 'package:soro/screens/quest.dart';
-import 'package:soro/screens/profile.dart';
+import 'package:soro/screens/profile/profile.dart';
 
 // [IMPORT] Database
 import './database/database_helper.dart';
