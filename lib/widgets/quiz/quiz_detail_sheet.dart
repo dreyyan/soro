@@ -27,7 +27,6 @@ class QuizDetailSheet extends StatelessWidget {
     final count       = quiz['questionCount'] as int?    ?? 0;
     final mode        = quiz['mode']          as String? ?? 'Multiple Choice';
     final gameMode    = quiz['gameMode']      as String? ?? 'Classic';
-    final deckTitle   = quiz['deckTitle']     as String? ?? '—';
     final timeLimit   = quiz['timeLimitSecs'] as int?;
     final createdAt   = quiz['createdAt']     as String? ?? '';
 
@@ -105,8 +104,6 @@ class QuizDetailSheet extends StatelessWidget {
                   _buildDetailRow(Icons.category_outlined, 'Mode', mode),
                   const SizedBox(height: 10),
                   _buildDetailRow(Icons.sports_esports_outlined, 'Game Mode', gameMode),
-                  const SizedBox(height: 10),
-                  _buildDetailRow(Icons.style_outlined, 'Deck', deckTitle),
                   const SizedBox(height: 10),
                   _buildDetailRow(
                     Icons.timer_outlined,
