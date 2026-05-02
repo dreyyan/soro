@@ -129,23 +129,22 @@ class QuizDetailSheet extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: onPlay,
-                      icon: const Icon(Icons.play_arrow_rounded, size: 24),
+                      icon: const Icon(Icons.play_arrow_rounded),
                       label: const Text(
                         'Start Quiz',
                         style: TextStyle(
                           fontFamily: 'Nunito',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary_600,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        elevation: 3,
                       ),
                     ),
                   ),
