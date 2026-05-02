@@ -1,9 +1,7 @@
 // [IMPORT] Libraries
 import 'package:flutter/material.dart';
-
 // [IMPORT] App
 import 'package:soro/main.dart';
-
 // [IMPORT] Database
 import 'package:soro/database/database_helper.dart';
 import 'package:soro/screens/profile/edit_profile.dart';
@@ -62,9 +60,7 @@ class _ProfileState extends State<Profile> {
         ],
       ),
     );
-
     if (confirm != true) return;
-
     await DatabaseHelper().logoutUser();
     if (mounted) {
       Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
@@ -145,10 +141,9 @@ class _ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
-    final fullName =
-        (_userData?['fullName'] as String? ?? '').isNotEmpty
-            ? _userData!['fullName'] as String
-            : 'User';
+    final fullName = (_userData?['fullName'] as String? ?? '').isNotEmpty
+        ? _userData!['fullName'] as String
+        : 'User';
     final username = _userData?['username'] as String? ?? '';
     final email = _userData?['email'] as String? ?? '';
     final birthday = _userData?['birthday'] as String? ?? '';
@@ -156,136 +151,148 @@ class _ProfileState extends State<Profile> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+      // 👇 [HEADER] Exact same placement & structure as Quest
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ListView(
+                padding: const EdgeInsets.symmetric(vertical: 20),
                 children: [
-                  // Avatar
-                  CircleAvatar(
-                    radius: 60,
-                    backgroundColor: AppColors.primary_200,
+                  // Page title
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      _getInitials(),
-                      style: const TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary_700,
-                        fontFamily: "Baloo",
+                      'Profile',
+                      style: TextStyle(
+                        fontFamily: 'Baloo',
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.text_800,
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Name
-                  Text(
-                    fullName,
-                    style: const TextStyle(
-                      fontFamily: "Baloo",
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.text_800,
-                    ),
-                  ),
-
-                  // Username
-                  if (username.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      '@$username',
-                      style: const TextStyle(
-                        fontFamily: "Nunito",
-                        fontSize: 15,
-                        color: AppColors.primary_600,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-
-                  const SizedBox(height: 6),
-
-                  // Email
-                  Text(
-                    email,
-                    style: const TextStyle(
-                      fontFamily: "Nunito",
-                      fontSize: 14,
-                      color: AppColors.text_400,
-                    ),
-                  ),
-
-                  // Bio
-                  if (bio.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary_100,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Text(
-                        bio,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontFamily: "Nunito",
-                          fontSize: 14,
-                          color: AppColors.text_600,
-                          fontStyle: FontStyle.italic,
+                  // Profile Content
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Avatar
+                        CircleAvatar(
+                          radius: 60,
+                          backgroundColor: AppColors.primary_200,
+                          child: Text(
+                            _getInitials(),
+                            style: const TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary_700,
+                              fontFamily: "Baloo",
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 16),
+                        // Name
+                        Text(
+                          fullName,
+                          style: const TextStyle(
+                            fontFamily: "Baloo",
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.text_800,
+                          ),
+                        ),
+                        // Username
+                        if (username.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            '@$username',
+                            style: const TextStyle(
+                              fontFamily: "Nunito",
+                              fontSize: 15,
+                              color: AppColors.primary_600,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 6),
+                        // Email
+                        Text(
+                          email,
+                          style: const TextStyle(
+                            fontFamily: "Nunito",
+                            fontSize: 14,
+                            color: AppColors.text_400,
+                          ),
+                        ),
+                        // Bio
+                        if (bio.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: AppColors.secondary_100,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Text(
+                              bio,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontFamily: "Nunito",
+                                fontSize: 14,
+                                color: AppColors.text_600,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        ],
+                        // Extra info chips
+                        if (birthday.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          _buildInfoChip(Icons.cake_outlined, "Birthday", birthday),
+                        ],
+                        const SizedBox(height: 28),
+                        const Divider(),
+                        const SizedBox(height: 12),
+                        // Account options
+                        _buildProfileOption(Icons.edit_outlined, "Edit Profile", () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const EditProfile()),
+                          ).then((updated) {
+                            if (updated == true) _loadUser();
+                          });
+                        }),
+                        _buildProfileOption(Icons.lock_outline, "Change Password", () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const ChangePassword()),
+                          );
+                        }),
+                        _buildProfileOption(Icons.settings_outlined, "Settings", () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const Settings()),
+                          );
+                        }),
+                        const SizedBox(height: 8),
+                        // Logout
+                        _buildProfileOption(
+                          Icons.logout,
+                          "Log Out",
+                          _handleLogout,
+                          iconColor: Colors.red,
+                          textColor: Colors.red,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
                     ),
-                  ],
-
-                  // Extra info chips
-                  if (birthday.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    _buildInfoChip(Icons.cake_outlined, "Birthday", birthday),
-                  ],
-
-                  const SizedBox(height: 28),
-                  const Divider(),
-                  const SizedBox(height: 12),
-
-                  // Account options
-                  _buildProfileOption(Icons.edit_outlined, "Edit Profile", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const EditProfile()),
-                    ).then((updated) {
-                      if (updated == true) _loadUser(); // Refresh profile data
-                    });
-                  }),
-
-                  _buildProfileOption(Icons.lock_outline, "Change Password", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ChangePassword()),
-                    );
-                  }),
-
-                  _buildProfileOption(Icons.settings_outlined, "Settings", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const Settings()),
-                    );
-                  }),
-
-                  const SizedBox(height: 8),
-
-                  // Logout
-                  _buildProfileOption(
-                    Icons.logout,
-                    "Log Out",
-                    _handleLogout,
-                    iconColor: Colors.red,
-                    textColor: Colors.red,
                   ),
                 ],
               ),
-            ),
+      ),
     );
   }
 }
