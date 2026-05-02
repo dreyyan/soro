@@ -366,7 +366,10 @@ class _CardsSettingsState extends State<CardsSettings> {
                               child: TextButton.icon(
                                 onPressed: () => _removeCardItem(i),
                                 icon: const Icon(Icons.delete_outline, size: 18),
-                                label: const Text("Delete"),
+                                label: const Text(
+                                  "Delete",
+                                  style: TextStyle(fontFamily: 'Nunito', fontSize: 13),
+                                ),
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.red[400],
                                 ),
