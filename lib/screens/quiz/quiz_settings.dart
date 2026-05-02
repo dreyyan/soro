@@ -115,7 +115,7 @@ class _QuizSettingsState extends State<QuizSettings> {
       'gameMode': 'Classic',
       'identificationMode': 'Definition',
       'deckTitle': '—',
-      'timeLimitSecs': totalSeconds, // [UPDATED] Uses calculated seconds
+      'timeLimitSecs': totalSeconds,
       'questions': questions.map((q) => {
         'question': q.question,
         'answer': q.correctAnswer,
@@ -149,13 +149,13 @@ class _QuizSettingsState extends State<QuizSettings> {
   Widget _getTypeIcon(String type) {
     switch (type) {
       case "Multiple Choice":
-        return Icon(Icons.radio_button_checked, size: 20, color: AppColors.text_700);
+        return Icon(Icons.radio_button_checked, size: 18, color: AppColors.text_700);
       case "Identification":
-        return Icon(Icons.text_fields, size: 20, color: AppColors.text_700);
+        return Icon(Icons.text_fields, size: 18, color: AppColors.text_700);
       case "True or False":
-        return Icon(Icons.thumb_up_outlined, size: 20, color: AppColors.text_700);
+        return Icon(Icons.thumb_up_outlined, size: 18, color: AppColors.text_700);
       default:
-        return Icon(Icons.help_outline, size: 20);
+        return Icon(Icons.help_outline, size: 18);
     }
   }
 
@@ -195,6 +195,38 @@ class _QuizSettingsState extends State<QuizSettings> {
           ),
         ),
       ],
+    );
+  }
+
+  // [WIDGET] Shared text input field used for Question and Answer
+  Widget _buildTextField({
+    required String hint,
+    required ValueChanged<String> onChanged,
+    int minLines = 2,
+    int? maxLines = 2,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.secondary_300),
+      ),
+      child: TextField(
+        maxLines: maxLines,
+        minLines: minLines,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: AppColors.text_400),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        ),
+        style: const TextStyle(
+          fontFamily: 'Nunito',
+          fontSize: 14,
+          color: AppColors.text_700,
+        ),
+        onChanged: onChanged,
+      ),
     );
   }
 
@@ -307,18 +339,14 @@ class _QuizSettingsState extends State<QuizSettings> {
                   const SizedBox(height: 24),
                   
                   // [SECTION] Items
-                  Row(
-                    children: [
-                      Text(
-                        "Items",
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.text_700,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    "Items",
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text_700,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   
@@ -360,7 +388,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                       ),
                     ),
 
-                  // [LIST] Questions
+                  // [LIST] Questions — reorderable
                   ReorderableListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -378,8 +406,8 @@ class _QuizSettingsState extends State<QuizSettings> {
                         ),
                         child: Column(
                           children: [
-                            // [HEADER] Question number and drag handle
-                            Container(
+                            // [HEADER] Question number + drag handle
+                            Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               child: Row(
                                 children: [
@@ -404,6 +432,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                                 ],
                               ),
                             ),
+
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16),
                               child: Column(
@@ -414,7 +443,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                                     padding: const EdgeInsets.symmetric(horizontal: 12),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(8),
                                       border: Border.all(color: AppColors.secondary_300),
                                     ),
                                     child: DropdownButton<String>(
@@ -428,12 +457,12 @@ class _QuizSettingsState extends State<QuizSettings> {
                                           child: Row(
                                             children: [
                                               _getTypeIcon(type),
-                                              const SizedBox(width: 12),
+                                              const SizedBox(width: 10),
                                               Text(
                                                 type,
                                                 style: TextStyle(
                                                   fontFamily: 'Nunito',
-                                                  fontSize: 15,
+                                                  fontSize: 14,
                                                   color: AppColors.text_700,
                                                 ),
                                               ),
@@ -446,7 +475,8 @@ class _QuizSettingsState extends State<QuizSettings> {
                                       },
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 14),
+
                                   // [INPUT] Question
                                   Text(
                                     "Question",
@@ -458,24 +488,12 @@ class _QuizSettingsState extends State<QuizSettings> {
                                     ),
                                   ),
                                   const SizedBox(height: 6),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(0),
-                                      border: Border.all(color: AppColors.secondary_300),
-                                    ),
-                                    child: TextField(
-                                      maxLines: 2,
-                                      decoration: InputDecoration(
-                                        hintText: "Type question...",
-                                        hintStyle: TextStyle(color: AppColors.text_400),
-                                        border: InputBorder.none,
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                      ),
-                                      onChanged: (val) => _updateQuestion(index, question: val),
-                                    ),
+                                  _buildTextField(
+                                    hint: "Type question...",
+                                    onChanged: (val) => _updateQuestion(index, question: val),
                                   ),
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 14),
+
                                   // [INPUT] Correct Answer
                                   Text(
                                     "Correct Answer",
@@ -488,55 +506,69 @@ class _QuizSettingsState extends State<QuizSettings> {
                                   ),
                                   const SizedBox(height: 6),
                                   if (q.type == "True or False")
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: RadioListTile<bool>(
-                                            title: const Text("True"),
-                                            value: true,
-                                            groupValue: q.trueFalseAnswer,
-                                            contentPadding: EdgeInsets.zero,
-                                            visualDensity: VisualDensity.compact,
-                                            onChanged: (val) {
-                                              if (val != null) _updateQuestion(index, trueFalseAnswer: val);
-                                            },
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: RadioListTile<bool>(
-                                            title: const Text("False"),
-                                            value: false,
-                                            groupValue: q.trueFalseAnswer,
-                                            contentPadding: EdgeInsets.zero,
-                                            visualDensity: VisualDensity.compact,
-                                            onChanged: (val) {
-                                              if (val != null) _updateQuestion(index, trueFalseAnswer: val);
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  else
                                     Container(
                                       decoration: BoxDecoration(
                                         color: Colors.white,
-                                        borderRadius: BorderRadius.circular(0),
+                                        borderRadius: BorderRadius.circular(8),
                                         border: Border.all(color: AppColors.secondary_300),
                                       ),
-                                      child: TextField(
-                                        decoration: InputDecoration(
-                                          hintText: "Type correct answer...",
-                                          hintStyle: TextStyle(color: AppColors.text_400),
-                                          border: InputBorder.none,
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                        ),
-                                        onChanged: (val) => _updateQuestion(index, answer: val),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: RadioListTile<bool>(
+                                              title: Text(
+                                                "True",
+                                                style: TextStyle(
+                                                  fontFamily: 'Nunito',
+                                                  fontSize: 14,
+                                                  color: AppColors.text_700,
+                                                ),
+                                              ),
+                                              value: true,
+                                              groupValue: q.trueFalseAnswer,
+                                              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                              visualDensity: VisualDensity.compact,
+                                              activeColor: AppColors.primary_600,
+                                              onChanged: (val) {
+                                                if (val != null) _updateQuestion(index, trueFalseAnswer: val);
+                                              },
+                                            ),
+                                          ),
+                                          Container(width: 1, height: 32, color: AppColors.secondary_200),
+                                          Expanded(
+                                            child: RadioListTile<bool>(
+                                              title: Text(
+                                                "False",
+                                                style: TextStyle(
+                                                  fontFamily: 'Nunito',
+                                                  fontSize: 14,
+                                                  color: AppColors.text_700,
+                                                ),
+                                              ),
+                                              value: false,
+                                              groupValue: q.trueFalseAnswer,
+                                              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                              visualDensity: VisualDensity.compact,
+                                              activeColor: AppColors.primary_600,
+                                              onChanged: (val) {
+                                                if (val != null) _updateQuestion(index, trueFalseAnswer: val);
+                                              },
+                                            ),
+                                          ),
+                                        ],
                                       ),
+                                    )
+                                  else
+                                    _buildTextField(
+                                      hint: "Type correct answer...",
+                                      onChanged: (val) => _updateQuestion(index, answer: val),
+                                      minLines: 1,
+                                      maxLines: null,
                                     ),
-                                  const SizedBox(height: 8),
                                 ],
                               ),
                             ),
+
                             // [DELETE] Delete button
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -544,9 +576,14 @@ class _QuizSettingsState extends State<QuizSettings> {
                               child: TextButton.icon(
                                 onPressed: () => _removeQuestion(index),
                                 icon: const Icon(Icons.delete_outline, size: 18),
-                                label: const Text("Delete"),
+                                label: const Text(
+                                  "Delete",
+                                  style: TextStyle(fontFamily: 'Nunito', fontSize: 13),
+                                ),
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.red[400],
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 ),
                               ),
                             ),
