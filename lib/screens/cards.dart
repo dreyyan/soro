@@ -4,6 +4,11 @@ import 'package:flutter/material.dart';
 // [IMPORT] App
 import 'package:soro/main.dart';
 
+// [IMPORT] Screens
+import 'package:soro/screens/cards_settings.dart';
+import 'package:soro/screens/cards_edit.dart';
+import 'package:soro/screens/cards_play.dart';
+
 // [IMPORT] Widgets
 import 'package:soro/widgets/cards/deck_card.dart';
 import 'package:soro/widgets/cards/deck_form.dart';
@@ -86,12 +91,13 @@ class _CardsState extends State<Cards> {
     await _loadDecks();
   }
 
-  // [DIALOG] Show the DeckForm dialog to create a new deck
-  void _showCreateDeckDialog() {
-    showDialog(
-      context: context,
-      builder: (_) => DeckForm(onCreated: _loadDecks),
+  // [NAVIGATE] Go to CardsSettings to create a new deck
+  Future<void> _createDeck() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CardsSettings()),
     );
+    await _loadDecks();
   }
 
   // [DIALOG] Show DeckDetailSheet as modal bottom sheet
@@ -104,6 +110,22 @@ void _showDeckDetailSheet(Map<String, dynamic> deck) {
     enableDrag: true,
     builder: (_) => DeckDetailSheet(
       deck: deck,
+      onPlay: () {
+        Navigator.pop(context);
+        final cards = (deck['cards'] as List? ?? []).cast<Map<String, dynamic>>();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const CardsPlay(),
+            settings: RouteSettings(
+              arguments: {
+                'title': deck['title'] as String? ?? 'Flashcard Deck',
+                'cards': cards,
+              },
+            ),
+          ),
+        );
+      },
       onEdit: () {
         Navigator.pop(context); // Close sheet first
         _showEditDeckDialog(deck); // Then open edit form
@@ -118,16 +140,12 @@ void _showDeckDetailSheet(Map<String, dynamic> deck) {
 
 // [DIALOG] Show DeckForm in edit mode
 void _showEditDeckDialog(Map<String, dynamic> deck) {
-  showDialog(
-    context: context,
-    builder: (_) => DeckForm(
-      deck: deck, // Pass existing data for editing
-      onCreated: () {
-        _loadDecks(); // Refresh list
-        if (context.mounted) Navigator.pop(context); // Close dialog
-      },
-    ),
-  );
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => CardsEdit(deck: deck)),
+  ).then((_) {
+    _loadDecks();
+  });
 }
 
   @override
@@ -171,7 +189,7 @@ void _showEditDeckDialog(Map<String, dynamic> deck) {
             ),
 
             // [COMPONENT] Action Buttons (Sort + Add Deck)
-            _buildActionButtons(),
+            _buildActionButtons(_createDeck),
           ],
         ),
       ),
@@ -214,7 +232,7 @@ void _showEditDeckDialog(Map<String, dynamic> deck) {
   }
 
   // [WIDGET] Bottom Action Buttons (Sort + Add Deck)
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(VoidCallback onAddDeck) {
     final sortKey = GlobalKey();
 
     return Container(
@@ -268,7 +286,7 @@ void _showEditDeckDialog(Map<String, dynamic> deck) {
           // [BUTTON] Add Deck
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: _showCreateDeckDialog,
+              onPressed: onAddDeck,
               icon: const Icon(Icons.add),
               label: const Text(
                 'Add Card',

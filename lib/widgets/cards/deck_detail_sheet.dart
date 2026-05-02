@@ -7,12 +7,14 @@ import 'package:soro/main.dart';
 class DeckDetailSheet extends StatelessWidget {
   // [PROPS]
   final Map<String, dynamic> deck;
+  final VoidCallback onPlay;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const DeckDetailSheet({
     super.key,
     required this.deck,
+    required this.onPlay,
     required this.onEdit,
     required this.onDelete,
   });
@@ -106,6 +108,33 @@ class DeckDetailSheet extends StatelessWidget {
                   ],
 
                   const SizedBox(height: 28),
+
+                  // [BUTTON] Study Deck
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: onPlay,
+                      icon: const Icon(Icons.play_arrow),
+                      label: const Text(
+                        'Study Deck',
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary_600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
 
                   // [BUTTON] Edit Deck — same style as QuizDetailSheet
                   SizedBox(
