@@ -136,7 +136,7 @@ class _CardsSettingsState extends State<CardsSettings> {
       text,
       style: const TextStyle(
         fontFamily: 'Nunito',
-        fontSize: 13,
+        fontSize: 15,
         fontWeight: FontWeight.w600,
         color: AppColors.text_700,
       ),
@@ -164,7 +164,7 @@ class _CardsSettingsState extends State<CardsSettings> {
         ),
         style: const TextStyle(
           fontFamily: 'Nunito',
-          fontSize: 14,
+          fontSize: 15,
           color: AppColors.text_700,
         ),
       ),
@@ -206,7 +206,7 @@ class _CardsSettingsState extends State<CardsSettings> {
                     "Card Title",
                     style: TextStyle(
                       fontFamily: 'Nunito',
-                      fontSize: 15,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: AppColors.text_700,
                     ),
@@ -222,8 +222,14 @@ class _CardsSettingsState extends State<CardsSettings> {
                     child: TextField(
                       controller: titleController,
                       textCapitalization: TextCapitalization.sentences,
+                      style: TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.text_700,
+                      ),
                       decoration: InputDecoration(
-                        hintText: "e.g. Spanish Vocab Unit 3",
+                        hintText: "Type card title...",
                         hintStyle: TextStyle(color: AppColors.text_400),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -237,7 +243,7 @@ class _CardsSettingsState extends State<CardsSettings> {
                     "Items",
                     style: TextStyle(
                       fontFamily: 'Nunito',
-                      fontSize: 15,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: AppColors.text_700,
                     ),
@@ -273,7 +279,7 @@ class _CardsSettingsState extends State<CardsSettings> {
                             'Tap + Add Item to create one',
                             style: TextStyle(
                               fontFamily: 'Nunito',
-                              fontSize: 13,
+                              fontSize: 15,
                               color: AppColors.text_300,
                             ),
                             textAlign: TextAlign.center,
@@ -368,7 +374,7 @@ class _CardsSettingsState extends State<CardsSettings> {
                                 icon: const Icon(Icons.delete_outline, size: 18),
                                 label: const Text(
                                   "Delete",
-                                  style: TextStyle(fontFamily: 'Nunito', fontSize: 13),
+                                  style: TextStyle(fontFamily: 'Nunito', fontSize: 15),
                                 ),
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.red[400],

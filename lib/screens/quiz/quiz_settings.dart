@@ -222,7 +222,7 @@ class _QuizSettingsState extends State<QuizSettings> {
         ),
         style: const TextStyle(
           fontFamily: 'Nunito',
-          fontSize: 14,
+          fontSize: 15,
           color: AppColors.text_700,
         ),
         onChanged: onChanged,
@@ -260,9 +260,9 @@ class _QuizSettingsState extends State<QuizSettings> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // [INPUT] Quiz Name
+                  // [INPUT] Quiz Title
                   Text(
-                    "Quiz Name",
+                    "Quiz Title",
                     style: TextStyle(
                       fontFamily: 'Nunito',
                       fontSize: 15,
@@ -279,8 +279,13 @@ class _QuizSettingsState extends State<QuizSettings> {
                     child: TextField(
                       controller: titleController,
                       textCapitalization: TextCapitalization.sentences,
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 15,
+                        color: AppColors.text_700,
+                      ),
                       decoration: InputDecoration(
-                        hintText: "Enter quiz name",
+                        hintText: "Type quiz title...",
                         hintStyle: TextStyle(color: AppColors.text_400),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -343,7 +348,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                     "Items",
                     style: TextStyle(
                       fontFamily: 'Nunito',
-                      fontSize: 15,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: AppColors.text_700,
                     ),
@@ -379,7 +384,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                             'Tap + Add Item to create one',
                             style: TextStyle(
                               fontFamily: 'Nunito',
-                              fontSize: 13,
+                              fontSize: 15,
                               color: AppColors.text_300,
                             ),
                             textAlign: TextAlign.center,
@@ -462,7 +467,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                                                 type,
                                                 style: TextStyle(
                                                   fontFamily: 'Nunito',
-                                                  fontSize: 14,
+                                                  fontSize: 15,
                                                   color: AppColors.text_700,
                                                 ),
                                               ),
@@ -482,7 +487,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                                     "Question",
                                     style: TextStyle(
                                       fontFamily: 'Nunito',
-                                      fontSize: 13,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.text_700,
                                     ),
@@ -499,7 +504,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                                     "Correct Answer",
                                     style: TextStyle(
                                       fontFamily: 'Nunito',
-                                      fontSize: 13,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.text_700,
                                     ),
@@ -520,7 +525,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                                                 "True",
                                                 style: TextStyle(
                                                   fontFamily: 'Nunito',
-                                                  fontSize: 14,
+                                                  fontSize: 15,
                                                   color: AppColors.text_700,
                                                 ),
                                               ),
@@ -541,7 +546,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                                                 "False",
                                                 style: TextStyle(
                                                   fontFamily: 'Nunito',
-                                                  fontSize: 14,
+                                                  fontSize: 15,
                                                   color: AppColors.text_700,
                                                 ),
                                               ),
@@ -578,7 +583,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                                 icon: const Icon(Icons.delete_outline, size: 18),
                                 label: const Text(
                                   "Delete",
-                                  style: TextStyle(fontFamily: 'Nunito', fontSize: 13),
+                                  style: TextStyle(fontFamily: 'Nunito', fontSize: 15),
                                 ),
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.red[400],
