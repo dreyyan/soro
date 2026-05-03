@@ -183,17 +183,17 @@ class _QuizEditState extends State<QuizEdit> {
   Widget _getTypeIcon(String type) {
     switch (type) {
       case "Multiple Choice":
-        return Icon(Icons.radio_button_checked, size: 20, color: AppColors.text_700);
+        return Icon(Icons.radio_button_checked, size: 18, color: AppColors.text_700);
       case "Identification":
-        return Icon(Icons.text_fields, size: 20, color: AppColors.text_700);
+        return Icon(Icons.text_fields, size: 18, color: AppColors.text_700);
       case "True or False":
-        return Icon(Icons.thumb_up_outlined, size: 20, color: AppColors.text_700);
+        return Icon(Icons.thumb_up_outlined, size: 18, color: AppColors.text_700);
       default:
-        return const Icon(Icons.help_outline, size: 20);
+        return const Icon(Icons.help_outline, size: 18);
     }
   }
 
-  // [WIDGET] Compact time unit stepper (mirrors quiz_settings.dart)
+  // [WIDGET] Compact time unit stepper (up/down arrows + value + label)
   Widget _buildTimeUnit(int value, String label, ValueChanged<int> onChanged) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -220,7 +220,7 @@ class _QuizEditState extends State<QuizEdit> {
         const SizedBox(height: 2),
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Nunito',
             fontSize: 11,
             fontWeight: FontWeight.w600,
@@ -229,6 +229,41 @@ class _QuizEditState extends State<QuizEdit> {
           ),
         ),
       ],
+    );
+  }
+
+  // [WIDGET] Shared text input field used for Question and Answer
+  Widget _buildTextField({
+    required String hint,
+    required ValueChanged<String> onChanged,
+    String initialValue = '',
+    int minLines = 2,
+    int? maxLines = 2,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.secondary_300),
+      ),
+      child: TextField(
+        maxLines: maxLines,
+        minLines: minLines,
+        controller: TextEditingController(text: initialValue)
+          ..selection = TextSelection.collapsed(offset: initialValue.length),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: AppColors.text_400),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        ),
+        style: const TextStyle(
+          fontFamily: 'Nunito',
+          fontSize: 15,
+          color: AppColors.text_700,
+        ),
+        onChanged: onChanged,
+      ),
     );
   }
 
@@ -262,9 +297,9 @@ class _QuizEditState extends State<QuizEdit> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // [INPUT] Quiz Name
+                  // [INPUT] Quiz Title
                   Text(
-                    "Quiz Name",
+                    "Quiz Title",
                     style: TextStyle(
                       fontFamily: 'Nunito',
                       fontSize: 15,
@@ -281,8 +316,13 @@ class _QuizEditState extends State<QuizEdit> {
                     child: TextField(
                       controller: titleController,
                       textCapitalization: TextCapitalization.sentences,
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 15,
+                        color: AppColors.text_700,
+                      ),
                       decoration: InputDecoration(
-                        hintText: "Enter quiz name",
+                        hintText: "Type quiz title...",
                         hintStyle: TextStyle(color: AppColors.text_400),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -341,22 +381,56 @@ class _QuizEditState extends State<QuizEdit> {
                   const SizedBox(height: 24),
 
                   // [SECTION] Items
-                  Row(
-                    children: [
-                      Text(
-                        "Items",
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.text_700,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    "Items",
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text_700,
+                    ),
                   ),
                   const SizedBox(height: 12),
 
-                  // [LIST] Questions
+                  // [EMPTY STATE] Shown when no questions have been added yet
+                  if (questions.isEmpty)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary_100,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.secondary_300),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.quiz_outlined, size: 48, color: AppColors.text_200),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No items yet',
+                            style: TextStyle(
+                              fontFamily: 'Baloo',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.text_300,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Tap + Add Item to create one',
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 15,
+                              color: AppColors.text_300,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  // [LIST] Questions — reorderable
                   ReorderableListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -375,7 +449,7 @@ class _QuizEditState extends State<QuizEdit> {
                         child: Column(
                           children: [
                             // [HEADER] Question number + drag handle
-                            Container(
+                            Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               child: Row(
                                 children: [
@@ -391,11 +465,16 @@ class _QuizEditState extends State<QuizEdit> {
                                   const Spacer(),
                                   ReorderableDragStartListener(
                                     index: index,
-                                    child: Icon(Icons.drag_indicator, color: AppColors.text_400, size: 24),
+                                    child: Icon(
+                                      Icons.drag_indicator,
+                                      color: AppColors.text_400,
+                                      size: 24,
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
+
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16),
                               child: Column(
@@ -406,7 +485,7 @@ class _QuizEditState extends State<QuizEdit> {
                                     padding: const EdgeInsets.symmetric(horizontal: 12),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(8),
                                       border: Border.all(color: AppColors.secondary_300),
                                     ),
                                     child: DropdownButton<String>(
@@ -420,10 +499,14 @@ class _QuizEditState extends State<QuizEdit> {
                                           child: Row(
                                             children: [
                                               _getTypeIcon(type),
-                                              const SizedBox(width: 12),
+                                              const SizedBox(width: 10),
                                               Text(
                                                 type,
-                                                style: TextStyle(fontFamily: 'Nunito', fontSize: 15, color: AppColors.text_700),
+                                                style: TextStyle(
+                                                  fontFamily: 'Nunito',
+                                                  fontSize: 15,
+                                                  color: AppColors.text_700,
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -434,90 +517,98 @@ class _QuizEditState extends State<QuizEdit> {
                                       },
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 14),
 
-                                  // [INPUT] Question text
+                                  // [INPUT] Question
                                   Text(
                                     "Question",
-                                    style: TextStyle(fontFamily: 'Nunito', fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.text_700),
+                                    style: TextStyle(
+                                      fontFamily: 'Nunito',
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.text_700,
+                                    ),
                                   ),
                                   const SizedBox(height: 6),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(0),
-                                      border: Border.all(color: AppColors.secondary_300),
-                                    ),
-                                    child: TextField(
-                                      maxLines: 2,
-                                      controller: TextEditingController(text: q.question)
-                                        ..selection = TextSelection.collapsed(offset: q.question.length),
-                                      decoration: InputDecoration(
-                                        hintText: "Type question...",
-                                        hintStyle: TextStyle(color: AppColors.text_400),
-                                        border: InputBorder.none,
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                      ),
-                                      onChanged: (val) => _updateQuestion(index, question: val),
-                                    ),
+                                  _buildTextField(
+                                    hint: "Type question...",
+                                    initialValue: q.question,
+                                    onChanged: (val) => _updateQuestion(index, question: val),
                                   ),
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: 14),
 
                                   // [INPUT] Correct Answer
                                   Text(
                                     "Correct Answer",
-                                    style: TextStyle(fontFamily: 'Nunito', fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.text_700),
+                                    style: TextStyle(
+                                      fontFamily: 'Nunito',
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.text_700,
+                                    ),
                                   ),
                                   const SizedBox(height: 6),
                                   if (q.type == "True or False")
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: RadioListTile<bool>(
-                                            title: const Text("True"),
-                                            value: true,
-                                            groupValue: q.trueFalseAnswer,
-                                            contentPadding: EdgeInsets.zero,
-                                            visualDensity: VisualDensity.compact,
-                                            onChanged: (val) {
-                                              if (val != null) _updateQuestion(index, trueFalseAnswer: val);
-                                            },
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: RadioListTile<bool>(
-                                            title: const Text("False"),
-                                            value: false,
-                                            groupValue: q.trueFalseAnswer,
-                                            contentPadding: EdgeInsets.zero,
-                                            visualDensity: VisualDensity.compact,
-                                            onChanged: (val) {
-                                              if (val != null) _updateQuestion(index, trueFalseAnswer: val);
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  else
                                     Container(
                                       decoration: BoxDecoration(
                                         color: Colors.white,
-                                        borderRadius: BorderRadius.circular(0),
+                                        borderRadius: BorderRadius.circular(8),
                                         border: Border.all(color: AppColors.secondary_300),
                                       ),
-                                      child: TextField(
-                                        controller: TextEditingController(text: q.correctAnswer)
-                                          ..selection = TextSelection.collapsed(offset: q.correctAnswer.length),
-                                        decoration: InputDecoration(
-                                          hintText: "Type correct answer...",
-                                          hintStyle: TextStyle(color: AppColors.text_400),
-                                          border: InputBorder.none,
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                        ),
-                                        onChanged: (val) => _updateQuestion(index, answer: val),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: RadioListTile<bool>(
+                                              title: Text(
+                                                "True",
+                                                style: TextStyle(
+                                                  fontFamily: 'Nunito',
+                                                  fontSize: 15,
+                                                  color: AppColors.text_700,
+                                                ),
+                                              ),
+                                              value: true,
+                                              groupValue: q.trueFalseAnswer,
+                                              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                              visualDensity: VisualDensity.compact,
+                                              activeColor: AppColors.primary_600,
+                                              onChanged: (val) {
+                                                if (val != null) _updateQuestion(index, trueFalseAnswer: val);
+                                              },
+                                            ),
+                                          ),
+                                          Container(width: 1, height: 32, color: AppColors.secondary_200),
+                                          Expanded(
+                                            child: RadioListTile<bool>(
+                                              title: Text(
+                                                "False",
+                                                style: TextStyle(
+                                                  fontFamily: 'Nunito',
+                                                  fontSize: 15,
+                                                  color: AppColors.text_700,
+                                                ),
+                                              ),
+                                              value: false,
+                                              groupValue: q.trueFalseAnswer,
+                                              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                              visualDensity: VisualDensity.compact,
+                                              activeColor: AppColors.primary_600,
+                                              onChanged: (val) {
+                                                if (val != null) _updateQuestion(index, trueFalseAnswer: val);
+                                              },
+                                            ),
+                                          ),
+                                        ],
                                       ),
+                                    )
+                                  else
+                                    _buildTextField(
+                                      hint: "Type correct answer...",
+                                      initialValue: q.correctAnswer,
+                                      onChanged: (val) => _updateQuestion(index, answer: val),
+                                      minLines: 1,
+                                      maxLines: null,
                                     ),
-                                  const SizedBox(height: 8),
                                 ],
                               ),
                             ),
@@ -529,8 +620,15 @@ class _QuizEditState extends State<QuizEdit> {
                               child: TextButton.icon(
                                 onPressed: () => _removeQuestion(index),
                                 icon: const Icon(Icons.delete_outline, size: 18),
-                                label: const Text("Delete"),
-                                style: TextButton.styleFrom(foregroundColor: Colors.red[400]),
+                                label: const Text(
+                                  "Delete",
+                                  style: TextStyle(fontFamily: 'Nunito', fontSize: 15),
+                                ),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.red[400],
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
                               ),
                             ),
                           ],
@@ -561,13 +659,19 @@ class _QuizEditState extends State<QuizEdit> {
               icon: const Icon(Icons.add, size: 24),
               label: const Text(
                 "Add Item",
-                style: TextStyle(fontFamily: 'Nunito', fontSize: 16, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary_600,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 elevation: 0,
                 minimumSize: const Size(double.infinity, 56),
               ),
@@ -583,13 +687,19 @@ class _QuizEditState extends State<QuizEdit> {
                 backgroundColor: AppColors.primary_600,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 elevation: 2,
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: const Text(
                 "Save Changes",
-                style: TextStyle(fontFamily: 'Nunito', fontSize: 16, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
