@@ -109,14 +109,14 @@ class DeckDetailSheet extends StatelessWidget {
 
                   const SizedBox(height: 28),
 
-                  // [BUTTON] Study Deck
+                  // [BUTTON] Study Cards
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: onPlay,
                       icon: const Icon(Icons.play_arrow),
                       label: const Text(
-                        'Study Deck',
+                        'Study Cards',
                         style: TextStyle(
                           fontFamily: 'Nunito',
                           fontSize: 15,
@@ -136,7 +136,7 @@ class DeckDetailSheet extends StatelessWidget {
 
                   const SizedBox(height: 10),
 
-                  // [BUTTON] Edit Deck — same style as QuizDetailSheet
+                  // [BUTTON] Edit Cards — same style as QuizDetailSheet
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -146,7 +146,7 @@ class DeckDetailSheet extends StatelessWidget {
                         color: AppColors.primary_600,
                       ),
                       label: const Text(
-                        'Edit Deck',
+                        'Edit Cards',
                         style: TextStyle(
                           fontFamily: 'Nunito',
                           fontSize: 15,
@@ -169,14 +169,14 @@ class DeckDetailSheet extends StatelessWidget {
 
                   const SizedBox(height: 10),
 
-                  // [BUTTON] Delete Deck — same style as QuizDetailSheet
+                  // [BUTTON] Delete Cards — same style as QuizDetailSheet
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: onDelete, // ← Just calls the callback. No logic.
                       icon: const Icon(Icons.delete_outline, color: Colors.red),
                       label: const Text(
-                        'Delete Deck',
+                        'Delete Cards',
                         style: TextStyle(
                           fontFamily: 'Nunito',
                           fontSize: 15,
