@@ -97,7 +97,6 @@ class DeckDetailSheet extends StatelessWidget {
                     'Cards',
                     '$cardCount card${cardCount == 1 ? '' : 's'}',
                   ),
-                  const SizedBox(height: 10),
                   if (dateLabel.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     _buildDetailRow(
