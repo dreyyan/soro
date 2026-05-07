@@ -202,10 +202,27 @@ class _QuizStartState extends State<QuizStart> {
 
   // [CONFIRM] Show dialog before returning to menu
 void _confirmGoBack() {
-  showDialog(
-    context: context,
-    barrierDismissible: false, // Force explicit choice
-    builder: (_) => AlertDialog(
+  showGeneralDialog(
+  context: context,
+  barrierDismissible: false,
+  barrierLabel: '',
+  barrierColor: Colors.black54,
+  transitionDuration: const Duration(milliseconds: 400),
+  transitionBuilder: (_, animation, __, child) {
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutBack,
+    );
+    return ScaleTransition(
+      // ✅ AFTER
+      scale: Tween<double>(begin: 0.7, end: 1.0).animate(curved),
+      child: FadeTransition(
+        opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curved),
+        child: child,
+      ),
+    );
+  },
+  pageBuilder: (_, __, ___) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: const Text(
         "Leave Quiz?",
@@ -256,9 +273,9 @@ void _confirmGoBack() {
     if (!mounted) return;
 
     showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
+  context: context,
+  barrierDismissible: false,
+  builder: (_) => AlertDialog(
         title: Text(
           selectedGameMode == "Time Attack" ? "Time's Up!" : "Quiz Complete!",
         ),

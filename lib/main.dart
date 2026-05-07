@@ -97,6 +97,7 @@ class MyApp extends StatelessWidget {
       // [THEME]
       theme: ThemeData(
         useMaterial3: true,
+        
         // brightness: Brightness.dark,
 
         // // [COLORS] Base
@@ -395,4 +396,27 @@ class AppColors {
   static const Color green_800 = Color(0xFF166534);
   static const Color green_900 = Color(0xFF14532D);
   static const Color green_950 = Color(0xFF0F3D22);
+}
+
+// [CLASS] Smooth Slide Transition
+class SlidePageRoute extends PageRouteBuilder {
+  final Widget page;
+
+  SlidePageRoute({required this.page})
+      : super(
+          pageBuilder: (context, animation, secondaryAnimation) => page,
+          transitionDuration: const Duration(milliseconds: 350),
+          reverseTransitionDuration: const Duration(milliseconds: 350),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final tween = Tween(
+              begin: const Offset(1.0, 0.0),
+              end: Offset.zero,
+            ).chain(CurveTween(curve: Curves.easeInOutCubic));
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
 }

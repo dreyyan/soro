@@ -16,6 +16,9 @@ import 'package:soro/database/database_helper.dart';
 
 import 'package:soro/screens/quiz/quiz_edit.dart';
 
+
+import 'package:soro/screens/quiz/quiz_start.dart';
+
 class Quiz extends StatefulWidget {
   const Quiz({super.key});
 
@@ -81,9 +84,9 @@ class _QuizState extends State<Quiz> {
   // [NAVIGATE] Go to QuizSettings to create a new quiz
   Future<void> _createQuiz() async {
     await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const QuizSettings()),
-    );
+  context,
+  MaterialPageRoute(builder: (_) => const QuizSettings()),
+  );
     await _loadQuizzes();
   }
 
@@ -121,33 +124,34 @@ class _QuizState extends State<Quiz> {
         quiz: quiz,
 
         // [PLAY] Navigate to QuizStart with the saved questions
-        onPlay: () {
-          Navigator.pop(context);
-          final questions =
-              (quiz['questions'] as List? ?? []).cast<Map<String, dynamic>>();
-          Navigator.pushNamed(
-            context,
-            '/quiz/start',
-            arguments: {
-              'numberOfQuestions':  quiz['questionCount'] ?? questions.length,
-              'mode':               quiz['mode']          ?? 'Multiple Choice',
-              'identificationMode': quiz['identificationMode'] ?? 'Definition',
-              'gameMode':           quiz['gameMode']      ?? 'Classic',
-              'timeLimitSecs':      quiz['timeLimitSecs'],
-              'questions':          questions,
-            },
-          );
-        },
+        // ✅ CORRECT - keep it as pushNamed
+onPlay: () {
+  Navigator.pop(context);
+  final questions =
+      (quiz['questions'] as List? ?? []).cast<Map<String, dynamic>>();
+  Navigator.pushNamed(
+    context,
+    '/quiz/start',
+    arguments: {
+      'numberOfQuestions':  quiz['questionCount'] ?? questions.length,
+      'mode':               quiz['mode']          ?? 'Multiple Choice',
+      'identificationMode': quiz['identificationMode'] ?? 'Definition',
+      'gameMode':           quiz['gameMode']      ?? 'Classic',
+      'timeLimitSecs':      quiz['timeLimitSecs'],
+      'questions':          questions,
+    },
+  );
+},
 
         // [EDIT] Open QuizSettings then refresh the list on return
         onEdit: (quizData) async {
-          Navigator.pop(context);
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => QuizEdit(quiz: quizData)),
-          );
-          await _loadQuizzes();
-      },
+  Navigator.pop(context);
+  await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => QuizEdit(quiz: quizData)),
+  );
+  await _loadQuizzes();
+},
 
         // [DELETE] Close sheet then run the delete confirmation flow
         onDelete: () {

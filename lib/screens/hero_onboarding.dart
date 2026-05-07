@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 // [IMPORT] App
 import 'package:soro/main.dart';
 import 'package:soro/database/database_helper.dart';
+//transition
+import 'package:soro/screens/auth/login_page.dart';
 
 class HeroOnboarding extends StatefulWidget {
   const HeroOnboarding({super.key});
