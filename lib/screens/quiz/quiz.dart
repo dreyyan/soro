@@ -150,7 +150,7 @@ class _QuizState extends State<Quiz> {
     final quizzes = _sortedQuizzes;
 
     return Scaffold(
-      backgroundColor: AppColors.secondary_50,
+      backgroundColor: AppColors.secondary_200,
       body: SafeArea(
         child: Column(
           children: [
@@ -224,7 +224,7 @@ class _QuizState extends State<Quiz> {
   Widget _buildActionButtons() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: AppColors.secondary_50,
+      color: AppColors.secondary_200,
       child: Row(
         children: [
           // [BUTTON] Sort Menu
@@ -252,12 +252,12 @@ class _QuizState extends State<Quiz> {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary_100,
+                backgroundColor: AppColors.secondary_50,
                 foregroundColor: AppColors.text_700,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                elevation: 2,
+                elevation: 1,
                 padding: const EdgeInsets.symmetric(vertical: 24),
               ),
             ),
@@ -284,7 +284,7 @@ class _QuizState extends State<Quiz> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                elevation: 3,
+                elevation: 1,
                 padding: const EdgeInsets.symmetric(vertical: 24),
               ),
             ),

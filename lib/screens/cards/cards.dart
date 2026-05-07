@@ -159,7 +159,7 @@ void _showEditDeckDialog(Map<String, dynamic> deck) {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.secondary_50,
+      backgroundColor: AppColors.secondary_200,
       body: SafeArea(
         child: Column(
           children: [
@@ -236,80 +236,89 @@ void _showEditDeckDialog(Map<String, dynamic> deck) {
     final sortKey = GlobalKey();
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: AppColors.secondary_50,
-      child: Row(
-        children: [
-          // [BUTTON] Sort Menu
-          Expanded(
-            child: ElevatedButton.icon(
-              key: sortKey,
-              onPressed: () async {
-                // Show menu anchored to the button
-                final selected = await showMenu<String>(
-                  context: context,
-                  position: RelativeRect.fromLTRB(
-                    60, 528, 100, 100
-                  ),
-                  items: const [
-                    PopupMenuItem(value: 'newest', child: Text('Newest first')),
-                    PopupMenuItem(value: 'oldest', child: Text('Oldest first')),
-                    PopupMenuItem(value: 'alpha', child: Text('A → Z')),
-                  ],
-                );
-
-                if (selected != null) setState(() => _sortBy = selected);
-              },
-              icon: const Icon(Icons.sort),
-              label: const Text(
-                'Sort',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontFamily: 'Nunito',
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary_100,
-                foregroundColor: AppColors.text_700,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 2,
-                padding: const EdgeInsets.symmetric(vertical: 24),
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // [BUTTON] Add Deck
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: onAddDeck,
-              icon: const Icon(Icons.add),
-              label: const Text(
-                'Add Card',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontFamily: 'Nunito',
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary_600,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 3,
-                padding: const EdgeInsets.symmetric(vertical: 24),
-              ),
-            ),
-          ),
-        ],
+  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+  decoration: BoxDecoration(
+    color: AppColors.secondary_200,
+    /*boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.05),
+        offset: const Offset(0, -4), // 👈 upward shadow
+        blurRadius: 8,
+        spreadRadius: 1,
       ),
-    );
+    ], */
+  ),
+  child: Row(
+    children: [
+      // [BUTTON] Sort Menu
+      Expanded(
+        child: ElevatedButton.icon(
+          key: sortKey,
+          onPressed: () async {
+            final selected = await showMenu<String>(
+              context: context,
+              position: const RelativeRect.fromLTRB(60, 528, 100, 100),
+              items: const [
+                PopupMenuItem(value: 'newest', child: Text('Newest first')),
+                PopupMenuItem(value: 'oldest', child: Text('Oldest first')),
+                PopupMenuItem(value: 'alpha', child: Text('A → Z')),
+              ],
+            );
+
+            if (selected != null) {
+              setState(() => _sortBy = selected);
+            }
+          },
+          icon: const Icon(Icons.sort),
+          label: const Text(
+            'Sort',
+            style: TextStyle(
+              fontSize: 16,
+              fontFamily: 'Nunito',
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.secondary_50,
+            foregroundColor: AppColors.text_700,
+            elevation: 1,
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+      ),
+
+      const SizedBox(width: 12),
+
+      // [BUTTON] Create Card
+      Expanded(
+        child: ElevatedButton.icon(
+          onPressed: onAddDeck,
+          icon: const Icon(Icons.add),
+          label: const Text(
+            'Create Card',
+            style: TextStyle(
+              fontSize: 16,
+              fontFamily: 'Nunito',
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary_600,
+            foregroundColor: Colors.white,
+            elevation: 1,
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+      ),
+    ],
+  ),
+);
   }
 
   // [WIDGET] Empty State
