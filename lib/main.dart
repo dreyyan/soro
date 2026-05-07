@@ -97,6 +97,13 @@ class MyApp extends StatelessWidget {
       // [THEME]
       theme: ThemeData(
         useMaterial3: true,
+
+        pageTransitionsTheme: const PageTransitionsTheme(
+  builders: {
+    TargetPlatform.android: _SlideTransitionBuilder(),
+    TargetPlatform.iOS: _SlideTransitionBuilder(),
+  },
+),
         
         // brightness: Brightness.dark,
 
@@ -234,9 +241,34 @@ class HomeWithNav extends StatefulWidget {
   State<HomeWithNav> createState() => HomeWithNavState();
 }
 
-class HomeWithNavState extends State<HomeWithNav> {
+class HomeWithNavState extends State<HomeWithNav> with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
+  int _previousIndex = 0;
+  late AnimationController _animController;
+  late Animation<Offset> _slideAnimation;
 
+@override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 350),
+      vsync: this,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(1.0, 0.0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeInOutCubic,
+    ));
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
   // [SCREENS] Bottom Navigation Bar
   final List<Widget> _screens = [
     const HomePage(), // 0
@@ -247,18 +279,33 @@ class HomeWithNavState extends State<HomeWithNav> {
   ];
 
   // [NAVIGATION] Handle tab change
-  void onTabSelected(int index) {
+void onTabSelected(int index) {
     if (index < 0 || index >= _screens.length) return;
+    if (index == _selectedIndex) return;
     setState(() {
+      _previousIndex = _selectedIndex;
       _selectedIndex = index;
     });
+    _animController.forward(from: 0.0);
   }
+
 
   // [SECTION] Home Scaffold
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_selectedIndex],
+      body: Stack(
+        children: [
+          // [OLD SCREEN] stays in place
+          _screens[_previousIndex],
+
+          // [NEW SCREEN] slides in on top
+          SlideTransition(
+            position: _slideAnimation,
+            child: _screens[_selectedIndex],
+          ),
+        ],
+      ),
 
       // [SECTION] Bottom Navigation Bar
       bottomNavigationBar: Theme(
@@ -396,6 +443,30 @@ class AppColors {
   static const Color green_800 = Color(0xFF166534);
   static const Color green_900 = Color(0xFF14532D);
   static const Color green_950 = Color(0xFF0F3D22);
+}
+
+// [CLASS] Global Slide Transition Builder
+class _SlideTransitionBuilder extends PageTransitionsBuilder {
+  const _SlideTransitionBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    route,
+    context,
+    animation,
+    secondaryAnimation,
+    child,
+  ) {
+    final tween = Tween(
+      begin: const Offset(1.0, 0.0),
+      end: Offset.zero,
+    ).chain(CurveTween(curve: Curves.easeInOutCubic));
+
+    return SlideTransition(
+      position: animation.drive(tween),
+      child: child,
+    );
+  }
 }
 
 // [CLASS] Smooth Slide Transition
