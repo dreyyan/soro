@@ -668,7 +668,7 @@ class _QuizSettingsState extends State<QuizSettings> {
       elevation: 3,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Row(
           children: [
             IconButton(
