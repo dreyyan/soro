@@ -175,26 +175,12 @@ class _CardsSettingsState extends State<CardsSettings> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.secondary_50,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "Create Card",
-          style: TextStyle(
-            fontFamily: 'Baloo',
-            fontWeight: FontWeight.w700,
-            fontSize: 24,
-          ),
-        ),
-        backgroundColor: AppColors.primary_600,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Column(
+      body: SafeArea(
+        child: Column(
         children: [
-          // [CONTENT] Scrollable card items
+            _buildHeader(),
+
+            // [CONTENT] Scrollable card items
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),
@@ -454,6 +440,36 @@ class _CardsSettingsState extends State<CardsSettings> {
             ),
           ),
         ],
+        ),
+      ),
+    );
+  }
+
+  // [WIDGET] Header — matches QuizSettings layout
+  Widget _buildHeader() {
+    return Material(
+      color: AppColors.primary_600,
+      elevation: 3,
+      shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.text_50),
+              onPressed: () => Navigator.pop(context),
+            ),
+            const Text(
+              'Create Card',
+              style: TextStyle(
+                fontFamily: 'Baloo',
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: AppColors.text_50,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
