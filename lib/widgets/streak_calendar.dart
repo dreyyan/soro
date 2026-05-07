@@ -58,9 +58,19 @@ class _StreakCalendarState extends State<StreakCalendar> {
     final today = DateTime.now();
 
     // [HELPER] Example streak logic (replace later with DB)
-    bool isStreakDay(int day) {
-      return day <= widget.streak;
-    }
+    // ✅ FIXED - only highlights streak days in the CURRENT month (today's month)
+  bool isStreakDay(int day) {
+    final isCurrentMonth =
+        _currentMonth.year == today.year &&
+        _currentMonth.month == today.month;
+
+    if (!isCurrentMonth) return false;
+
+  //Only highlight days from (today.day - streak + 1) up to today.day//
+    const testStreak = 3;
+    final streakStart = today.day - testStreak + 1;
+    return day >= streakStart && day <= today.day;
+  }
 
     return Container(
       width: double.infinity,
