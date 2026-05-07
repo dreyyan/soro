@@ -118,7 +118,9 @@ class _QuizSettingsState extends State<QuizSettings> {
       'timeLimitSecs': totalSeconds,
       'questions': questions.map((q) => {
         'question': q.question,
-        'answer': q.correctAnswer,
+        'answer': q.type == "True or False"
+            ? (q.trueFalseAnswer ? "True" : "False")
+            : q.correctAnswer,
         'type': q.type,
         'trueFalseAnswer': q.trueFalseAnswer,
         'choices': q.choices,
@@ -666,7 +668,7 @@ class _QuizSettingsState extends State<QuizSettings> {
       elevation: 3,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
         child: Row(
           children: [
             IconButton(
