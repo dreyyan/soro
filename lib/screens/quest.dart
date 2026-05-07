@@ -588,7 +588,7 @@ class _QuestState extends State<Quest> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.secondary_50,
+      backgroundColor: AppColors.secondary_200,
       body: SafeArea(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
