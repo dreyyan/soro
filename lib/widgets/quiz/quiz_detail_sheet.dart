@@ -103,8 +103,6 @@ class QuizDetailSheet extends StatelessWidget {
                   const SizedBox(height: 10),
                   _buildDetailRow(Icons.category_outlined, 'Mode', mode),
                   const SizedBox(height: 10),
-                  _buildDetailRow(Icons.sports_esports_outlined, 'Game Mode', gameMode),
-                  const SizedBox(height: 10),
                   _buildDetailRow(
                     Icons.timer_outlined,
                     'Time Limit',
