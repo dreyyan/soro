@@ -39,6 +39,19 @@ class _QuizState extends State<Quiz> {
   Future<void> _loadQuizzes() async {
     final quizzes = await DatabaseHelper().getSavedQuizzes();
     if (!mounted) return;
+
+    // [RESOLVE] Override mode to "Mixed" if questions span multiple types
+    for (final quiz in quizzes) {
+      final questions =
+          (quiz['questions'] as List? ?? []).cast<Map<String, dynamic>>();
+      if (questions.isNotEmpty) {
+        final types = questions
+            .map((q) => q['type'] as String? ?? '')
+            .toSet();
+        if (types.length > 1) quiz['mode'] = 'Mixed';
+      }
+    }
+
     setState(() {
       _quizzes   = quizzes;
       _isLoading = false;
