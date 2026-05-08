@@ -615,67 +615,86 @@ class _QuizSettingsState extends State<QuizSettings> {
               ),
             ),
           ),
-          // [BUTTON] Add Item
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            decoration: BoxDecoration(
-              color: AppColors.secondary_50,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
-                ),
-              ],
+          // [FOOTER] Action Buttons — Add Item + Save Quiz
+SafeArea(
+  top: false,
+  child: Container(
+    padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+    decoration: BoxDecoration(
+      color: AppColors.secondary_50,
+      border: Border(
+        top: BorderSide(
+          color: AppColors.secondary_200,
+        ),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 16,
+          offset: const Offset(0, -4),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        // [BUTTON] Add Item
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: _addQuestion,
+            icon: const Icon(Icons.playlist_add_rounded),
+            label: const Text(
+              'Add Item',
+              style: TextStyle(
+                fontSize: 16,
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.w700,
+              ),
             ),
-            child: ElevatedButton.icon(
-              onPressed: _addQuestion,
-              icon: const Icon(Icons.add, size: 24),
-              label: const Text(
-                "Add Item",
-                style: TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.text_700,
+              elevation: 0,
+              side: BorderSide(
+                color: AppColors.secondary_300,
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary_600,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-                minimumSize: const Size(double.infinity, 56),
-              ),
-            ),
-          ),
-          // [BUTTON] Save Quiz
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-            child: ElevatedButton(
-              onPressed: _saveQuiz,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary_600,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              child: const Text(
-                "Save Quiz",
-                style: TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
           ),
+        ),
+
+        const SizedBox(width: 12),
+
+        // [BUTTON] Save Quiz
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: _saveQuiz,
+            icon: const Icon(Icons.save_rounded),
+            label: const Text(
+              'Save Quiz',
+              style: TextStyle(
+                fontSize: 16,
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary_600,
+              foregroundColor: Colors.white,
+              elevation: 1,
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
           ],
         ),
             ),
