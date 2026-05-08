@@ -277,8 +277,32 @@ class _QuizSettingsState extends State<QuizSettings> {
                       decoration: InputDecoration(
                         hintText: "Type quiz title...",
                         hintStyle: TextStyle(color: AppColors.text_400),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: AppColors.secondary_300,
+                          ),
+                        ),
+
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: AppColors.secondary_300,
+                          ),
+                        ),
+
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: AppColors.secondary_300,
+                          ),
+                        ),
+
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                       ),
                     ),
                   ),
@@ -664,7 +688,7 @@ class _QuizSettingsState extends State<QuizSettings> {
   // [WIDGET] Header — matches Quiz screen layout
   Widget _buildHeader() {
     return Material(
-      color: AppColors.primary_600,
+      color: AppColors.secondary_50,
       elevation: 3,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
@@ -672,7 +696,7 @@ class _QuizSettingsState extends State<QuizSettings> {
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.text_50),
+              icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_600),
               onPressed: () => Navigator.pop(context),
             ),
             const Text(
@@ -681,7 +705,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                 fontFamily: 'Baloo',
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.text_50,
+                color: AppColors.primary_600,
               ),
             ),
           ],
