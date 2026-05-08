@@ -81,7 +81,14 @@ class _CardsState extends State<Cards> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('Delete', style: const TextStyle(
+              fontFamily: 'Nunito',
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              height: 1.5,
+              letterSpacing: 0.5,
+              color: AppColors.text_700,
+            ).copyWith(color: Colors.red)),
           ),
         ],
       ),

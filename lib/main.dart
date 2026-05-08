@@ -124,12 +124,19 @@ class MyApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           titleTextStyle: const TextStyle(
+            fontFamily: 'Baloo',
             fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
+            height: 1.4,
+            letterSpacing: 0,
             color: AppColors.text_900,
           ),
           contentTextStyle: const TextStyle(
+            fontFamily: 'Nunito',
             fontSize: 16,
+            fontWeight: FontWeight.w400,
+            height: 1.5,
+            letterSpacing: 0,
             color: AppColors.text_300,
           ),
         ),
@@ -148,8 +155,12 @@ class MyApp extends StatelessWidget {
         snackBarTheme: SnackBarThemeData(
           backgroundColor: AppColors.text_800,
           contentTextStyle: const TextStyle(
-            color: AppColors.text_100,
+            fontFamily: 'Nunito',
             fontSize: 14,
+            fontWeight: FontWeight.w400,
+            height: 1.4,
+            letterSpacing: 0.25,
+            color: AppColors.text_100,
           ),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -192,16 +203,6 @@ class MyApp extends StatelessWidget {
         //     borderSide: BorderSide.none,
         //   ),
         // ),
-
-        // [THEME] Text
-        textTheme: const TextTheme(
-          bodyMedium: TextStyle(color: AppColors.text_100),
-          bodySmall: TextStyle(color: AppColors.text_400),
-          titleLarge: TextStyle(
-            color: AppColors.text_50,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
       ),
 
       // [ROUTES]
@@ -294,14 +295,20 @@ class HomeWithNavState extends State<HomeWithNav> {
 
             // [STYLE] Typography
             selectedLabelStyle: const TextStyle(
-              fontFamily: "Baloo",
+              fontFamily: 'Baloo',
               fontSize: 14,
               fontWeight: FontWeight.w600,
+              height: 1.3,
+              letterSpacing: 0,
+              color: AppColors.primary_600,
             ),
             unselectedLabelStyle: const TextStyle(
-              fontFamily: "Baloo",
+              fontFamily: 'Baloo',
               fontSize: 12,
               fontWeight: FontWeight.w500,
+              height: 1.3,
+              letterSpacing: 0,
+              color: AppColors.text_300,
             ),
 
             // [CONFIG]

@@ -105,8 +105,11 @@ class _HomePageState extends State<HomePage> {
         Text(
           value,
           style: const TextStyle(
+            fontFamily: 'Baloo',
             fontSize: 18,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
+            height: 1.2,
+            letterSpacing: 0,
             color: AppColors.primary_600,
           ),
         ),
@@ -114,9 +117,13 @@ class _HomePageState extends State<HomePage> {
         Text(
           label,
           style: const TextStyle(
-            fontFamily: "Nunito",
+            fontFamily: 'Nunito',
             fontSize: 12,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
+            height: 1.5,
+            letterSpacing: 0.5,
+            color: AppColors.text_700,
+          ).copyWith(
             color: AppColors.text_600,
           ),
         ),
@@ -168,22 +175,30 @@ class _HomePageState extends State<HomePage> {
                           "${_greeting()} $_firstName!",
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                            fontFamily: "Baloo",
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Baloo',
+                            fontSize: 28,
+                            fontWeight: FontWeight.w600,
+                            height: 1.35,
+                            letterSpacing: 0,
+                            color: AppColors.text_900,
+                          ).copyWith(
                             color: Colors.white,
                           ),
                         ),
 
                   const SizedBox(height: 4),
 
-                  const Text(
+                  Text(
                     "Ready to study?",
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: "Nunito",
+                    style: const TextStyle(
+                      fontFamily: 'Nunito',
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w400,
+                      height: 1.5,
+                      letterSpacing: 0.5,
+                      color: AppColors.text_200,
+                    ).copyWith(
                       color: Colors.white,
                     ),
                   ),
@@ -225,7 +240,15 @@ class _HomePageState extends State<HomePage> {
                           child: Center(
                             child: Text(
                               _rankIcon,
-                              style: const TextStyle(fontSize: 32),
+                              style: const TextStyle(
+                                fontFamily: 'Baloo',
+                                fontSize: 40,
+                                fontWeight: FontWeight.w700,
+                                height: 1.25,
+                                color: AppColors.text_900,
+                              ).copyWith(
+                                fontSize: 32,
+                              ),
                             ),
                           ),
                         ),
@@ -238,26 +261,37 @@ class _HomePageState extends State<HomePage> {
                             Text(
                               "Level ${(_totalExp ~/ 500) + 1}",
                               style: const TextStyle(
-                                fontFamily: "Nunito",
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
+                                fontFamily: 'Nunito',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                height: 1.5,
+                                letterSpacing: 0.5,
+                                color: AppColors.text_700,
+                              ).copyWith(
                                 color: AppColors.text_500,
                               ),
                             ),
                             Text(
                               _rankTitle,
                               style: const TextStyle(
-                                fontFamily: "Baloo",
-                                fontSize: 20,
+                                fontFamily: 'Baloo',
+                                fontSize: 22,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.text_800,
+                                height: 1.4,
+                                letterSpacing: 0,
+                                color: AppColors.text_900,
                               ),
                             ),
                             Text(
                               "$_totalExp / $_nextLevelExp XP",
                               style: const TextStyle(
-                                fontFamily: "Nunito",
+                                fontFamily: 'Nunito',
                                 fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                                height: 1.5,
+                                letterSpacing: 0.4,
+                                color: AppColors.text_400,
+                              ).copyWith(
                                 color: AppColors.text_500,
                               ),
                             ),
@@ -287,9 +321,13 @@ class _HomePageState extends State<HomePage> {
                             Text(
                               "${(_expProgress * 100).toStringAsFixed(1)}%",
                               style: const TextStyle(
-                                fontFamily: "Nunito",
+                                fontFamily: 'Nunito',
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
+                                height: 1.5,
+                                letterSpacing: 0.5,
+                                color: AppColors.text_700,
+                              ).copyWith(
                                 color: AppColors.text_600,
                               ),
                             ),
@@ -401,16 +439,20 @@ class _HomePageState extends State<HomePage> {
                                 color: AppColors.primary_500,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Column(
+                              child: Column(
                                 children: [
-                                  Icon(Icons.psychology, color: Colors.white, size: 28),
-                                  SizedBox(height: 6),
+                                  const Icon(Icons.psychology, color: Colors.white, size: 28),
+                                  const SizedBox(height: 6),
                                   Text(
                                     "Study Now",
-                                    style: TextStyle(
-                                      fontFamily: "Baloo",
-                                      fontSize: 14,
+                                    style: const TextStyle(
+                                      fontFamily: 'Nunito',
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w600,
+                                      height: 1.5,
+                                      letterSpacing: 0.5,
+                                      color: AppColors.text_700,
+                                    ).copyWith(
                                       color: AppColors.text_50,
                                     ),
                                   ),
@@ -486,10 +528,15 @@ class _HomePageState extends State<HomePage> {
                       _trivia,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        fontFamily: "Nunito",
+                        fontFamily: 'Nunito',
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w400,
+                        height: 1.5,
+                        letterSpacing: 0.25,
+                        color: AppColors.text_300,
+                      ).copyWith(
                         color: AppColors.text_800,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
