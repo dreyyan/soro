@@ -237,7 +237,7 @@ void _confirmGoBack() {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           ),
           child: const Text(
-            "Yes, Leave", 
+            "Leave", 
             style: TextStyle(fontFamily: "Nunito", fontWeight: FontWeight.w700),
           ),
         ),
