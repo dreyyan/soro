@@ -268,7 +268,7 @@ class HomeWithNavState extends State<HomeWithNav> {
         hoverColor: Colors.transparent, // remove hover effect
         ),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 4),
           decoration: const BoxDecoration(
             color: AppColors.secondary_50,
             border: Border(
