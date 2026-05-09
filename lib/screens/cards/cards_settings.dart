@@ -160,7 +160,7 @@ class _CardsSettingsState extends State<CardsSettings> {
       child: TextField(
         controller: controller,
         maxLines: null,
-        minLines: 3,
+        minLines: 1,
         textCapitalization: TextCapitalization.sentences,
         decoration: InputDecoration(
           hintText: placeholder,
@@ -217,14 +217,36 @@ class _CardsSettingsState extends State<CardsSettings> {
                       style: TextStyle(
                         fontFamily: 'Nunito',
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
                         color: AppColors.text_700,
                       ),
                       decoration: InputDecoration(
                         hintText: "Type card title...",
                         hintStyle: TextStyle(color: AppColors.text_400),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: AppColors.secondary_300,
+                          ),
+                        ),
+
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: AppColors.secondary_300,
+                          ),
+                        ),
+
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: AppColors.secondary_300,
+                          ),
+                        ),
+
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                       ),
                     ),
                   ),
@@ -412,7 +434,7 @@ class _CardsSettingsState extends State<CardsSettings> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildLabel("Front"),
+                                  _buildLabel("Term"),
                                   const SizedBox(height: 6),
                                   _buildCardField(frontCtrl, "Type something..."),
                                 ],
@@ -427,7 +449,7 @@ class _CardsSettingsState extends State<CardsSettings> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildLabel("Back"),
+                                  _buildLabel("Definition"),
                                   const SizedBox(height: 6),
                                   _buildCardField(backCtrl, "Type something..."),
                                 ],
@@ -496,13 +518,13 @@ class _CardsSettingsState extends State<CardsSettings> {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
+                        backgroundColor: AppColors.secondary_100,
                         foregroundColor: AppColors.text_700,
-                        elevation: 0,
+                        elevation: 1,
                         side: BorderSide(
                           color: AppColors.secondary_300,
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -529,7 +551,7 @@ class _CardsSettingsState extends State<CardsSettings> {
                         backgroundColor: AppColors.primary_600,
                         foregroundColor: Colors.white,
                         elevation: 1,
-                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -553,7 +575,7 @@ class _CardsSettingsState extends State<CardsSettings> {
       elevation: 3,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Row(
           children: [
             IconButton(

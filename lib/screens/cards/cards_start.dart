@@ -288,10 +288,6 @@ class _CardsPlayState extends State<CardsPlay>
                       child: SizedBox(
                         width: 96,
                         height: 96,
-                        child: Image.asset(
-                          'assets/images/soro-mascot.png',
-                          fit: BoxFit.contain,
-                        ),
                       ),
                     ),
                     Padding(

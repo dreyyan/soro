@@ -29,13 +29,20 @@ class _CardsEditState extends State<CardsEdit> {
     final cards = (widget.deck['cards'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
     if (cards.isEmpty) {
-      _addCardItem();
+      // [INIT] Start with one blank card
+      cardItems.add({
+        'id': DateTime.now().millisecondsSinceEpoch,
+        'frontController': TextEditingController(),
+        'backController': TextEditingController(),
+      });
     } else {
+      // [INIT] Populate directly — no setState needed before first build
       for (final card in cards) {
-        _addCardItem(
-          frontText: card['term'] as String? ?? '',
-          backText: card['definition'] as String? ?? '',
-        );
+        cardItems.add({
+          'id': DateTime.now().millisecondsSinceEpoch,
+          'frontController': TextEditingController(text: card['term'] as String? ?? ''),
+          'backController': TextEditingController(text: card['definition'] as String? ?? ''),
+        });
       }
     }
   }
