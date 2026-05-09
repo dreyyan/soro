@@ -166,7 +166,7 @@ void _showEditDeckDialog(Map<String, dynamic> deck) {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.secondary_200,
+      backgroundColor: AppColors.secondary_50,
       body: SafeArea(
         child: Column(
           children: [
@@ -210,7 +210,7 @@ void _showEditDeckDialog(Map<String, dynamic> deck) {
       elevation: 3,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         alignment: Alignment.centerLeft,
         child: RichText(
           text: TextSpan(
@@ -244,17 +244,7 @@ void _showEditDeckDialog(Map<String, dynamic> deck) {
 
     return Container(
   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-  decoration: BoxDecoration(
-    color: AppColors.secondary_200,
-    /*boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.05),
-        offset: const Offset(0, -4), // 👈 upward shadow
-        blurRadius: 8,
-        spreadRadius: 1,
-      ),
-    ], */
-  ),
+  color: AppColors.secondary_50,
   child: Row(
     children: [
       // [BUTTON] Sort Menu
@@ -286,12 +276,13 @@ void _showEditDeckDialog(Map<String, dynamic> deck) {
             ),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.secondary_50,
+            backgroundColor: AppColors.secondary_100,
             foregroundColor: AppColors.text_700,
             elevation: 1,
-            padding: const EdgeInsets.symmetric(vertical: 24),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
+              side: const BorderSide(color: AppColors.secondary_300),
             ),
           ),
         ),
@@ -316,7 +307,7 @@ void _showEditDeckDialog(Map<String, dynamic> deck) {
             backgroundColor: AppColors.primary_600,
             foregroundColor: Colors.white,
             elevation: 1,
-            padding: const EdgeInsets.symmetric(vertical: 24),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
