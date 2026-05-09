@@ -163,7 +163,7 @@ class _QuizState extends State<Quiz> {
     final quizzes = _sortedQuizzes;
 
     return Scaffold(
-      backgroundColor: AppColors.secondary_200,
+      backgroundColor: AppColors.secondary_50,
       body: SafeArea(
         child: Column(
           children: [
@@ -205,7 +205,7 @@ class _QuizState extends State<Quiz> {
       elevation: 3,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         alignment: Alignment.centerLeft,
         child: RichText(
           text: TextSpan(
@@ -237,7 +237,7 @@ class _QuizState extends State<Quiz> {
   Widget _buildActionButtons() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: AppColors.secondary_200,
+      color: AppColors.secondary_50,
       child: Row(
         children: [
           // [BUTTON] Sort Menu
@@ -265,13 +265,14 @@ class _QuizState extends State<Quiz> {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary_50,
+                backgroundColor: AppColors.secondary_100,
                 foregroundColor: AppColors.text_700,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
+                  side: const BorderSide(color: AppColors.secondary_300)
                 ),
                 elevation: 1,
-                padding: const EdgeInsets.symmetric(vertical: 24),
+                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
           ),
@@ -298,7 +299,7 @@ class _QuizState extends State<Quiz> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 elevation: 1,
-                padding: const EdgeInsets.symmetric(vertical: 24),
+                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
           ),
