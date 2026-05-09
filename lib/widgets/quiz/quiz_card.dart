@@ -26,10 +26,10 @@ class QuizCard extends StatelessWidget {
     final mode        = quiz['mode']          as String? ?? 'Multiple Choice';
 
     return Card(
-      color: AppColors.secondary_50,
+      color: AppColors.secondary_100,
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.secondary_300)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
