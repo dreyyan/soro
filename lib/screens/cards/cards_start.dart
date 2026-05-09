@@ -158,85 +158,37 @@ class _CardsPlayState extends State<CardsPlay>
     );
   }
 
-  Future<void> _submitSession() async {
-    final accuracy = cards.isNotEmpty
-        ? ((correctCount / cards.length) * 100).toStringAsFixed(1)
-        : '0';
+  // ─── STUDY COMPLETE DIALOG ──────────────────────────────────────────────────
 
+  Future<void> _submitSession() async {
     if (!mounted) return;
+
+    final accuracy = cards.isNotEmpty
+        ? (correctCount / cards.length) * 100
+        : 0.0;
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          "Study Session Complete!",
-          style: TextStyle(fontFamily: "Baloo", fontWeight: FontWeight.w700),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Correct: $correctCount / ${cards.length}",
-                style: const TextStyle(fontFamily: "Nunito")),
-            Text("Wrong: $wrongCount / ${cards.length}",
-                style: const TextStyle(fontFamily: "Nunito")),
-            Text("Accuracy: $accuracy%",
-                style: const TextStyle(fontFamily: "Nunito")),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.secondary_100,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  const Text("✨ Cards reviewed: ",
-                      style: TextStyle(
-                          fontFamily: "Nunito", fontWeight: FontWeight.bold)),
-                  Text("${cards.length}",
-                      style: const TextStyle(
-                          fontFamily: "Nunito", color: AppColors.primary_600)),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                currentNumber = 0;
-                correctCount = 0;
-                wrongCount = 0;
-                isFlipped = false;
-                _flipController.reset();
-              });
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.text_600,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            ),
-            child: const Text("Review Again",
-                style: TextStyle(fontFamily: "Nunito")),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _handleBack();
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary_600,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            ),
-            child: const Text("Back to Cards",
-                style: TextStyle(
-                    fontFamily: "Nunito", fontWeight: FontWeight.w700)),
-          ),
-        ],
+      builder: (_) => _StudyCompleteDialog(
+        correctCount: correctCount,
+        wrongCount: wrongCount,
+        totalCards: cards.length,
+        accuracy: accuracy,
+        onReviewAgain: () {
+          Navigator.pop(context);
+          setState(() {
+            currentNumber = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            isFlipped = false;
+            _flipController.reset();
+          });
+        },
+        onBack: () {
+          Navigator.pop(context);
+          _handleBack();
+        },
       ),
     );
   }
@@ -339,10 +291,9 @@ class _CardsPlayState extends State<CardsPlay>
           // [TITLE] Deck name chip
           Expanded(
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               decoration: BoxDecoration(
-                color: AppColors.secondary_100,
+                color: AppColors.secondary_50,
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: const [
                   BoxShadow(
@@ -355,7 +306,7 @@ class _CardsPlayState extends State<CardsPlay>
               ),
               child: Text(
                 deckTitle,
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.left,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontFamily: 'Baloo',
@@ -698,6 +649,572 @@ class _CardsPlayState extends State<CardsPlay>
   }
 }
 
+// ─── STUDY COMPLETE DIALOG ──────────────────────────────────────────────────
+
+class _SessionTier {
+  final String emoji;
+  final String title;
+  final String subtitle;
+  final Color color;
+  final int stars;
+
+  const _SessionTier({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.color,
+    required this.stars,
+  });
+
+  static _SessionTier fromAccuracy(double accuracy) {
+    if (accuracy >= 90) {
+      return const _SessionTier(
+        emoji: '🏆',
+        title: 'Perfect Score!',
+        subtitle: 'You absolutely nailed it!',
+        color: Color(0xFFF59E0B), // amber
+        stars: 3,
+      );
+    } else if (accuracy >= 70) {
+      return _SessionTier(
+        emoji: '🌟',
+        title: 'Great Job!',
+        subtitle: "You're really getting it!",
+        color: AppColors.primary_600,
+        stars: 2,
+      );
+    } else if (accuracy >= 50) {
+      return const _SessionTier(
+        emoji: '👍',
+        title: 'Good Work!',
+        subtitle: 'Keep building on this!',
+        color: Color(0xFF0D9488), // teal
+        stars: 1,
+      );
+    }
+    return const _SessionTier(
+      emoji: '💪',
+      title: 'Keep Practicing!',
+      subtitle: 'Every session makes you stronger!',
+      color: Color(0xFFF97316), // orange
+      stars: 0,
+    );
+  }
+}
+
+class _StudyCompleteDialog extends StatefulWidget {
+  final int correctCount;
+  final int wrongCount;
+  final int totalCards;
+  final double accuracy;
+  final VoidCallback onReviewAgain;
+  final VoidCallback onBack;
+
+  const _StudyCompleteDialog({
+    required this.correctCount,
+    required this.wrongCount,
+    required this.totalCards,
+    required this.accuracy,
+    required this.onReviewAgain,
+    required this.onBack,
+  });
+
+  @override
+  State<_StudyCompleteDialog> createState() => _StudyCompleteDialogState();
+}
+
+class _StudyCompleteDialogState extends State<_StudyCompleteDialog>
+    with TickerProviderStateMixin {
+  late AnimationController _mainCtrl;
+  late AnimationController _confettiCtrl;
+  late Animation<double> _slideAnim;
+  late Animation<double> _fadeAnim;
+  late List<Animation<double>> _starScaleAnims;
+  late List<Animation<double>> _starOpacityAnims;
+
+  List<_ConfettiPiece>? _confetti;
+
+  bool get _showConfetti => widget.accuracy >= 70;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _mainCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
+
+    _confettiCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
+
+    // Dialog slide-up + fade in
+    _slideAnim = Tween<double>(begin: 56, end: 0).animate(
+      CurvedAnimation(
+        parent: _mainCtrl,
+        curve: const Interval(0.0, 0.35, curve: Curves.easeOutCubic),
+      ),
+    );
+    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _mainCtrl,
+        curve: const Interval(0.0, 0.30, curve: Curves.easeOut),
+      ),
+    );
+
+    // Stars stagger — each bounces in with elastic overshoot
+    _starScaleAnims = List.generate(3, (i) {
+      final start = 0.38 + i * 0.14;
+      final end = (start + 0.22).clamp(0.0, 1.0);
+      return Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(
+          parent: _mainCtrl,
+          curve: Interval(start, end, curve: Curves.elasticOut),
+        ),
+      );
+    });
+
+    _starOpacityAnims = List.generate(3, (i) {
+      final start = 0.38 + i * 0.14;
+      final end = (start + 0.10).clamp(0.0, 1.0);
+      return Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(
+          parent: _mainCtrl,
+          curve: Interval(start, end, curve: Curves.easeOut),
+        ),
+      );
+    });
+
+    if (_showConfetti) {
+      _confetti = List.generate(22, (i) => _ConfettiPiece(Random(i * 17)));
+    }
+
+    _mainCtrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _mainCtrl.dispose();
+    _confettiCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tier = _SessionTier.fromAccuracy(widget.accuracy);
+
+    return AnimatedBuilder(
+      animation: _mainCtrl,
+      builder: (context, _) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Transform.translate(
+            offset: Offset(0, _slideAnim.value),
+            child: Opacity(
+              opacity: _fadeAnim.value,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // ── Main card ──────────────────────────────────────
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.12),
+                          blurRadius: 24,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.fromLTRB(24, 32, 24, 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // ── Emoji + headline ─────────────────────────
+                        Text(tier.emoji,
+                            style: const TextStyle(fontSize: 52)),
+                        const SizedBox(height: 6),
+                        Text(
+                          tier.title,
+                          style: TextStyle(
+                            fontFamily: 'Baloo',
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                            color: tier.color,
+                          ),
+                        ),
+                        Text(
+                          tier.subtitle,
+                          style: const TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 13,
+                            color: AppColors.text_400,
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // ── Stars ────────────────────────────────────
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(3, (i) {
+                            final filled = i < tier.stars;
+                            return Opacity(
+                              opacity: _starOpacityAnims[i].value,
+                              child: Transform.scale(
+                                scale: _starScaleAnims[i].value,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5),
+                                  child: Icon(
+                                    filled
+                                        ? Icons.star_rounded
+                                        : Icons.star_outline_rounded,
+                                    size: 44,
+                                    color: filled
+                                        ? const Color(0xFFF59E0B)
+                                        : AppColors.text_300,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+
+                        const SizedBox(height: 22),
+
+                        // ── Accuracy ring + stat rows ─────────────────
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Circular accuracy ring
+                            SizedBox(
+                              width: 92,
+                              height: 92,
+                              child: TweenAnimationBuilder<double>(
+                                tween: Tween(
+                                    begin: 0,
+                                    end: widget.accuracy / 100),
+                                duration:
+                                    const Duration(milliseconds: 1100),
+                                curve: Curves.easeOutCubic,
+                                builder: (_, value, __) => CustomPaint(
+                                  painter: _AccuracyRingPainter(
+                                      value, tier.color),
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          '${(value * 100).toStringAsFixed(0)}%',
+                                          style: TextStyle(
+                                            fontFamily: 'Baloo',
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w700,
+                                            color: tier.color,
+                                          ),
+                                        ),
+                                        const Text(
+                                          'accuracy',
+                                          style: TextStyle(
+                                            fontFamily: 'Nunito',
+                                            fontSize: 10,
+                                            color: AppColors.text_400,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(width: 20),
+
+                            // Stat rows
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  _buildStatRow(
+                                    icon: Icons.check_circle_rounded,
+                                    label: 'Correct',
+                                    value: widget.correctCount,
+                                    color: Colors.green.shade600,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  _buildStatRow(
+                                    icon: Icons.cancel_rounded,
+                                    label: 'Wrong',
+                                    value: widget.wrongCount,
+                                    color: Colors.red.shade500,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  _buildStatRow(
+                                    icon: Icons.style_rounded,
+                                    label: 'Cards',
+                                    value: widget.totalCards,
+                                    color: AppColors.text_600,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 26),
+
+                        // ── Buttons ───────────────────────────────────
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: widget.onReviewAgain,
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.text_600,
+                                  side: const BorderSide(
+                                      color: AppColors.text_100,
+                                      width: 1.5),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10)),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 14),
+                                ),
+                                child: const Text(
+                                  'Review Again',
+                                  style: TextStyle(
+                                    fontFamily: 'Nunito',
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: widget.onBack,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary_600,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10)),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 14),
+                                ),
+                                child: const Text(
+                                  'Back to Cards',
+                                  style: TextStyle(
+                                    fontFamily: 'Nunito',
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // ── Confetti overlay (clipped to card) ─────────────
+                  if (_showConfetti && _confetti != null)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: AnimatedBuilder(
+                            animation: _confettiCtrl,
+                            builder: (_, __) => CustomPaint(
+                              painter: _ConfettiPainter(
+                                  _confettiCtrl.value, _confetti!),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatRow({
+    required IconData icon,
+    required String label,
+    required int value,
+    required Color color,
+  }) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: value.toDouble()),
+      duration: const Duration(milliseconds: 900),
+      curve: Curves.easeOutCubic,
+      builder: (_, animated, __) => Row(
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Nunito',
+              fontSize: 13,
+              color: AppColors.text_400,
+            ),
+          ),
+          const Spacer(),
+          Text(
+            '${animated.round()}',
+            style: TextStyle(
+              fontFamily: 'Baloo',
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── ACCURACY RING PAINTER ──────────────────────────────────────────────────
+
+class _AccuracyRingPainter extends CustomPainter {
+  final double progress; // 0.0 – 1.0
+  final Color color;
+
+  _AccuracyRingPainter(this.progress, this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.shortestSide / 2 - 7;
+    const strokeW = 8.0;
+    const startAngle = -pi / 2;
+
+    // Background track
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = const Color(0xFFF3F4F6)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeW,
+    );
+
+    if (progress > 0) {
+      // Glow behind arc
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        2 * pi * progress,
+        false,
+        Paint()
+          ..color = color.withOpacity(0.18)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeW + 6
+          ..strokeCap = StrokeCap.round,
+      );
+
+      // Main arc
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        2 * pi * progress,
+        false,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeW
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_AccuracyRingPainter old) =>
+      old.progress != progress || old.color != color;
+}
+
+// ─── CONFETTI ───────────────────────────────────────────────────────────────
+
+class _ConfettiPiece {
+  final double x;
+  final double speed;
+  final double size;
+  final double phase;
+  final double wobble;
+  final Color color;
+
+  static const _colors = [
+    Color(0xFFF59E0B), // amber
+    Color(0xFFF472B6), // pink
+    Color(0xFF60A5FA), // blue
+    Color(0xFF34D399), // green
+    Color(0xFFA78BFA), // purple
+    Color(0xFFFB923C), // orange
+  ];
+
+  _ConfettiPiece(Random r)
+      : x = r.nextDouble(),
+        speed = 0.18 + r.nextDouble() * 0.38,
+        size = 5 + r.nextDouble() * 7,
+        phase = r.nextDouble(),
+        wobble = 0.5 + r.nextDouble() * 1.5,
+        color = _colors[r.nextInt(_colors.length)];
+}
+
+class _ConfettiPainter extends CustomPainter {
+  final double t;
+  final List<_ConfettiPiece> pieces;
+
+  _ConfettiPainter(this.t, this.pieces);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final p in pieces) {
+      final progress = (p.phase + p.speed * t) % 1.0;
+      final y = progress * (size.height + 24) - 12;
+      final x = p.x * size.width + sin((t * p.wobble + p.phase) * 2 * pi) * 18;
+      final rotation = t * p.wobble * pi;
+
+      canvas.save();
+      canvas.translate(x, y);
+      canvas.rotate(rotation);
+
+      final paint = Paint()..color = p.color.withOpacity(0.75);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(
+              center: Offset.zero,
+              width: p.size,
+              height: p.size * 0.45),
+          const Radius.circular(2),
+        ),
+        paint,
+      );
+
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ConfettiPainter old) => old.t != t;
+}
 // ─── PARTICLE BACKGROUND ────────────────────────────────────────────────────
 
 class _Particle {
