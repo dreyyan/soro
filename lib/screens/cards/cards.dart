@@ -128,6 +128,8 @@ void _showDeckDetailSheet(Map<String, dynamic> deck) {
               arguments: {
                 'title': deck['title'] as String? ?? 'Flashcard Deck',
                 'cards': cards,
+                'randomizeOrder': deck['randomizeOrder'] as bool? ?? false,
+                'randomizeSides': deck['randomizeSides'] as bool? ?? false,
               },
             ),
           ),

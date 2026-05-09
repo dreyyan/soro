@@ -18,6 +18,10 @@ class _CardsSettingsState extends State<CardsSettings> {
   // [STATES] Deck settings
   List<Map<String, dynamic>> cardItems = [];
 
+  // [STATES] Randomization options
+  bool _randomizeOrder = false;
+  bool _randomizeSides = false;
+
   // [CONTROLLERS] Form inputs
   final TextEditingController titleController = TextEditingController();
 
@@ -121,6 +125,8 @@ class _CardsSettingsState extends State<CardsSettings> {
       'title': title,
       'description': '',
       'createdAt': DateTime.now().toIso8601String(),
+      'randomizeOrder': _randomizeOrder,
+      'randomizeSides': _randomizeSides,
       'cards': cards,
     });
 
@@ -222,6 +228,83 @@ class _CardsSettingsState extends State<CardsSettings> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 24),
+
+                  // [SECTION] Randomization options
+                  Text(
+                    "Options",
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text_700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary_100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.secondary_300),
+                    ),
+                    child: Column(
+                      children: [
+                        // [TOGGLE] Randomize card order
+                        SwitchListTile(
+                          value: _randomizeOrder,
+                          onChanged: (val) => setState(() => _randomizeOrder = val),
+                          activeColor: AppColors.primary_600,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                          title: const Text(
+                            "Randomize Order",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.text_700,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            "Shuffle cards each time you play",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 13,
+                              color: AppColors.text_400,
+                            ),
+                          ),
+                        ),
+
+                        Divider(height: 1, color: AppColors.secondary_300),
+
+                        // [TOGGLE] Randomize front/back sides
+                        SwitchListTile(
+                          value: _randomizeSides,
+                          onChanged: (val) => setState(() => _randomizeSides = val),
+                          activeColor: AppColors.primary_600,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                          title: const Text(
+                            "Randomize Sides",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.text_700,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            "Randomly flip front and back",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 13,
+                              color: AppColors.text_400,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   const SizedBox(height: 24),
 
                   // [LABEL] Items section

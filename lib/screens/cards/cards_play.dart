@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:soro/main.dart';
 import 'package:soro/database/database_helper.dart';
 
@@ -57,9 +58,29 @@ class _CardsPlayState extends State<CardsPlay>
     if (args != null) {
       deckTitle = args['title'] ?? "Flashcard Deck";
       final cardsList = args['cards'] as List? ?? [];
-      
+      final randomizeOrder = args['randomizeOrder'] as bool? ?? false;
+      final randomizeSides = args['randomizeSides'] as bool? ?? false;
+
       if (cardsList.isNotEmpty) {
-        cards = cardsList.cast<Map<String, dynamic>>();
+        // [COPY] Work on a mutable copy so the original deck data is unchanged
+        cards = cardsList.cast<Map<String, dynamic>>()
+            .map((c) => Map<String, dynamic>.from(c))
+            .toList();
+
+        // [RANDOMIZE] Shuffle card order each play session
+        if (randomizeOrder) cards.shuffle(Random());
+
+        // [RANDOMIZE] Randomly flip front/back for each card each play session
+        if (randomizeSides) {
+          final rng = Random();
+          for (final card in cards) {
+            if (rng.nextBool()) {
+              final temp = card['term'];
+              card['term'] = card['definition'];
+              card['definition'] = temp;
+            }
+          }
+        }
       }
     }
 
