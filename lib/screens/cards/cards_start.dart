@@ -155,25 +155,36 @@ class _CardsPlayState extends State<CardsPlay>
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        title: const Text("Study Session Complete!"),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          "Study Session Complete!",
+          style: TextStyle(fontFamily: "Baloo", fontWeight: FontWeight.w700),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Correct: $correctCount / ${cards.length}"),
-            Text("Wrong: $wrongCount / ${cards.length}"),
-            Text("Accuracy: $accuracy%"),
+            Text("Correct: $correctCount / ${cards.length}",
+                style: const TextStyle(fontFamily: "Nunito")),
+            Text("Wrong: $wrongCount / ${cards.length}",
+                style: const TextStyle(fontFamily: "Nunito")),
+            Text("Accuracy: $accuracy%",
+                style: const TextStyle(fontFamily: "Nunito")),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
+                color: AppColors.secondary_100,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
-                  const Text("✨ Cards reviewed: ", style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text("${cards.length}", style: const TextStyle(color: Colors.blue)),
+                  const Text("✨ Cards reviewed: ",
+                      style: TextStyle(
+                          fontFamily: "Nunito", fontWeight: FontWeight.bold)),
+                  Text("${cards.length}",
+                      style: const TextStyle(
+                          fontFamily: "Nunito", color: AppColors.primary_600)),
                 ],
               ),
             ),
@@ -191,15 +202,25 @@ class _CardsPlayState extends State<CardsPlay>
                 _flipController.reset();
               });
             },
-            child: const Text("Review Again"),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.text_600,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+            child: const Text("Review Again",
+                style: TextStyle(fontFamily: "Nunito")),
           ),
-
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _handleBack();
             },
-            child: const Text("Back to Cards"),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary_600,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+            child: const Text("Back to Cards",
+                style: TextStyle(
+                    fontFamily: "Nunito", fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -208,7 +229,6 @@ class _CardsPlayState extends State<CardsPlay>
 
   void _markCorrect() {
     setState(() => correctCount++);
-
     Future.delayed(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       _nextCard();
@@ -217,7 +237,6 @@ class _CardsPlayState extends State<CardsPlay>
 
   void _markWrong() {
     setState(() => wrongCount++);
-
     Future.delayed(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       _nextCard();
@@ -246,6 +265,86 @@ class _CardsPlayState extends State<CardsPlay>
     }
   }
 
+  // ─── WIDGETS ────────────────────────────────────────────────────────────────
+
+  // [WIDGET] Top row: back button + deck title chip — mirrors quiz _buildHeader
+  Widget _buildHeader() {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // [BUTTON] Back with confirmation
+          SizedBox(
+            width: 48,
+            child: ElevatedButton(
+              onPressed: _confirmGoBack,
+              style: ButtonStyle(
+                padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+                splashFactory: NoSplash.splashFactory,
+                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+                backgroundColor:
+                    const WidgetStatePropertyAll(AppColors.secondary_50),
+                foregroundColor:
+                    const WidgetStatePropertyAll(AppColors.text_700),
+                shape: WidgetStatePropertyAll(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side:
+                        const BorderSide(color: AppColors.text_100, width: 2),
+                  ),
+                ),
+              ),
+              child: const Center(
+                child: Text(
+                  "<",
+                  style: TextStyle(
+                    fontFamily: "Nunito",
+                    fontWeight: FontWeight.w700,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 16),
+
+          // [TITLE] Deck name chip
+          Expanded(
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.secondary_100,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: const [
+                  BoxShadow(
+                    color: AppColors.secondary_500,
+                    spreadRadius: 0,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                deckTitle,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontFamily: 'Baloo',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.text_800,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // [WIDGET] Flippable card — clean NotebookLM-style, front/back differ only by bg
   Widget _buildFlippableCard() {
     return GestureDetector(
       onTap: _toggleFlip,
@@ -266,77 +365,73 @@ class _CardsPlayState extends State<CardsPlay>
               height: 330,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
+                // [FRONT] Clean white / [BACK] Soft warm tint
+                color: isBack ? AppColors.secondary_100 : Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: const [
                   BoxShadow(
-                    color: AppColors.text_200.withOpacity(0.45),
-                    blurRadius: 24,
-                    offset: const Offset(0, 12),
+                    color: AppColors.secondary_500,
+                    spreadRadius: 0,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
               child: Transform(
                 alignment: Alignment.center,
-                transform: isBack ? (Matrix4.identity()..rotateY(3.14159)) : Matrix4.identity(),
-                child: Stack(
-                  clipBehavior: Clip.hardEdge,
-                  children: [
-                    Positioned(
-                      top: 16,
-                      right: 16,
-                      child: SizedBox(
-                        width: 96,
-                        height: 96,
+                transform: isBack
+                    ? (Matrix4.identity()..rotateY(3.14159))
+                    : Matrix4.identity(),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // [COUNTER] "Card X of Y" + progress bar
+                      Text(
+                        "Card ${currentNumber + 1} of ${cards.length}",
+                        style: const TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 12,
+                          color: AppColors.text_400,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 24.0, left: 24.0, right: 24.0, bottom: 24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            "Card ${currentNumber + 1} of ${cards.length}",
-                            style: TextStyle(
+
+                      const SizedBox(height: 8),
+
+                      // [TEXT] Card content — left-aligned, vertically centered
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            isBack
+                                ? (currentCard['definition'] as String? ?? "")
+                                : (currentCard['term'] as String? ?? ""),
+                            textAlign: TextAlign.left,
+                            style: const TextStyle(
                               fontFamily: 'Nunito',
-                              fontSize: 12,
-                              color: AppColors.text_400,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.text_800,
+                              height: 1.4,
                             ),
                           ),
-                          const SizedBox(height: 18),
-                          Expanded(
-                            child: Center(
-                              child: Text(
-                                isBack
-                                    ? (currentCard['definition'] as String? ?? "")
-                                    : (currentCard['term'] as String? ?? ""),
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontFamily: 'Baloo',
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.text_800,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            "Tap card to flip",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontFamily: 'Nunito',
-                              fontSize: 12,
-                              color: AppColors.text_300,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
+
+                      // [HINT] Tap to flip
+                      Text(
+                        "Tap to flip",
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 12,
+                          color: AppColors.text_300,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -346,168 +441,224 @@ class _CardsPlayState extends State<CardsPlay>
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final isLastCard = currentNumber == cards.length - 1;
+  // [WIDGET] Bottom controls: prev / wrong / correct / next — styled like quiz input container
+  Widget _buildBottomControls(bool isLastCard) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.secondary_100,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.secondary_500,
+            spreadRadius: 0,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // [PREV] Back arrow button
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: currentNumber > 0 ? _previousCard : null,
+              style: ButtonStyle(
+                padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+                splashFactory: NoSplash.splashFactory,
+                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+                backgroundColor: WidgetStatePropertyAll(
+                  currentNumber > 0
+                      ? AppColors.secondary_50
+                      : AppColors.secondary_200,
+                ),
+                foregroundColor: WidgetStatePropertyAll(
+                  currentNumber > 0
+                      ? AppColors.text_700
+                      : AppColors.text_300,
+                ),
+                shape: WidgetStatePropertyAll(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: const BorderSide(
+                        color: AppColors.text_100, width: 2),
+                  ),
+                ),
+              ),
+              child: const Center(
+                child: Text(
+                  "<",
+                  style: TextStyle(
+                    fontFamily: "Nunito",
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            ),
+          ),
 
-    return cards.isEmpty
-        ? Scaffold(
-            backgroundColor: AppColors.secondary_50,
-            appBar: AppBar(
-              title: const Text("Study Flashcards",
-                  style: TextStyle(fontFamily: 'Baloo', fontWeight: FontWeight.w700)),
-              backgroundColor: AppColors.primary_600,
-              foregroundColor: Colors.white,
-              elevation: 0,
-            ),
-            body: const Center(
-              child: Text("No cards to study"),
-            ),
-          )
-        : Scaffold(
-            backgroundColor: AppColors.secondary_50,
-            body: SafeArea(
-              child: Column(
+          // [WRONG] Mark wrong
+          GestureDetector(
+            onTap: _markWrong,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red.shade200, width: 1.5),
+              ),
+              child: Row(
                 children: [
-                  Container(
-                    color: AppColors.secondary_50,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back),
-                          onPressed: _confirmGoBack,
-                          color: AppColors.primary_600,
-                          splashRadius: 24,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.text_200.withOpacity(0.25),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              deckTitle,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontFamily: 'Nunito',
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.text_800,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  Expanded(
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildFlippableCard(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          onPressed: currentNumber > 0 ? _previousCard : null,
-                          icon: const Icon(Icons.arrow_back),
-                          color: currentNumber > 0 ? AppColors.text_700 : AppColors.text_300,
-                          iconSize: 24,
-                          splashRadius: 24,
-                        ),
-
-                        GestureDetector(
-                          onTap: _markWrong,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.red.shade50,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.red.shade200, width: 1.5),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.close, color: Colors.red.shade700, size: 20),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '$wrongCount',
-                                  style: TextStyle(
-                                    fontFamily: 'Nunito',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.red.shade700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        GestureDetector(
-                          onTap: _markCorrect,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade50,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.green.shade200, width: 1.5),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.check, color: Colors.green.shade700, size: 20),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '$correctCount',
-                                  style: TextStyle(
-                                    fontFamily: 'Nunito',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.green.shade700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        IconButton(
-                          onPressed: isLastCard ? _submitSession : _nextCard,
-                          icon: Icon(isLastCard ? Icons.check : Icons.arrow_forward),
-                          color: AppColors.primary_600,
-                          iconSize: 24,
-                          splashRadius: 24,
-                        ),
-                      ],
+                  Icon(Icons.close, color: Colors.red.shade700, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    '$wrongCount',
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.red.shade700,
                     ),
                   ),
                 ],
               ),
             ),
-          );
+          ),
+
+          // [CORRECT] Mark correct
+          GestureDetector(
+            onTap: _markCorrect,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border:
+                    Border.all(color: Colors.green.shade200, width: 1.5),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check, color: Colors.green.shade700, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    '$correctCount',
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.green.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // [NEXT / SUBMIT] Forward arrow or checkmark on last card
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: isLastCard ? _submitSession : _nextCard,
+              style: ButtonStyle(
+                padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+                splashFactory: NoSplash.splashFactory,
+                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+                backgroundColor:
+                    const WidgetStatePropertyAll(AppColors.secondary_50),
+                foregroundColor:
+                    const WidgetStatePropertyAll(AppColors.primary_600),
+                shape: WidgetStatePropertyAll(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: const BorderSide(
+                        color: AppColors.text_100, width: 2),
+                  ),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  isLastCard ? "✓" : ">",
+                  style: const TextStyle(
+                    fontFamily: "Nunito",
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── BUILD ──────────────────────────────────────────────────────────────────
+
+  @override
+  Widget build(BuildContext context) {
+    final isLastCard = currentNumber == cards.length - 1;
+
+    // [EMPTY] Fallback state
+    if (cards.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppColors.secondary_300,
+        body: Padding(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              const Expanded(
+                child: Center(
+                  child: Text(
+                    "No cards to study",
+                    style: TextStyle(
+                      fontFamily: "Nunito",
+                      color: AppColors.text_600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.secondary_300,
+      body: Padding(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // [HEADER] Back button + deck title
+            _buildHeader(),
+
+            const SizedBox(height: 20),
+
+            // [CARD] Flippable flashcard — vertically centered in remaining space
+            Expanded(
+              child: Center(
+                child: _buildFlippableCard(),
+              ),
+            ),
+
+            // [CONTROLS] Navigation + wrong / correct buttons
+            _buildBottomControls(isLastCard),
+          ],
+        ),
+      ),
+    );
   }
 }
