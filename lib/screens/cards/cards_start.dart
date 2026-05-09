@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'dart:math';
 import 'package:soro/main.dart';
 import 'package:soro/database/database_helper.dart';
@@ -11,7 +12,7 @@ class CardsPlay extends StatefulWidget {
 }
 
 class _CardsPlayState extends State<CardsPlay>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   int currentNumber = 0;
   int correctCount = 0;
   int wrongCount = 0;
@@ -23,11 +24,22 @@ class _CardsPlayState extends State<CardsPlay>
   late AnimationController _flipController;
   late Animation<double> _flipAnimation;
 
+  Ticker? _particleTicker;
+  ValueNotifier<double>? _particleTime;
+  List<_Particle>? _particles;
+
   bool _settingsLoaded = false;
 
   @override
   void initState() {
     super.initState();
+    _particles = List.generate(14, (i) => _Particle(Random(i * 7)));
+    _particleTime = ValueNotifier(0);
+    _particleTicker = createTicker((elapsed) {
+      _particleTime!.value = elapsed.inMilliseconds / 1000.0;
+    });
+    _particleTicker!.start();
+
     _flipController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
@@ -49,6 +61,8 @@ class _CardsPlayState extends State<CardsPlay>
   @override
   void dispose() {
     _flipController.dispose();
+    _particleTicker?.dispose();
+    _particleTime?.dispose();
     super.dispose();
   }
 
@@ -266,6 +280,19 @@ class _CardsPlayState extends State<CardsPlay>
   }
 
   // ─── WIDGETS ────────────────────────────────────────────────────────────────
+
+  Widget _buildBackground() {
+    final notifier = _particleTime;
+    final parts = _particles;
+    if (notifier == null || parts == null) return const SizedBox.shrink();
+    return AnimatedBuilder(
+      animation: notifier,
+      builder: (_, __) => CustomPaint(
+        painter: _ParticlePainter(notifier.value, parts),
+        child: const SizedBox.expand(),
+      ),
+    );
+  }
 
   // [WIDGET] Top row: back button + deck title chip — mirrors quiz _buildHeader
   Widget _buildHeader() {
@@ -610,55 +637,104 @@ class _CardsPlayState extends State<CardsPlay>
     if (cards.isEmpty) {
       return Scaffold(
         backgroundColor: AppColors.secondary_300,
-        body: Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const Expanded(
-                child: Center(
-                  child: Text(
-                    "No cards to study",
-                    style: TextStyle(
-                      fontFamily: "Nunito",
-                      color: AppColors.text_600,
+        body: Stack(
+          children: [
+            Positioned.fill(child: _buildBackground()),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(),
+                  const Expanded(
+                    child: Center(
+                      child: Text(
+                        "No cards to study",
+                        style: TextStyle(
+                          fontFamily: "Nunito",
+                          color: AppColors.text_600,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
 
     return Scaffold(
       backgroundColor: AppColors.secondary_300,
-      body: Padding(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // [HEADER] Back button + deck title
-            _buildHeader(),
+      body: Stack(
+        children: [
+          Positioned.fill(child: _buildBackground()),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // [HEADER] Back button + deck title
+                _buildHeader(),
 
-            const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-            // [CARD] Flippable flashcard — vertically centered in remaining space
-            Expanded(
-              child: Center(
-                child: _buildFlippableCard(),
-              ),
+                // [CARD] Flippable flashcard — vertically centered in remaining space
+                Expanded(
+                  child: Center(
+                    child: _buildFlippableCard(),
+                  ),
+                ),
+
+                // [CONTROLS] Navigation + wrong / correct buttons
+                _buildBottomControls(isLastCard),
+              ],
             ),
-
-            // [CONTROLS] Navigation + wrong / correct buttons
-            _buildBottomControls(isLastCard),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
+}
+
+// ─── PARTICLE BACKGROUND ────────────────────────────────────────────────────
+
+class _Particle {
+  final double originX, originY, radius, velX, velY;
+
+  _Particle(Random r)
+      : originX = r.nextDouble(),
+        originY = r.nextDouble(),
+        radius = 20 + r.nextDouble() * 40,
+        velX = (r.nextDouble() - 0.5) * 0.04,
+        velY = (r.nextDouble() - 0.5) * 0.04;
+}
+
+class _ParticlePainter extends CustomPainter {
+  final double t;
+  final List<_Particle> particles;
+
+  _ParticlePainter(this.t, this.particles);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (int i = 0; i < particles.length; i++) {
+      final p = particles[i];
+      // Wrap around screen edges using modulo — truly endless
+      final x = ((p.originX + p.velX * t) % 1.0 + 1.0) % 1.0;
+      final y = ((p.originY + p.velY * t) % 1.0 + 1.0) % 1.0;
+      final paint = Paint()
+        ..color = AppColors.primary_500.withOpacity(i.isEven ? 0.18 : 0.10)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(
+        Offset(x * size.width, y * size.height),
+        p.radius,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ParticlePainter old) => old.t != t;
 }
