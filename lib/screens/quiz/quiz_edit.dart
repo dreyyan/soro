@@ -343,7 +343,7 @@ class _QuizEditState extends State<QuizEdit> {
             elevation: 3,
             shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: Row(
                 children: [
                   IconButton(
@@ -404,74 +404,101 @@ class _QuizEditState extends State<QuizEdit> {
                   ),
                   const SizedBox(height: 24),
 
-                  // [INPUT] Timer — toggle + h:m:s picker
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Timer",
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.text_700,
-                        ),
-                      ),
-                      Switch(
-                        value: _timerEnabled,
-                        onChanged: (v) => setState(() => _timerEnabled = v),
-                        activeColor: AppColors.primary_600,
-                      ),
-                    ],
-                  ),
-                  if (_timerEnabled) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary_100,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.secondary_300),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildTimeUnit(_hours,   "hr",  (v) => setState(() => _hours   = v), _hoursController, 23),
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
-                            child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
-                          ),
-                          _buildTimeUnit(_minutes, "min", (v) => setState(() => _minutes = v), _minutesController, 59),
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
-                            child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
-                          ),
-                          _buildTimeUnit(_seconds, "sec", (v) => setState(() => _seconds = v), _secondsController, 59),
-                        ],
-                      ),
+                  // [SECTION] Options
+                  Text(
+                    "Options",
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text_700,
                     ),
-                  ],
-                  const SizedBox(height: 24),
-                  
-                  // [INPUT] Randomize Questions — toggle
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Randomize Questions",
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.text_700,
+                  ),
+                  const SizedBox(height: 8),
+
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary_100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.secondary_300),
+                    ),
+                    child: Column(
+                      children: [
+                        // [TOGGLE] Timer
+                        SwitchListTile(
+                          value: _timerEnabled,
+                          onChanged: (v) => setState(() => _timerEnabled = v),
+                          activeColor: AppColors.primary_600,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                          title: const Text(
+                            "Timer",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.text_700,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            "Set a time limit for your quiz",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 13,
+                              color: AppColors.text_400,
+                            ),
+                          ),
                         ),
-                      ),
-                      Switch(
-                        value: _randomizeQuestions,
-                        onChanged: (v) => setState(() => _randomizeQuestions = v),
-                        activeColor: AppColors.primary_600,
-                      ),
-                    ],
+
+                        // [PICKER] h:m:s picker — shown when timer is enabled
+                        if (_timerEnabled)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildTimeUnit(_hours,   "hr",  (v) => setState(() => _hours   = v), _hoursController, 23),
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
+                                  child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
+                                ),
+                                _buildTimeUnit(_minutes, "min", (v) => setState(() => _minutes = v), _minutesController, 59),
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
+                                  child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
+                                ),
+                                _buildTimeUnit(_seconds, "sec", (v) => setState(() => _seconds = v), _secondsController, 59),
+                              ],
+                            ),
+                          ),
+
+                        Divider(height: 1, color: AppColors.secondary_300),
+
+                        // [TOGGLE] Randomize Questions
+                        SwitchListTile(
+                          value: _randomizeQuestions,
+                          onChanged: (v) => setState(() => _randomizeQuestions = v),
+                          activeColor: AppColors.primary_600,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                          title: const Text(
+                            "Randomize Questions",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.text_700,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            "Shuffle questions each time you play",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 13,
+                              color: AppColors.text_400,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 24),
                   
@@ -771,13 +798,13 @@ SafeArea(
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.secondary_100,
               foregroundColor: AppColors.text_700,
-              elevation: 0,
+              elevation: 1,
               side: BorderSide(
                 color: AppColors.secondary_300,
               ),
-              padding: const EdgeInsets.symmetric(vertical: 24),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -791,7 +818,7 @@ SafeArea(
         Expanded(
           child: ElevatedButton.icon(
             onPressed: _saveQuiz,
-            icon: const Icon(Icons.save_rounded, size: 24),
+            icon: const Icon(Icons.save_rounded),
             label: const Text(
               'Save Quiz',
               style: TextStyle(
@@ -804,7 +831,7 @@ SafeArea(
               backgroundColor: AppColors.primary_600,
               foregroundColor: Colors.white,
               elevation: 1,
-              padding: const EdgeInsets.symmetric(vertical: 24),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),

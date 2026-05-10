@@ -764,13 +764,13 @@ SafeArea(
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.secondary_100,
               foregroundColor: AppColors.text_700,
-              elevation: 0,
+              elevation: 1,
               side: BorderSide(
                 color: AppColors.secondary_300,
               ),
-              padding: const EdgeInsets.symmetric(vertical: 24),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -797,7 +797,7 @@ SafeArea(
               backgroundColor: AppColors.primary_600,
               foregroundColor: Colors.white,
               elevation: 1,
-              padding: const EdgeInsets.symmetric(vertical: 24),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -824,7 +824,7 @@ SafeArea(
       elevation: 3,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Row(
           children: [
             IconButton(
