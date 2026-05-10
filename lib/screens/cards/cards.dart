@@ -162,6 +162,7 @@ class _CardsState extends State<Cards> {
       _SortOption(value: 'newest', label: 'Newest First', icon: Icons.arrow_downward_rounded),
       _SortOption(value: 'oldest', label: 'Oldest First', icon: Icons.arrow_upward_rounded),
       _SortOption(value: 'alpha',  label: 'A → Z',        icon: Icons.sort_by_alpha_rounded),
+      _SortOption(value: 'reverse_alpha',  label: 'Z → A',        icon: Icons.sort_by_alpha_rounded),
     ];
 
     final selected = await showModalBottomSheet<String>(
