@@ -167,7 +167,7 @@ class _QuizState extends State<Quiz> {
     final quizzes = _sortedQuizzes;
 
     return Scaffold(
-      backgroundColor: AppColors.secondary_200,
+      backgroundColor: AppColors.secondary_50,
       body: SafeArea(
         child: Column(
           children: [
@@ -241,7 +241,7 @@ class _QuizState extends State<Quiz> {
   Widget _buildActionButtons() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: AppColors.secondary_200,
+      color: AppColors.secondary_50,
       child: Row(
         children: [
           // [BUTTON] Sort Menu
@@ -271,12 +271,12 @@ class _QuizState extends State<Quiz> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondary_100,
                 foregroundColor: AppColors.text_700,
+                elevation: 1,
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
-                  side: const BorderSide(color: AppColors.secondary_300)
+                  side: const BorderSide(color: AppColors.secondary_300),
                 ),
-                elevation: 1,
-                padding: const EdgeInsets.symmetric(vertical: 24),
               ),
             ),
           ),
@@ -284,7 +284,7 @@ class _QuizState extends State<Quiz> {
           const SizedBox(width: 12),
 
           // [BUTTON] Create Quiz
-          Expanded(
+         Expanded(
             child: ElevatedButton.icon(
               onPressed: _createQuiz,
               icon: const Icon(Icons.add),
@@ -299,11 +299,11 @@ class _QuizState extends State<Quiz> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary_600,
                 foregroundColor: Colors.white,
+                elevation: 1,
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                elevation: 1,
-                padding: const EdgeInsets.symmetric(vertical: 24),
               ),
             ),
           ),
