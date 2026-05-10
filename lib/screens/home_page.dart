@@ -34,7 +34,7 @@ class _HomePageState extends State<HomePage> {
   int? _accuracy; // null means no quizzes taken yet
   int _streak = 0;
   bool _isLoading = true;
-  
+
   // [PROGRESSION]
   String _rankTitle = "Novice";
   String _rankIcon = "🌱";
@@ -57,14 +57,14 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadData() async {
     final db = DatabaseHelper();
 
-    final user  = await db.getLoggedInUser();
-    final stats = await db.getProgressionStats();
+    final user    = await db.getLoggedInUser();
+    final stats   = await db.getProgressionStats();
     final academic = await db.getAcademicStats();
 
     if (!mounted) return;
 
     // Extract first name only for the greeting
-    final fullName = (user?['fullName'] as String? ?? '').trim();
+    final fullName  = (user?['fullName'] as String? ?? '').trim();
     final firstName = fullName.isNotEmpty
         ? fullName.split(' ').first
         : (user?['email'] as String? ?? 'there').split('@').first;
@@ -78,15 +78,15 @@ class _HomePageState extends State<HomePage> {
       _accuracy     = academic['accuracy'] as int?;
       _streak       = academic['streakDays'] as int;
       _isLoading    = false;
-      
+
       // [PROGRESSION]
-      _rankTitle = rankInfo['title'] as String;
-      _rankIcon = rankInfo['icon'] as String;
-      _totalExp = stats.totalExp;
-      _totalCoins = stats.totalCoins;
-      _currentLevelExp = rankInfo['minExp'] as int;
-      _nextLevelExp = rankInfo['nextExp'] as int? ?? _currentLevelExp;
-      _expProgress = rankInfo['progress'] as double;
+      _rankTitle       = rankInfo['title']    as String;
+      _rankIcon        = rankInfo['icon']     as String;
+      _totalExp        = stats.totalExp;
+      _totalCoins      = stats.totalCoins;
+      _currentLevelExp = rankInfo['minExp']   as int;
+      _nextLevelExp    = rankInfo['nextExp']  as int? ?? _currentLevelExp;
+      _expProgress     = rankInfo['progress'] as double;
     });
   }
 
@@ -131,81 +131,124 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // [WIDGET] Rank icon with circular XP progress ring
+  Widget _buildRankIcon() {
+    // Ring turns amber when the rank is maxed out (progress == 1.0)
+    final ringColor = _expProgress >= 1.0 ? Colors.amber : AppColors.primary_500;
+
+    return SizedBox(
+      width: 76,
+      height: 76,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // [RING] XP progress ring drawn around the icon
+          CustomPaint(
+            size: const Size(76, 76),
+            painter: _XpRingPainter(
+              progress: _expProgress,
+              ringColor: ringColor,
+              trackColor: AppColors.secondary_300,
+            ),
+          ),
+
+          // [ICON] Rank tier emoji inside a rounded square
+          Container(
+            width: 56,
+            height: 56,
+            child: Center(
+              child: Text(
+                _rankIcon,
+                style: const TextStyle(
+                  fontFamily: 'Baloo',
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  height: 1.25,
+                  color: AppColors.text_900,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final accuracyLabel = _accuracy != null ? '$_accuracy%' : '—';
 
-      return Scaffold(
-          body: SingleChildScrollView(
-            child: Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage("assets/images/home-page-bg.png"),
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter, // start from top
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Container(
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("assets/images/home-page-bg.png"),
+              fit: BoxFit.cover,
+              alignment: Alignment.topCenter,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 24),
+
+              // [BAR] Top with Title
+              const SizedBox(height: 24),
+
+              // [SECTION] Greeting
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _isLoading
+                        ? Container(
+                            height: 30,
+                            width: 200,
+                            decoration: BoxDecoration(
+                              color: AppColors.text_100,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          )
+                        : Text(
+                            "${_greeting()} $_firstName!",
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontFamily: 'Baloo',
+                              fontSize: 28,
+                              fontWeight: FontWeight.w600,
+                              height: 1.35,
+                              letterSpacing: 0,
+                              color: AppColors.text_900,
+                            ).copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
+
+                    const SizedBox(height: 4),
+
+                    Text(
+                      "Ready to study?",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        height: 1.5,
+                        letterSpacing: 0.5,
+                        color: AppColors.text_200,
+                      ).copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 24),
-              // [BAR] Top with Title
-        
-              const SizedBox(height: 24),
-        
-             // [SECTION] Greeting
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _isLoading
-                      ? Container(
-                          height: 30,
-                          width: 200,
-                          decoration: BoxDecoration(
-                            color: AppColors.text_100,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        )
-                      : Text(
-                          "${_greeting()} $_firstName!",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontFamily: 'Baloo',
-                            fontSize: 28,
-                            fontWeight: FontWeight.w600,
-                            height: 1.35,
-                            letterSpacing: 0,
-                            color: AppColors.text_900,
-                          ).copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
 
-                  const SizedBox(height: 4),
-
-                  Text(
-                    "Ready to study?",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      height: 1.5,
-                      letterSpacing: 0.5,
-                      color: AppColors.text_200,
-                    ).copyWith(
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        
               const SizedBox(height: 16),
 
               // [SECTION] Progress Dashboard (Level + Stats + Streak)
@@ -230,28 +273,8 @@ class _HomePageState extends State<HomePage> {
                     // [SECTION] Level
                     Row(
                       children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary_500,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(
-                            child: Text(
-                              _rankIcon,
-                              style: const TextStyle(
-                                fontFamily: 'Baloo',
-                                fontSize: 40,
-                                fontWeight: FontWeight.w700,
-                                height: 1.25,
-                                color: AppColors.text_900,
-                              ).copyWith(
-                                fontSize: 32,
-                              ),
-                            ),
-                          ),
-                        ),
+                        // [WIDGET] Rank icon + XP ring
+                        _buildRankIcon(),
 
                         const SizedBox(width: 12),
 
@@ -417,7 +440,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-    
+
               const SizedBox(height: 16),
 
               Column(
@@ -461,9 +484,9 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-        
+
                         const SizedBox(width: 12),
-        
+
                         Expanded(
                           child: GestureDetector(
                             onTap: () {
@@ -506,9 +529,9 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                   ),
-        
+
                   const SizedBox(height: 16),
-        
+
                   // [TRIVIA]
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 24),
@@ -540,9 +563,9 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-        
+
                   const SizedBox(height: 8),
-        
+
                   // [MASCOT]
                   Container(
                     margin: const EdgeInsets.only(right: 8),
@@ -562,4 +585,58 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// [PAINTER] Circular XP progress ring drawn around the rank tier icon
+// ─────────────────────────────────────────────────────────────────────────────
+class _XpRingPainter extends CustomPainter {
+  final double progress;
+  final Color ringColor;
+  final Color trackColor;
+
+  const _XpRingPainter({
+    required this.progress,
+    required this.ringColor,
+    required this.trackColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center     = Offset(size.width / 2, size.height / 2);
+    final radius     = (size.width / 2) - 3.5;
+    const strokeWidth = 4.5;
+
+    // [TRACK] Full grey background circle
+    final trackPaint = Paint()
+      ..color       = trackColor
+      ..style       = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap   = StrokeCap.round;
+
+    canvas.drawCircle(center, radius, trackPaint);
+
+    // [ARC] Filled progress arc, starts at the top (−90°)
+    if (progress > 0) {
+      final progressPaint = Paint()
+        ..color       = ringColor
+        ..style       = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap   = StrokeCap.round;
+
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        -pi / 2,                            // top of circle
+        2 * pi * progress.clamp(0.0, 1.0), // sweep angle
+        false,
+        progressPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_XpRingPainter old) =>
+      old.progress != progress ||
+      old.ringColor != ringColor ||
+      old.trackColor != trackColor;
 }
