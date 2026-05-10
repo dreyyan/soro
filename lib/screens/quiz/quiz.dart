@@ -134,6 +134,7 @@ class _QuizState extends State<Quiz> {
               'identificationMode': quiz['identificationMode'] ?? 'Definition',
               'gameMode':           quiz['gameMode']      ?? 'Classic',
               'timeLimitSecs':      quiz['timeLimitSecs'],
+              'randomizeQuestions': quiz['randomizeQuestions'] ?? false,
               'questions':          questions,
             },
           );

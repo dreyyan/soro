@@ -52,6 +52,7 @@ class _QuizStartState extends State<QuizStart> {
 
   // [STATES] Question data
   List<Question> questions = [];
+  bool randomizeQuestions = false;
 
   // [GETTER] Current question shorthand
   Question get currentQuestion => questions[currentNumber];
@@ -89,6 +90,7 @@ class _QuizStartState extends State<QuizStart> {
       selectedMode      = args['mode']              ?? "Multiple Choice";
       identificationMode = args['identificationMode'] ?? "Definition";
       selectedGameMode  = args['gameMode']          ?? "Classic";
+      randomizeQuestions = args['randomizeQuestions'] ?? false;
 
       final savedSecs = args['timeLimitSecs'] as int?;
       timeLeft           = (savedSecs != null && savedSecs > 0) ? savedSecs : null;
@@ -104,6 +106,11 @@ class _QuizStartState extends State<QuizStart> {
             List<String>.from(map['choices'] ?? []),
           );
         }).toList();
+        
+        // [SHUFFLE] Randomize question order if enabled
+        if (randomizeQuestions) {
+          questions.shuffle(Random());
+        }
       }
     }
 
