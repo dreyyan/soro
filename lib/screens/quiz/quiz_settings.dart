@@ -17,10 +17,14 @@ class QuizSettings extends StatefulWidget {
 class _QuizSettingsState extends State<QuizSettings> {
   // [STATES] Quiz settings
   final TextEditingController titleController = TextEditingController();
+  final TextEditingController _hoursController = TextEditingController(text: '0');
+  final TextEditingController _minutesController = TextEditingController(text: '10');
+  final TextEditingController _secondsController = TextEditingController(text: '0');
   bool _timerEnabled = false;
   int _hours = 0;
   int _minutes = 10;
   int _seconds = 0;
+  bool _randomizeQuestions = false;
   
   List<QuestionItem> questions = [];
   
@@ -34,6 +38,12 @@ class _QuizSettingsState extends State<QuizSettings> {
   @override
   void dispose() {
     titleController.dispose();
+    _hoursController.dispose();
+    _minutesController.dispose();
+    _secondsController.dispose();
+    for (final q in questions) {
+      q.dispose();
+    }
     super.dispose();
   }
 
@@ -53,6 +63,7 @@ class _QuizSettingsState extends State<QuizSettings> {
   // [REMOVE] Remove a question
   void _removeQuestion(int index) {
     setState(() {
+      questions[index].dispose();
       questions.removeAt(index);
     });
   }
@@ -116,6 +127,7 @@ class _QuizSettingsState extends State<QuizSettings> {
       'identificationMode': 'Definition',
       'deckTitle': '—',
       'timeLimitSecs': totalSeconds,
+      'randomizeQuestions': _randomizeQuestions,
       'questions': questions.map((q) => {
         'question': q.question,
         'answer': q.type == "True or False"
@@ -162,30 +174,73 @@ class _QuizSettingsState extends State<QuizSettings> {
   }
 
   // [WIDGET] Compact time unit stepper (up/down arrows + value + label)
-  Widget _buildTimeUnit(int value, String label, ValueChanged<int> onChanged) {
+  Widget _buildTimeUnit(int value, String label, ValueChanged<int> onChanged, TextEditingController controller, int max) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // [UP BUTTON] Increment by 1
         GestureDetector(
-          onTap: () => onChanged(value + 1),
-          child: Icon(Icons.keyboard_arrow_up_rounded, size: 22, color: AppColors.primary_600),
+          onTap: () {
+            int newValue = value + 1;
+            if (newValue > max) newValue = 0;
+            onChanged(newValue);
+            controller.text = newValue.toString().padLeft(2, '0');
+          },
+          child: Icon(Icons.keyboard_arrow_up_rounded, size: 24, color: AppColors.primary_600),
         ),
-        const SizedBox(height: 2),
-        Text(
-          value.toString().padLeft(2, '0'),
-          style: const TextStyle(
-            fontFamily: 'Nunito',
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: AppColors.text_700,
+        const SizedBox(height: 4),
+        // [INPUT FIELD] Time value
+        SizedBox(
+          width: 50,
+          child: TextField(
+            controller: controller,
+            textAlign: TextAlign.center,
+            keyboardType: TextInputType.number,
+            maxLength: 2,
+            style: const TextStyle(
+              fontFamily: 'Nunito',
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text_700,
+            ),
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+                borderSide: const BorderSide(color: AppColors.secondary_300, width: 1),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+                borderSide: const BorderSide(color: AppColors.secondary_300, width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+                borderSide: const BorderSide(color: AppColors.primary_600, width: 1.5),
+              ),
+              counterText: '',
+            ),
+            onChanged: (val) {
+              int? newValue = int.tryParse(val.isEmpty ? '0' : val);
+              if (newValue != null) {
+                newValue = newValue.clamp(0, max);
+                onChanged(newValue);
+              }
+            },
           ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
+        // [DOWN BUTTON] Decrement by 1
         GestureDetector(
-          onTap: () => onChanged(value - 1),
-          child: Icon(Icons.keyboard_arrow_down_rounded, size: 22, color: AppColors.primary_600),
+          onTap: () {
+            int newValue = value - 1;
+            if (newValue < 0) newValue = max;
+            onChanged(newValue);
+            controller.text = newValue.toString().padLeft(2, '0');
+          },
+          child: Icon(Icons.keyboard_arrow_down_rounded, size: 24, color: AppColors.primary_600),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
+        // [LABEL] Unit
         Text(
           label,
           style: TextStyle(
@@ -203,6 +258,7 @@ class _QuizSettingsState extends State<QuizSettings> {
   // [WIDGET] Shared text input field used for Question and Answer
   Widget _buildTextField({
     required String hint,
+    required TextEditingController controller,
     required ValueChanged<String> onChanged,
     int minLines = 2,
     int? maxLines = 2,
@@ -214,6 +270,7 @@ class _QuizSettingsState extends State<QuizSettings> {
         border: Border.all(color: AppColors.secondary_300),
       ),
       child: TextField(
+        controller: controller,
         maxLines: maxLines,
         minLines: minLines,
         decoration: InputDecoration(
@@ -340,21 +397,43 @@ class _QuizSettingsState extends State<QuizSettings> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _buildTimeUnit(_hours, "hr", (v) => setState(() => _hours = v.clamp(0, 23))),
+                          _buildTimeUnit(_hours, "hr", (v) => setState(() => _hours = v), _hoursController, 23),
                           Padding(
                             padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
                             child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
                           ),
-                          _buildTimeUnit(_minutes, "min", (v) => setState(() => _minutes = v.clamp(0, 59))),
+                          _buildTimeUnit(_minutes, "min", (v) => setState(() => _minutes = v), _minutesController, 59),
                           Padding(
                             padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
                             child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
                           ),
-                          _buildTimeUnit(_seconds, "sec", (v) => setState(() => _seconds = v.clamp(0, 59))),
+                          _buildTimeUnit(_seconds, "sec", (v) => setState(() => _seconds = v), _secondsController, 59),
                         ],
                       ),
                     ),
                   ],
+                  const SizedBox(height: 24),
+                  
+                  // [INPUT] Randomize Questions — toggle
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Randomize Questions",
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.text_700,
+                        ),
+                      ),
+                      Switch(
+                        value: _randomizeQuestions,
+                        onChanged: (v) => setState(() => _randomizeQuestions = v),
+                        activeColor: AppColors.primary_600,
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 24),
                   
                   // [SECTION] Items
@@ -509,6 +588,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                                   const SizedBox(height: 6),
                                   _buildTextField(
                                     hint: "Type question...",
+                                    controller: q.questionController,
                                     onChanged: (val) => _updateQuestion(index, question: val),
                                   ),
                                   const SizedBox(height: 14),
@@ -580,6 +660,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                                   else
                                     _buildTextField(
                                       hint: "Type correct answer...",
+                                      controller: q.answerController,
                                       onChanged: (val) => _updateQuestion(index, answer: val),
                                       minLines: 1,
                                       maxLines: null,
@@ -742,6 +823,9 @@ class QuestionItem {
   String correctAnswer;
   bool trueFalseAnswer;
   List<String> choices;
+  final TextEditingController questionController;
+  final TextEditingController answerController;
+
   QuestionItem({
     required this.id,
     required this.type,
@@ -749,5 +833,11 @@ class QuestionItem {
     required this.correctAnswer,
     this.trueFalseAnswer = true,
     this.choices = const [],
-  });
+  })  : questionController = TextEditingController(text: question),
+        answerController = TextEditingController(text: correctAnswer);
+
+  void dispose() {
+    questionController.dispose();
+    answerController.dispose();
+  }
 }

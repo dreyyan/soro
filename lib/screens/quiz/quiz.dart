@@ -125,6 +125,9 @@ class _QuizState extends State<Quiz> {
           Navigator.pop(context);
           final questions =
               (quiz['questions'] as List? ?? []).cast<Map<String, dynamic>>();
+          if (quiz['randomizeQuestions'] == true) {
+            questions.shuffle();
+          }
           Navigator.pushNamed(
             context,
             '/quiz/start',
@@ -134,6 +137,7 @@ class _QuizState extends State<Quiz> {
               'identificationMode': quiz['identificationMode'] ?? 'Definition',
               'gameMode':           quiz['gameMode']      ?? 'Classic',
               'timeLimitSecs':      quiz['timeLimitSecs'],
+              'randomizeQuestions': quiz['randomizeQuestions'] ?? false,
               'questions':          questions,
             },
           );
@@ -163,7 +167,7 @@ class _QuizState extends State<Quiz> {
     final quizzes = _sortedQuizzes;
 
     return Scaffold(
-      backgroundColor: AppColors.secondary_50,
+      backgroundColor: AppColors.secondary_200,
       body: SafeArea(
         child: Column(
           children: [
@@ -213,7 +217,7 @@ class _QuizState extends State<Quiz> {
               fontFamily: 'Baloo',
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: AppColors.text_50,
+              color: Colors.white,
             ),
             children: [
               const TextSpan(text: 'My Quizzes '),
@@ -223,7 +227,7 @@ class _QuizState extends State<Quiz> {
                   fontFamily: 'Nunito',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.text_100,
+                  color: Colors.white,
                 ),
               ),
             ],
@@ -237,7 +241,7 @@ class _QuizState extends State<Quiz> {
   Widget _buildActionButtons() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: AppColors.secondary_50,
+      color: AppColors.secondary_200,
       child: Row(
         children: [
           // [BUTTON] Sort Menu
@@ -272,7 +276,7 @@ class _QuizState extends State<Quiz> {
                   side: const BorderSide(color: AppColors.secondary_300)
                 ),
                 elevation: 1,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 24),
               ),
             ),
           ),
@@ -299,7 +303,7 @@ class _QuizState extends State<Quiz> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 elevation: 1,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 24),
               ),
             ),
           ),

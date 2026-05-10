@@ -52,6 +52,7 @@ class _QuizStartState extends State<QuizStart> {
 
   // [STATES] Question data
   List<Question> questions = [];
+  bool randomizeQuestions = false;
 
   // [GETTER] Current question shorthand
   Question get currentQuestion => questions[currentNumber];
@@ -89,6 +90,7 @@ class _QuizStartState extends State<QuizStart> {
       selectedMode      = args['mode']              ?? "Multiple Choice";
       identificationMode = args['identificationMode'] ?? "Definition";
       selectedGameMode  = args['gameMode']          ?? "Classic";
+      randomizeQuestions = args['randomizeQuestions'] ?? false;
 
       final savedSecs = args['timeLimitSecs'] as int?;
       timeLeft           = (savedSecs != null && savedSecs > 0) ? savedSecs : null;
@@ -98,12 +100,30 @@ class _QuizStartState extends State<QuizStart> {
       if (rawList != null && rawList.isNotEmpty) {
         questions = rawList.map((q) {
           final map = Map<String, dynamic>.from(q as Map);
+          final type = map['type'] as String? ?? 'Multiple Choice';
+          
+          // [CONVERT] True/False answer from string to normalized label
+          final rawAnswer = map['answer'] as String? ?? '';
+          final normalizedAnswer = type == 'True or False'
+              ? (rawAnswer.toLowerCase() == 'true' ? 'True' : 'False')
+              : rawAnswer;
+          final trueFalseAnswer = type == 'True or False'
+              ? normalizedAnswer == 'True'
+              : true;
+
           return Question(
             map['question'] as String,
-            map['answer']   as String,
+            normalizedAnswer,
             List<String>.from(map['choices'] ?? []),
+            type,
+            trueFalseAnswer,
           );
         }).toList();
+        
+        // [SHUFFLE] Randomize question order if enabled
+        if (randomizeQuestions) {
+          questions.shuffle(Random());
+        }
       }
     }
 
@@ -123,8 +143,14 @@ class _QuizStartState extends State<QuizStart> {
 
     for (var question in questions) {
       // [TRUE OR FALSE] Fixed choices
-      if (selectedMode == "True or False") {
+      if (question.type == "True or False") {
         question.choices = ["True", "False"];
+        continue;
+      }
+
+      // [IDENTIFICATION] No choices needed
+      if (question.type == "Identification") {
+        question.choices = [];
         continue;
       }
 
@@ -193,15 +219,13 @@ class _QuizStartState extends State<QuizStart> {
     return "$mins:$secs";
   }
 
-  // [NAVIGATE] Return to QuizSettings
+  // [NAVIGATE] Return to the quiz list page
   void _handleBack() {
-  // Pop twice to skip QuizSettings and return to quiz.dart
-  if (Navigator.canPop(context)) Navigator.pop(context); // Pop QuizStart
-  if (Navigator.canPop(context)) Navigator.pop(context); // Pop QuizSettings
-}
+    Navigator.popUntil(context, (route) => route.settings.name == '/quiz' || route.isFirst);
+  }
 
   // [CONFIRM] Show dialog before returning to menu
-void _confirmGoBack() {
+  void _confirmGoBack() {
   showDialog(
     context: context,
     barrierDismissible: false, // Force explicit choice
@@ -237,7 +261,7 @@ void _confirmGoBack() {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           ),
           child: const Text(
-            "Yes, Leave", 
+            "Leave", 
             style: TextStyle(fontFamily: "Nunito", fontWeight: FontWeight.w700),
           ),
         ),
@@ -627,9 +651,9 @@ void _confirmGoBack() {
 
           // [TEXT] The question itself
           Text(
-            selectedMode == "True or False"
+            currentQuestion.type == "True or False"
                 ? "True or False: ${currentQuestion.question}"
-                : selectedMode == "Identification"
+                : currentQuestion.type == "Identification"
                     ? (isTermToDefinition
                         ? currentQuestion.question  // Show term, answer is definition
                         : currentQuestion.answer)   // Show definition, answer is term
@@ -646,9 +670,9 @@ void _confirmGoBack() {
     );
   }
 
-  // [WIDGET] Dispatch to the correct input widget based on mode
+  // [WIDGET] Dispatch to the correct input widget based on current question type
   Widget _buildInputSection() {
-    switch (selectedMode) {
+    switch (currentQuestion.type) {
       case "Identification":
         return _buildIdentification();
       case "True or False":
@@ -784,9 +808,10 @@ void _confirmGoBack() {
     );
   }
 
-  // [WIDGET] True or False side-by-side buttons
+  // [WIDGET] True or False vertical buttons (True on top, False below)
   Widget _buildTrueOrFalse() {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: ["True", "False"].map((choice) {
         // [COLOR] Highlight correct/wrong after submission
         Color btnColor = AppColors.secondary_50;
@@ -800,17 +825,15 @@ void _confirmGoBack() {
           btnColor = AppColors.secondary_200;
         }
 
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: ChoiceButton(
-              text: choice,
-              backgroundColor: btnColor,
-              onPressed: answerSubmitted
-                  ? () {}
-                  : () => _handleTrueOrFalseAnswer(choice),
-              selectedAnswer: selectedAnswer == choice,
-            ),
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: ChoiceButton(
+            text: choice,
+            backgroundColor: btnColor,
+            onPressed: answerSubmitted
+                ? () {}
+                : () => _handleTrueOrFalseAnswer(choice),
+            selectedAnswer: selectedAnswer == choice,
           ),
         );
       }).toList(),
