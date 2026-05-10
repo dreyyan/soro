@@ -41,6 +41,9 @@ class _QuizSettingsState extends State<QuizSettings> {
     _hoursController.dispose();
     _minutesController.dispose();
     _secondsController.dispose();
+    for (final q in questions) {
+      q.dispose();
+    }
     super.dispose();
   }
 
@@ -60,6 +63,7 @@ class _QuizSettingsState extends State<QuizSettings> {
   // [REMOVE] Remove a question
   void _removeQuestion(int index) {
     setState(() {
+      questions[index].dispose();
       questions.removeAt(index);
     });
   }
@@ -254,6 +258,7 @@ class _QuizSettingsState extends State<QuizSettings> {
   // [WIDGET] Shared text input field used for Question and Answer
   Widget _buildTextField({
     required String hint,
+    required TextEditingController controller,
     required ValueChanged<String> onChanged,
     int minLines = 2,
     int? maxLines = 2,
@@ -265,6 +270,7 @@ class _QuizSettingsState extends State<QuizSettings> {
         border: Border.all(color: AppColors.secondary_300),
       ),
       child: TextField(
+        controller: controller,
         maxLines: maxLines,
         minLines: minLines,
         decoration: InputDecoration(
@@ -582,6 +588,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                                   const SizedBox(height: 6),
                                   _buildTextField(
                                     hint: "Type question...",
+                                    controller: q.questionController,
                                     onChanged: (val) => _updateQuestion(index, question: val),
                                   ),
                                   const SizedBox(height: 14),
@@ -653,6 +660,7 @@ class _QuizSettingsState extends State<QuizSettings> {
                                   else
                                     _buildTextField(
                                       hint: "Type correct answer...",
+                                      controller: q.answerController,
                                       onChanged: (val) => _updateQuestion(index, answer: val),
                                       minLines: 1,
                                       maxLines: null,
@@ -815,6 +823,9 @@ class QuestionItem {
   String correctAnswer;
   bool trueFalseAnswer;
   List<String> choices;
+  final TextEditingController questionController;
+  final TextEditingController answerController;
+
   QuestionItem({
     required this.id,
     required this.type,
@@ -822,5 +833,11 @@ class QuestionItem {
     required this.correctAnswer,
     this.trueFalseAnswer = true,
     this.choices = const [],
-  });
+  })  : questionController = TextEditingController(text: question),
+        answerController = TextEditingController(text: correctAnswer);
+
+  void dispose() {
+    questionController.dispose();
+    answerController.dispose();
+  }
 }

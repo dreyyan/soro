@@ -86,6 +86,9 @@ class _QuizEditState extends State<QuizEdit> {
     _hoursController.dispose();
     _minutesController.dispose();
     _secondsController.dispose();
+    for (final q in questions) {
+      q.dispose();
+    }
     super.dispose();
   }
 
@@ -292,8 +295,8 @@ class _QuizEditState extends State<QuizEdit> {
   // [WIDGET] Shared text input field used for Question and Answer
   Widget _buildTextField({
     required String hint,
+    required TextEditingController controller,
     required ValueChanged<String> onChanged,
-    String initialValue = '',
     int minLines = 2,
     int? maxLines = 2,
   }) {
@@ -304,10 +307,9 @@ class _QuizEditState extends State<QuizEdit> {
         border: Border.all(color: AppColors.secondary_300),
       ),
       child: TextField(
+        controller: controller,
         maxLines: maxLines,
         minLines: minLines,
-        controller: TextEditingController(text: initialValue)
-          ..selection = TextSelection.collapsed(offset: initialValue.length),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: AppColors.text_400),
@@ -620,7 +622,7 @@ class _QuizEditState extends State<QuizEdit> {
                                   const SizedBox(height: 6),
                                   _buildTextField(
                                     hint: "Type question...",
-                                    initialValue: q.question,
+                                    controller: q.questionController,
                                     onChanged: (val) => _updateQuestion(index, question: val),
                                   ),
                                   const SizedBox(height: 14),
@@ -692,7 +694,7 @@ class _QuizEditState extends State<QuizEdit> {
                                   else
                                     _buildTextField(
                                       hint: "Type correct answer...",
-                                      initialValue: q.correctAnswer,
+                                      controller: q.answerController,
                                       onChanged: (val) => _updateQuestion(index, answer: val),
                                       minLines: 1,
                                       maxLines: null,
