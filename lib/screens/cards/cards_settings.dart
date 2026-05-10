@@ -18,6 +18,10 @@ class _CardsSettingsState extends State<CardsSettings> {
   // [STATES] Deck settings
   List<Map<String, dynamic>> cardItems = [];
 
+  // [STATES] Randomization options
+  bool _randomizeOrder = false;
+  bool _randomizeSides = false;
+
   // [CONTROLLERS] Form inputs
   final TextEditingController titleController = TextEditingController();
 
@@ -121,6 +125,8 @@ class _CardsSettingsState extends State<CardsSettings> {
       'title': title,
       'description': '',
       'createdAt': DateTime.now().toIso8601String(),
+      'randomizeOrder': _randomizeOrder,
+      'randomizeSides': _randomizeSides,
       'cards': cards,
     });
 
@@ -154,7 +160,7 @@ class _CardsSettingsState extends State<CardsSettings> {
       child: TextField(
         controller: controller,
         maxLines: null,
-        minLines: 3,
+        minLines: 1,
         textCapitalization: TextCapitalization.sentences,
         decoration: InputDecoration(
           hintText: placeholder,
@@ -211,17 +217,116 @@ class _CardsSettingsState extends State<CardsSettings> {
                       style: TextStyle(
                         fontFamily: 'Nunito',
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
                         color: AppColors.text_700,
                       ),
                       decoration: InputDecoration(
                         hintText: "Type card title...",
                         hintStyle: TextStyle(color: AppColors.text_400),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: AppColors.secondary_300,
+                          ),
+                        ),
+
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: AppColors.secondary_300,
+                          ),
+                        ),
+
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: AppColors.secondary_300,
+                          ),
+                        ),
+
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                       ),
                     ),
                   ),
+                  const SizedBox(height: 24),
+
+                  // [SECTION] Randomization options
+                  Text(
+                    "Options",
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text_700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary_100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.secondary_300),
+                    ),
+                    child: Column(
+                      children: [
+                        // [TOGGLE] Randomize card order
+                        SwitchListTile(
+                          value: _randomizeOrder,
+                          onChanged: (val) => setState(() => _randomizeOrder = val),
+                          activeColor: AppColors.primary_600,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                          title: const Text(
+                            "Randomize Order",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.text_700,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            "Shuffle cards each time you play",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 13,
+                              color: AppColors.text_400,
+                            ),
+                          ),
+                        ),
+
+                        Divider(height: 1, color: AppColors.secondary_300),
+
+                        // [TOGGLE] Randomize front/back sides
+                        SwitchListTile(
+                          value: _randomizeSides,
+                          onChanged: (val) => setState(() => _randomizeSides = val),
+                          activeColor: AppColors.primary_600,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                          title: const Text(
+                            "Randomize Sides",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.text_700,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            "Randomly flip front and back",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 13,
+                              color: AppColors.text_400,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   const SizedBox(height: 24),
 
                   // [LABEL] Items section
@@ -329,7 +434,7 @@ class _CardsSettingsState extends State<CardsSettings> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildLabel("Front"),
+                                  _buildLabel("Term"),
                                   const SizedBox(height: 6),
                                   _buildCardField(frontCtrl, "Type something..."),
                                 ],
@@ -344,7 +449,7 @@ class _CardsSettingsState extends State<CardsSettings> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildLabel("Back"),
+                                  _buildLabel("Definition"),
                                   const SizedBox(height: 6),
                                   _buildCardField(backCtrl, "Type something..."),
                                 ],
@@ -377,65 +482,83 @@ class _CardsSettingsState extends State<CardsSettings> {
             ),
           ),
 
-          // [BUTTON] Add Item
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            decoration: BoxDecoration(
-              color: AppColors.secondary_50,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
+          // [FOOTER] Action Buttons — Add Item + Save Card
+          SafeArea(
+            top: false,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+              decoration: BoxDecoration(
+                color: AppColors.secondary_50,
+                border: Border(
+                  top: BorderSide(
+                    color: AppColors.secondary_200,
+                  ),
                 ),
-              ],
-            ),
-            child: ElevatedButton.icon(
-              onPressed: _addCardItem,
-              icon: const Icon(Icons.add, size: 24),
-              label: const Text(
-                "Add Item",
-                style: TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary_600,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-                minimumSize: const Size(double.infinity, 56),
-              ),
-            ),
-          ),
+              child: Row(
+                children: [
+                  // [BUTTON] Add Item
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _addCardItem,
+                      icon: const Icon(Icons.playlist_add_rounded),
+                      label: const Text(
+                        'Add Item',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondary_100,
+                        foregroundColor: AppColors.text_700,
+                        elevation: 1,
+                        side: BorderSide(
+                          color: AppColors.secondary_300,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
 
-          // [BUTTON] Save Card
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-            child: ElevatedButton(
-              onPressed: _createDeck,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary_600,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              child: const Text(
-                "Save Card",
-                style: TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+                  const SizedBox(width: 12),
+
+                  // [BUTTON] Save Card
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _createDeck,
+                      icon: const Icon(Icons.save_rounded),
+                      label: const Text(
+                        'Save Card',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary_600,
+                        foregroundColor: Colors.white,
+                        elevation: 1,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -448,15 +571,15 @@ class _CardsSettingsState extends State<CardsSettings> {
   // [WIDGET] Header — matches QuizSettings layout
   Widget _buildHeader() {
     return Material(
-      color: AppColors.primary_600,
+      color: AppColors.secondary_50,
       elevation: 3,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.text_50),
+              icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_600),
               onPressed: () => Navigator.pop(context),
             ),
             const Text(
@@ -465,7 +588,7 @@ class _CardsSettingsState extends State<CardsSettings> {
                 fontFamily: 'Baloo',
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.text_50,
+                color: AppColors.primary_600,
               ),
             ),
           ],
