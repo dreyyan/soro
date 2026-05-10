@@ -221,7 +221,7 @@ class _QuizStartState extends State<QuizStart> {
 
   // [NAVIGATE] Return to the quiz list page
   void _handleBack() {
-    Navigator.popUntil(context, (route) => route.settings.name == '/quiz' || route.isFirst);
+    Navigator.pop(context);
   }
 
   // [CONFIRM] Show dialog before returning to menu
