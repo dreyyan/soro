@@ -156,7 +156,9 @@ class _QuizStartState extends State<QuizStart> {
 
       // [MULTIPLE CHOICE] Pick 3 wrong answers + 1 correct, shuffle
       final wrongAnswers = allAnswers
-          .where((a) => a != question.answer)
+          .where((a) => a != question.answer &&
+            a.toLowerCase() != 'true' && 
+            a.toLowerCase() != 'false')
           .toSet()
           .toList()
         ..shuffle(random);
