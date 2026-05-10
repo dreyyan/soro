@@ -691,7 +691,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
           // [TEXT] The question itself
           Text(
             currentQuestion.type == "True or False"
-                ? "True or False: ${currentQuestion.question}"
+                ? currentQuestion.question
                 : currentQuestion.type == "Identification"
                     ? (isTermToDefinition
                         ? currentQuestion.question  // Show term, answer is definition
