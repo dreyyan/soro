@@ -100,10 +100,23 @@ class _QuizStartState extends State<QuizStart> {
       if (rawList != null && rawList.isNotEmpty) {
         questions = rawList.map((q) {
           final map = Map<String, dynamic>.from(q as Map);
+          final type = map['type'] as String? ?? 'Multiple Choice';
+          
+          // [CONVERT] True/False answer from string to normalized label
+          final rawAnswer = map['answer'] as String? ?? '';
+          final normalizedAnswer = type == 'True or False'
+              ? (rawAnswer.toLowerCase() == 'true' ? 'True' : 'False')
+              : rawAnswer;
+          final trueFalseAnswer = type == 'True or False'
+              ? normalizedAnswer == 'True'
+              : true;
+
           return Question(
             map['question'] as String,
-            map['answer']   as String,
+            normalizedAnswer,
             List<String>.from(map['choices'] ?? []),
+            type,
+            trueFalseAnswer,
           );
         }).toList();
         
@@ -130,8 +143,14 @@ class _QuizStartState extends State<QuizStart> {
 
     for (var question in questions) {
       // [TRUE OR FALSE] Fixed choices
-      if (selectedMode == "True or False") {
+      if (question.type == "True or False") {
         question.choices = ["True", "False"];
+        continue;
+      }
+
+      // [IDENTIFICATION] No choices needed
+      if (question.type == "Identification") {
+        question.choices = [];
         continue;
       }
 
@@ -634,9 +653,9 @@ void _confirmGoBack() {
 
           // [TEXT] The question itself
           Text(
-            selectedMode == "True or False"
+            currentQuestion.type == "True or False"
                 ? "True or False: ${currentQuestion.question}"
-                : selectedMode == "Identification"
+                : currentQuestion.type == "Identification"
                     ? (isTermToDefinition
                         ? currentQuestion.question  // Show term, answer is definition
                         : currentQuestion.answer)   // Show definition, answer is term
@@ -653,9 +672,9 @@ void _confirmGoBack() {
     );
   }
 
-  // [WIDGET] Dispatch to the correct input widget based on mode
+  // [WIDGET] Dispatch to the correct input widget based on current question type
   Widget _buildInputSection() {
-    switch (selectedMode) {
+    switch (currentQuestion.type) {
       case "Identification":
         return _buildIdentification();
       case "True or False":
@@ -791,9 +810,10 @@ void _confirmGoBack() {
     );
   }
 
-  // [WIDGET] True or False side-by-side buttons
+  // [WIDGET] True or False vertical buttons (True on top, False below)
   Widget _buildTrueOrFalse() {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: ["True", "False"].map((choice) {
         // [COLOR] Highlight correct/wrong after submission
         Color btnColor = AppColors.secondary_50;
@@ -807,17 +827,15 @@ void _confirmGoBack() {
           btnColor = AppColors.secondary_200;
         }
 
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: ChoiceButton(
-              text: choice,
-              backgroundColor: btnColor,
-              onPressed: answerSubmitted
-                  ? () {}
-                  : () => _handleTrueOrFalseAnswer(choice),
-              selectedAnswer: selectedAnswer == choice,
-            ),
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: ChoiceButton(
+            text: choice,
+            backgroundColor: btnColor,
+            onPressed: answerSubmitted
+                ? () {}
+                : () => _handleTrueOrFalseAnswer(choice),
+            selectedAnswer: selectedAnswer == choice,
           ),
         );
       }).toList(),
