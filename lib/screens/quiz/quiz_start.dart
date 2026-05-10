@@ -170,8 +170,9 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
       }
 
       // [MULTIPLE CHOICE] Pick 3 wrong answers + 1 correct, shuffle
+      // Exclude True/False answers so they never appear as MC distractors
       final wrongAnswers = allAnswers
-          .where((a) => a != question.answer)
+          .where((a) => a != question.answer && a != 'True' && a != 'False')
           .toSet()
           .toList()
         ..shuffle(random);
