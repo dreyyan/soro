@@ -1,5 +1,6 @@
 // [IMPORT] Libraries
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:math';
 // [IMPORT] App
 import 'package:soro/main.dart';
@@ -196,6 +197,10 @@ class _QuizSettingsState extends State<QuizSettings> {
             controller: controller,
             textAlign: TextAlign.center,
             keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              _RangeTextInputFormatter(max),
+            ],
             maxLength: 2,
             style: const TextStyle(
               fontFamily: 'Nunito',
@@ -839,5 +844,22 @@ class QuestionItem {
   void dispose() {
     questionController.dispose();
     answerController.dispose();
+  }
+}
+
+// [FORMATTER] Blocks typed values above a given max (used for timer fields)
+class _RangeTextInputFormatter extends TextInputFormatter {
+  final int max;
+  _RangeTextInputFormatter(this.max);
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) return newValue;
+    final intVal = int.tryParse(newValue.text);
+    if (intVal == null || intVal > max) return oldValue;
+    return newValue;
   }
 }
