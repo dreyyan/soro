@@ -1,5 +1,6 @@
 // [IMPORT] Libraries
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'dart:math';
 import 'dart:async';
 
@@ -25,7 +26,7 @@ class QuizStart extends StatefulWidget {
   State<QuizStart> createState() => _QuizStartState();
 }
 
-class _QuizStartState extends State<QuizStart> {
+class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
   // [STATES] Quiz progress
   int score = 0;
   int currentNumber = 0;
@@ -60,9 +61,20 @@ class _QuizStartState extends State<QuizStart> {
   // [FLAG] Prevent _loadSettings from running twice
   bool _settingsLoaded = false;
 
+  // [PARTICLES] Animated background
+  Ticker? _particleTicker;
+  ValueNotifier<double>? _particleTime;
+  List<_Particle>? _particles;
+
   @override
   void initState() {
     super.initState();
+    _particles = List.generate(14, (i) => _Particle(Random(i * 7)));
+    _particleTime = ValueNotifier(0);
+    _particleTicker = createTicker((elapsed) {
+      _particleTime!.value = elapsed.inMilliseconds / 1000.0;
+    });
+    _particleTicker!.start();
   }
 
   @override
@@ -78,6 +90,8 @@ class _QuizStartState extends State<QuizStart> {
   void dispose() {
     timer?.cancel();
     identificationController.dispose();
+    _particleTicker?.dispose();
+    _particleTime?.dispose();
     super.dispose();
   }
 
@@ -431,27 +445,36 @@ class _QuizStartState extends State<QuizStart> {
     // [EMPTY] Fallback if no questions were loaded
     if (questions.isEmpty) {
       return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text("No questions found."),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _handleBack,
-                child: const Text("Go Back"),
+        backgroundColor: AppColors.secondary_300,
+        body: Stack(
+          children: [
+            Positioned.fill(child: _buildBackground()),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("No questions found."),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _handleBack,
+                    child: const Text("Go Back"),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
 
     return Scaffold(
       backgroundColor: AppColors.secondary_300,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
-        child: Column(
+      body: Stack(
+        children: [
+          Positioned.fill(child: _buildBackground()),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // [HEADER] Back button + quiz title + timer
@@ -484,6 +507,22 @@ class _QuizStartState extends State<QuizStart> {
             ),
           ],
         ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // [WIDGET] Animated particle background
+  Widget _buildBackground() {
+    final notifier = _particleTime;
+    final parts = _particles;
+    if (notifier == null || parts == null) return const SizedBox.shrink();
+    return AnimatedBuilder(
+      animation: notifier,
+      builder: (_, __) => CustomPaint(
+        painter: _ParticlePainter(notifier.value, parts),
+        child: const SizedBox.expand(),
       ),
     );
   }
@@ -839,4 +878,45 @@ class _QuizStartState extends State<QuizStart> {
       }).toList(),
     );
   }
+}
+
+// ─── PARTICLE BACKGROUND ────────────────────────────────────────────────────
+
+class _Particle {
+  final double originX, originY, radius, velX, velY;
+
+  _Particle(Random r)
+      : originX = r.nextDouble(),
+        originY = r.nextDouble(),
+        radius = 20 + r.nextDouble() * 40,
+        velX = (r.nextDouble() - 0.5) * 0.04,
+        velY = (r.nextDouble() - 0.5) * 0.04;
+}
+
+class _ParticlePainter extends CustomPainter {
+  final double t;
+  final List<_Particle> particles;
+
+  _ParticlePainter(this.t, this.particles);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (int i = 0; i < particles.length; i++) {
+      final p = particles[i];
+      // Wrap around screen edges using modulo — truly endless
+      final x = ((p.originX + p.velX * t) % 1.0 + 1.0) % 1.0;
+      final y = ((p.originY + p.velY * t) % 1.0 + 1.0) % 1.0;
+      final paint = Paint()
+        ..color = AppColors.primary_500.withOpacity(i.isEven ? 0.18 : 0.10)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(
+        Offset(x * size.width, y * size.height),
+        p.radius,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ParticlePainter old) => old.t != t;
 }
