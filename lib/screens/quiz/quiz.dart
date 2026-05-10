@@ -132,6 +132,7 @@ class _QuizState extends State<Quiz> {
             context,
             '/quiz/start',
             arguments: {
+              'title':              quiz['title'],
               'numberOfQuestions':  quiz['questionCount'] ?? questions.length,
               'mode':               quiz['mode']          ?? 'Multiple Choice',
               'identificationMode': quiz['identificationMode'] ?? 'Definition',
