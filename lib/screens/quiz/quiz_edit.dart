@@ -23,9 +23,9 @@ class QuizEdit extends StatefulWidget {
 class _QuizEditState extends State<QuizEdit> {
   // [STATES] Quiz settings
   final TextEditingController titleController = TextEditingController();
-  final TextEditingController _hoursController = TextEditingController(text: '0');
+  final TextEditingController _hoursController = TextEditingController(text: '00');
   final TextEditingController _minutesController = TextEditingController(text: '10');
-  final TextEditingController _secondsController = TextEditingController(text: '0');
+  final TextEditingController _secondsController = TextEditingController(text: '00');
   bool _timerEnabled = false;
   int _hours   = 0;
   int _minutes = 10;
