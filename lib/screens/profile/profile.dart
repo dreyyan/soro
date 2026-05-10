@@ -87,8 +87,14 @@ class _ProfileState extends State<Profile> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
       elevation: 1,
-      color: AppColors.secondary_50,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      color: AppColors.secondary_100,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(
+          color: AppColors.secondary_300,
+          width: 1,
+        ),
+      ),
       child: ListTile(
         leading: Icon(icon, color: iconColor),
         title: Text(
@@ -99,8 +105,11 @@ class _ProfileState extends State<Profile> {
             color: textColor,
           ),
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 15,
-            color: AppColors.text_300),
+        trailing: const Icon(
+          Icons.arrow_forward_ios,
+          size: 15,
+          color: AppColors.text_300,
+        ),
         onTap: onTap,
       ),
     );
@@ -150,7 +159,7 @@ class _ProfileState extends State<Profile> {
     final bio = _userData?['bio'] as String? ?? '';
 
     return Scaffold(
-      backgroundColor: AppColors.secondary_200,
+      backgroundColor: AppColors.secondary_50,
       // 👇 [HEADER] Exact same placement & structure as Quest
       body: SafeArea(
         child: _isLoading
