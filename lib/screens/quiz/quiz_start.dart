@@ -105,6 +105,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
       identificationMode = args['identificationMode'] ?? "Definition";
       selectedGameMode  = args['gameMode']          ?? "Classic";
       randomizeQuestions = args['randomizeQuestions'] ?? false;
+      quizTitle         = args['title']              ?? "Quiz";
 
       final savedSecs = args['timeLimitSecs'] as int?;
       timeLeft           = (savedSecs != null && savedSecs > 0) ? savedSecs : null;
@@ -527,7 +528,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.secondary_100,
+                color: AppColors.secondary_50,
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: const [
                   BoxShadow(
@@ -539,16 +540,20 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
                 ],
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   // [TEXT] Quiz title
-                  Text(
-                    quizTitle,
-                    style: const TextStyle(
-                      fontFamily: "Baloo",
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.text_800,
+                  Expanded(
+                    child: Text(
+                      quizTitle,
+                      textAlign: TextAlign.left,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: "Baloo",
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.text_800,
+                      ),
                     ),
                   ),
 
