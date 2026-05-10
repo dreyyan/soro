@@ -125,6 +125,9 @@ class _QuizState extends State<Quiz> {
           Navigator.pop(context);
           final questions =
               (quiz['questions'] as List? ?? []).cast<Map<String, dynamic>>();
+          if (quiz['randomizeQuestions'] == true) {
+            questions.shuffle();
+          }
           Navigator.pushNamed(
             context,
             '/quiz/start',

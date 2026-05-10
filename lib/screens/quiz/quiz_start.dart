@@ -219,15 +219,13 @@ class _QuizStartState extends State<QuizStart> {
     return "$mins:$secs";
   }
 
-  // [NAVIGATE] Return to QuizSettings
+  // [NAVIGATE] Return to the quiz list page
   void _handleBack() {
-  // Pop twice to skip QuizSettings and return to quiz.dart
-  if (Navigator.canPop(context)) Navigator.pop(context); // Pop QuizStart
-  if (Navigator.canPop(context)) Navigator.pop(context); // Pop QuizSettings
-}
+    Navigator.popUntil(context, (route) => route.settings.name == '/quiz' || route.isFirst);
+  }
 
   // [CONFIRM] Show dialog before returning to menu
-void _confirmGoBack() {
+  void _confirmGoBack() {
   showDialog(
     context: context,
     barrierDismissible: false, // Force explicit choice
