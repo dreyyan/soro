@@ -195,7 +195,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 24),
 
               // [BAR] Top with Title
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
 
               // [SECTION] Greeting
               Container(
@@ -219,7 +219,7 @@ class _HomePageState extends State<HomePage> {
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontFamily: 'Baloo',
-                              fontSize: 28,
+                              fontSize: 24,
                               fontWeight: FontWeight.w600,
                               height: 1.35,
                               letterSpacing: 0,
@@ -249,7 +249,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
 
               // [SECTION] Progress Dashboard (Level + Stats + Streak)
               Container(
@@ -371,7 +371,7 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ), */
 
-                    const SizedBox(height: 12),
+                   // const SizedBox(height: 12),
 
                     // [COINS] Display total coins earned
                     /*Container(
@@ -414,7 +414,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ), */
 
-                    const SizedBox(height: 16),
+                    //const SizedBox(height: 4),
 
                     // [SECTION] Statistics
                     Container(
