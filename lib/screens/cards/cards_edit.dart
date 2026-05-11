@@ -245,17 +245,9 @@ class _CardsEditState extends State<CardsEdit> {
       ),
       body: CustomScrollView(
         slivers: [
-          // [HEADER] Fixed title section
+          // [HEADER] Fixed title + options section
           SliverToBoxAdapter(
             child: Padding(
-      body: SafeArea(
-        child: Column(
-        children: [
-            _buildHeader(),
-
-            // [CONTENT] Scrollable card items
-          Expanded(
-            child: SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -490,181 +482,89 @@ class _CardsEditState extends State<CardsEdit> {
               },
             ),
 
-          // [BUTTON] Add Item + Save Changes footer
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary_50,
-                    boxShadow: [
-                      const BoxShadow(
-                        color: Color.fromRGBO(0, 0, 0, 0.05),
-                        blurRadius: 10,
-                        offset: Offset(0, -2),
-                      ),
-                    ],
-                  ),
-                  child: ElevatedButton.icon(
-                    onPressed: _addCardItem,
-                    icon: const Icon(Icons.add, size: 24),
-                    label: const Text(
-                      "Add Item",
-                      style: TextStyle(
-                        fontFamily: 'Nunito',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary_600,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                      minimumSize: const Size(double.infinity, 56),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                  child: ElevatedButton(
-                    onPressed: _saveDeck,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary_600,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 2,
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                    child: const Text(
-                      "Save Changes",
-                      style: TextStyle(
-                        fontFamily: 'Nunito',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
           // [FOOTER] Action Buttons — Add Item + Save Changes
-          SafeArea(
-            top: false,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-              decoration: BoxDecoration(
-                color: AppColors.secondary_50,
-                border: Border(
-                  top: BorderSide(
-                    color: AppColors.secondary_200,
+          SliverToBoxAdapter(
+            child: SafeArea(
+              top: false,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                decoration: BoxDecoration(
+                  color: AppColors.secondary_50,
+                  border: Border(
+                    top: BorderSide(
+                      color: AppColors.secondary_200,
+                    ),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 16,
+                      offset: const Offset(0, -4),
+                    ),
+                  ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 16,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  // [BUTTON] Add Item
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _addCardItem,
-                      icon: const Icon(Icons.playlist_add_rounded),
-                      label: const Text(
-                        'Add Item',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontFamily: 'Nunito',
-                          fontWeight: FontWeight.w700,
+                child: Row(
+                  children: [
+                    // [BUTTON] Add Item
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _addCardItem,
+                        icon: const Icon(Icons.playlist_add_rounded),
+                        label: const Text(
+                          'Add Item',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontFamily: 'Nunito',
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppColors.text_700,
-                        elevation: 0,
-                        side: BorderSide(
-                          color: AppColors.secondary_300,
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 24),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.text_700,
+                          elevation: 0,
+                          side: BorderSide(
+                            color: AppColors.secondary_300,
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
                     ),
-                  ),
 
-                  const SizedBox(width: 12),
+                    const SizedBox(width: 12),
 
-                  // [BUTTON] Save Changes
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _saveDeck,
-                      icon: const Icon(Icons.save_rounded),
-                      label: const Text(
-                        'Save Changes',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontFamily: 'Nunito',
-                          fontWeight: FontWeight.w700,
+                    // [BUTTON] Save Changes
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _saveDeck,
+                        icon: const Icon(Icons.save_rounded),
+                        label: const Text(
+                          'Save Changes',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontFamily: 'Nunito',
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary_600,
-                        foregroundColor: Colors.white,
-                        elevation: 1,
-                        padding: const EdgeInsets.symmetric(vertical: 24),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary_600,
+                          foregroundColor: Colors.white,
+                          elevation: 1,
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ],
-        ),
-      ),
-    );
-  }
-
-  // [WIDGET] Header — matches CardsSettings layout
-  Widget _buildHeader() {
-    return Material(
-      color: AppColors.secondary_50,
-      elevation: 3,
-      shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        child: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_600),
-              onPressed: () => Navigator.pop(context),
-            ),
-            const Text(
-              'Edit Card',
-              style: TextStyle(
-                fontFamily: 'Baloo',
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: AppColors.primary_600,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
