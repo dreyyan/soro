@@ -1,6 +1,7 @@
 // [IMPORT] Libraries
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:convert';
 import 'dart:math';
 // [IMPORT] App
 import 'package:soro/main.dart';
@@ -8,6 +9,17 @@ import 'package:soro/main.dart';
 import 'package:soro/database/database_helper.dart';
 // [IMPORT] Models
 import 'package:soro/models/question.dart';
+// [IMPORT] PDF
+import 'package:file_picker/file_picker.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart';
+// [IMPORT] Gemini
+import 'package:google_generative_ai/google_generative_ai.dart';
+
+// ---------------------------------------------------------------------------
+// API KEY: imported from lib/config.dart (excluded from Git via .gitignore)
+// ---------------------------------------------------------------------------
+import 'package:soro/config.dart';
+const String _geminiApiKey = geminiApiKey;
 
 class QuizSettings extends StatefulWidget {
   const QuizSettings({super.key});
@@ -26,9 +38,9 @@ class _QuizSettingsState extends State<QuizSettings> {
   int _minutes = 10;
   int _seconds = 0;
   bool _randomizeQuestions = false;
-  
+
   List<QuestionItem> questions = [];
-  
+
   // [OPTIONS] Question types
   final List<String> questionTypes = [
     "Multiple Choice",
@@ -110,7 +122,7 @@ class _QuizSettingsState extends State<QuizSettings> {
         return;
       }
     }
-    
+
     // [CALCULATE] Total seconds from picker (null if timer is off)
     final totalSeconds = _timerEnabled
         ? _hours * 3600 + _minutes * 60 + _seconds
@@ -143,6 +155,202 @@ class _QuizSettingsState extends State<QuizSettings> {
     Navigator.pop(context);
   }
 
+  // -------------------------------------------------------------------------
+  // [PDF IMPORT] Full flow: pick → extract → Gemini → add questions
+  // -------------------------------------------------------------------------
+  Future<void> _importFromPdf() async {
+    // Guard: make sure API key was injected
+    if (_geminiApiKey.isEmpty) {
+      _showError(
+        "Gemini API key is not set.\n\n"
+        "Run the app with:\n"
+        "flutter run --dart-define=GEMINI_API_KEY=your_key_here",
+      );
+      return;
+    }
+
+    // [STEP 1] Pick a PDF file (withData: true so bytes are available on mobile)
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      withData: true,
+    );
+    if (result == null || result.files.single.bytes == null) return;
+
+    // [STEP 2] Extract text using Syncfusion
+    String extractedText;
+    try {
+      final PdfDocument document = PdfDocument(
+        inputBytes: result.files.single.bytes!,
+      );
+      extractedText = PdfTextExtractor(document).extractText();
+      document.dispose();
+    } catch (e) {
+      _showError("Could not read the PDF file.\n$e");
+      return;
+    }
+
+    if (extractedText.trim().isEmpty) {
+      _showError(
+        "No readable text found in this PDF.\n"
+        "Scanned/image-only PDFs are not supported.",
+      );
+      return;
+    }
+
+    // [STEP 3] Show loading dialog while calling Gemini
+    _showLoadingDialog();
+
+    try {
+      final model = GenerativeModel(
+        model: 'gemini-2.5-flash',
+        apiKey: _geminiApiKey,
+      );
+
+      // Trim text to avoid exceeding Gemini token limits
+      final trimmedText = extractedText.length > 12000
+          ? extractedText.substring(0, 12000)
+          : extractedText;
+
+      final prompt = '''
+You are a quiz generator. Based on the text below, generate as many quiz questions as possible.
+Return ONLY a valid JSON array — no explanation, no markdown, no code fences.
+
+Each item must follow one of these exact formats:
+
+Multiple Choice:
+{ "type": "Multiple Choice", "question": "...", "answer": "...", "choices": ["...", "...", "...", "..."] }
+
+Identification:
+{ "type": "Identification", "question": "...", "answer": "..." }
+
+True or False:
+{ "type": "True or False", "question": "...", "answer": "True" }
+or
+{ "type": "True or False", "question": "...", "answer": "False" }
+
+Rules:
+- Mix all three types naturally based on the content.
+- For Multiple Choice, the correct answer must be one of the 4 choices.
+- Keep questions clear and concise.
+- Do not add any text outside the JSON array.
+
+Text:
+$trimmedText
+''';
+
+      final response = await model.generateContent([Content.text(prompt)]);
+      final rawJson = response.text ?? '';
+
+      if (!mounted) return;
+      Navigator.pop(context); // dismiss loading dialog
+
+      _parseAndAddQuestions(rawJson);
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // dismiss loading dialog
+      _showError("Gemini error: $e");
+    }
+  }
+
+  // [PARSE] Parse Gemini JSON response and add to questions list
+  void _parseAndAddQuestions(String rawJson) {
+    try {
+      // Strip markdown fences in case Gemini still wraps output
+      final cleaned = rawJson
+          .replaceAll(RegExp(r'```json|```'), '')
+          .trim();
+
+      final List<dynamic> parsed = jsonDecode(cleaned);
+
+      if (parsed.isEmpty) {
+        _showError("Gemini returned no questions. Try a different PDF.");
+        return;
+      }
+
+      setState(() {
+        for (final item in parsed) {
+          final type = item['type'] ?? 'Multiple Choice';
+          final question = item['question'] ?? '';
+          final answer = item['answer'] ?? '';
+          final choices = (item['choices'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ?? [];
+
+          questions.add(QuestionItem(
+            id: DateTime.now().millisecondsSinceEpoch + questions.length,
+            type: type,
+            question: question,
+            correctAnswer: type == 'True or False' ? '' : answer,
+            trueFalseAnswer: answer.toLowerCase() == 'true',
+            choices: choices,
+          ));
+        }
+      });
+
+      // Show a quick success snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "${parsed.length} question(s) imported from PDF.",
+              style: const TextStyle(fontFamily: 'Nunito'),
+            ),
+            backgroundColor: AppColors.primary_600,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      _showError("Failed to parse Gemini response.\nRaw output:\n$rawJson");
+    }
+  }
+
+  // [LOADING] Show loading dialog while waiting for Gemini
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.secondary_50,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: Row(
+          children: [
+            CircularProgressIndicator(color: AppColors.primary_600),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Generating questions...",
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.text_700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "Powered by Gemini AI",
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 12,
+                      color: AppColors.text_400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // [ERROR] Show error dialog
   void _showError(String message) {
     showDialog(
@@ -170,7 +378,7 @@ class _QuizSettingsState extends State<QuizSettings> {
       case "True or False":
         return Icon(Icons.thumb_up_outlined, size: 18, color: AppColors.text_700);
       default:
-        return Icon(Icons.help_outline, size: 18);
+        return const Icon(Icons.help_outline, size: 18);
     }
   }
 
@@ -304,512 +512,529 @@ class _QuizSettingsState extends State<QuizSettings> {
             _buildHeader(),
             Expanded(
               child: Column(
-        children: [
-          // [BODY] Scrollable content
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // [INPUT] Quiz Title
-                  Text(
-                    "Quiz Title",
-                    style: TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.text_700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary_100,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: TextField(
-                      controller: titleController,
-                      textCapitalization: TextCapitalization.sentences,
-                      style: const TextStyle(
-                        fontFamily: 'Nunito',
-                        fontSize: 15,
-                        color: AppColors.text_700,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: "Type quiz title...",
-                        hintStyle: TextStyle(color: AppColors.text_400),
-
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: AppColors.secondary_300,
-                          ),
-                        ),
-
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: AppColors.secondary_300,
-                          ),
-                        ),
-
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: AppColors.secondary_300,
-                          ),
-                        ),
-
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // [SECTION] Options
-                  Text(
-                    "Options",
-                    style: TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.text_700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary_100,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.secondary_300),
-                    ),
-                    child: Column(
-                      children: [
-                        // [TOGGLE] Timer
-                        SwitchListTile(
-                          value: _timerEnabled,
-                          onChanged: (v) => setState(() => _timerEnabled = v),
-                          activeColor: AppColors.primary_600,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                          title: const Text(
-                            "Timer",
-                            style: TextStyle(
-                              fontFamily: 'Nunito',
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.text_700,
-                            ),
-                          ),
-                          subtitle: const Text(
-                            "Set a time limit for your quiz",
-                            style: TextStyle(
-                              fontFamily: 'Nunito',
-                              fontSize: 13,
-                              color: AppColors.text_400,
-                            ),
-                          ),
-                        ),
-
-                        // [PICKER] h:m:s picker — shown when timer is enabled
-                        if (_timerEnabled)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _buildTimeUnit(_hours, "hr", (v) => setState(() => _hours = v), _hoursController, 23),
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
-                                  child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
-                                ),
-                                _buildTimeUnit(_minutes, "min", (v) => setState(() => _minutes = v), _minutesController, 59),
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
-                                  child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
-                                ),
-                                _buildTimeUnit(_seconds, "sec", (v) => setState(() => _seconds = v), _secondsController, 59),
-                              ],
-                            ),
-                          ),
-
-                        Divider(height: 1, color: AppColors.secondary_300),
-
-                        // [TOGGLE] Randomize Questions
-                        SwitchListTile(
-                          value: _randomizeQuestions,
-                          onChanged: (v) => setState(() => _randomizeQuestions = v),
-                          activeColor: AppColors.primary_600,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                          title: const Text(
-                            "Randomize Questions",
-                            style: TextStyle(
-                              fontFamily: 'Nunito',
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.text_700,
-                            ),
-                          ),
-                          subtitle: const Text(
-                            "Shuffle questions each time you play",
-                            style: TextStyle(
-                              fontFamily: 'Nunito',
-                              fontSize: 13,
-                              color: AppColors.text_400,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // [SECTION] Items
-                  Text(
-                    "Items",
-                    style: TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.text_700,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // [EMPTY STATE] Shown when no questions have been added yet
-                  if (questions.isEmpty)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary_100,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.secondary_300),
-                      ),
+                  // [BODY] Scrollable content
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(20.0),
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Icon(Icons.quiz_outlined, size: 48, color: AppColors.text_200),
-                          const SizedBox(height: 12),
+                          // [INPUT] Quiz Title
                           Text(
-                            'No items yet',
-                            style: TextStyle(
-                              fontFamily: 'Baloo',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.text_300,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Tap + Add Item to create one',
+                            "Quiz Title",
                             style: TextStyle(
                               fontFamily: 'Nunito',
                               fontSize: 15,
-                              color: AppColors.text_300,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.text_700,
                             ),
-                            textAlign: TextAlign.center,
                           ),
-                        ],
-                      ),
-                    ),
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.secondary_100,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: TextField(
+                              controller: titleController,
+                              textCapitalization: TextCapitalization.sentences,
+                              style: const TextStyle(
+                                fontFamily: 'Nunito',
+                                fontSize: 15,
+                                color: AppColors.text_700,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: "Type quiz title...",
+                                hintStyle: TextStyle(color: AppColors.text_400),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: AppColors.secondary_300),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: AppColors.secondary_300),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: AppColors.secondary_300),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
 
-                  // [LIST] Questions — reorderable
-                  ReorderableListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: questions.length,
-                    onReorder: _reorderQuestions,
-                    itemBuilder: (context, index) {
-                      final q = questions[index];
-                      return Container(
-                        key: ValueKey(q.id),
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: AppColors.secondary_100,
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: AppColors.secondary_300),
-                        ),
-                        child: Column(
-                          children: [
-                            // [HEADER] Question number + drag handle
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    "${index + 1}".padLeft(2, '0'),
+                          // [SECTION] Options
+                          Text(
+                            "Options",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.text_700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.secondary_100,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: AppColors.secondary_300),
+                            ),
+                            child: Column(
+                              children: [
+                                // [TOGGLE] Timer
+                                SwitchListTile(
+                                  value: _timerEnabled,
+                                  onChanged: (v) => setState(() => _timerEnabled = v),
+                                  activeColor: AppColors.primary_600,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                                  title: const Text(
+                                    "Timer",
                                     style: TextStyle(
                                       fontFamily: 'Nunito',
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
                                       color: AppColors.text_700,
                                     ),
                                   ),
-                                  const Spacer(),
-                                  ReorderableDragStartListener(
-                                    index: index,
-                                    child: Icon(
-                                      Icons.drag_indicator,
+                                  subtitle: const Text(
+                                    "Set a time limit for your quiz",
+                                    style: TextStyle(
+                                      fontFamily: 'Nunito',
+                                      fontSize: 13,
                                       color: AppColors.text_400,
-                                      size: 24,
                                     ),
+                                  ),
+                                ),
+
+                                // [PICKER] h:m:s picker — shown when timer is enabled
+                                if (_timerEnabled)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        _buildTimeUnit(_hours, "hr", (v) => setState(() => _hours = v), _hoursController, 23),
+                                        Padding(
+                                          padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
+                                          child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
+                                        ),
+                                        _buildTimeUnit(_minutes, "min", (v) => setState(() => _minutes = v), _minutesController, 59),
+                                        Padding(
+                                          padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
+                                          child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
+                                        ),
+                                        _buildTimeUnit(_seconds, "sec", (v) => setState(() => _seconds = v), _secondsController, 59),
+                                      ],
+                                    ),
+                                  ),
+
+                                Divider(height: 1, color: AppColors.secondary_300),
+
+                                // [TOGGLE] Randomize Questions
+                                SwitchListTile(
+                                  value: _randomizeQuestions,
+                                  onChanged: (v) => setState(() => _randomizeQuestions = v),
+                                  activeColor: AppColors.primary_600,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                                  title: const Text(
+                                    "Randomize Questions",
+                                    style: TextStyle(
+                                      fontFamily: 'Nunito',
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.text_700,
+                                    ),
+                                  ),
+                                  subtitle: const Text(
+                                    "Shuffle questions each time you play",
+                                    style: TextStyle(
+                                      fontFamily: 'Nunito',
+                                      fontSize: 13,
+                                      color: AppColors.text_400,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // [SECTION] Items
+                          Text(
+                            "Items",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.text_700,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // [EMPTY STATE] Shown when no questions have been added yet
+                          if (questions.isEmpty)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+                              decoration: BoxDecoration(
+                                color: AppColors.secondary_100,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppColors.secondary_300),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.quiz_outlined, size: 48, color: AppColors.text_200),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No items yet',
+                                    style: TextStyle(
+                                      fontFamily: 'Baloo',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.text_300,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Tap + Add Item or Import PDF to create questions',
+                                    style: TextStyle(
+                                      fontFamily: 'Nunito',
+                                      fontSize: 15,
+                                      color: AppColors.text_300,
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
                             ),
 
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  // [DROPDOWN] Question type
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: AppColors.secondary_300),
-                                    ),
-                                    child: DropdownButton<String>(
-                                      value: q.type,
-                                      isExpanded: true,
-                                      underline: const SizedBox(),
-                                      icon: Icon(Icons.arrow_drop_down, size: 20, color: AppColors.text_700),
-                                      items: questionTypes.map((type) {
-                                        return DropdownMenuItem(
-                                          value: type,
-                                          child: Row(
-                                            children: [
-                                              _getTypeIcon(type),
-                                              const SizedBox(width: 10),
-                                              Text(
-                                                type,
-                                                style: TextStyle(
-                                                  fontFamily: 'Nunito',
-                                                  fontSize: 15,
-                                                  color: AppColors.text_700,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      }).toList(),
-                                      onChanged: (val) {
-                                        if (val != null) _updateQuestion(index, type: val);
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(height: 14),
-
-                                  // [INPUT] Question
-                                  Text(
-                                    "Question",
-                                    style: TextStyle(
-                                      fontFamily: 'Nunito',
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.text_700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  _buildTextField(
-                                    hint: "Type question...",
-                                    controller: q.questionController,
-                                    onChanged: (val) => _updateQuestion(index, question: val),
-                                  ),
-                                  const SizedBox(height: 14),
-
-                                  // [INPUT] Correct Answer
-                                  Text(
-                                    "Correct Answer",
-                                    style: TextStyle(
-                                      fontFamily: 'Nunito',
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.text_700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  if (q.type == "True or False")
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: AppColors.secondary_300),
-                                      ),
+                          // [LIST] Questions — reorderable
+                          ReorderableListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: questions.length,
+                            onReorder: _reorderQuestions,
+                            itemBuilder: (context, index) {
+                              final q = questions[index];
+                              return Container(
+                                key: ValueKey(q.id),
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.secondary_100,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(color: AppColors.secondary_300),
+                                ),
+                                child: Column(
+                                  children: [
+                                    // [HEADER] Question number + drag handle
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                       child: Row(
                                         children: [
-                                          Expanded(
-                                            child: RadioListTile<bool>(
-                                              title: Text(
-                                                "True",
-                                                style: TextStyle(
-                                                  fontFamily: 'Nunito',
-                                                  fontSize: 15,
-                                                  color: AppColors.text_700,
-                                                ),
-                                              ),
-                                              value: true,
-                                              groupValue: q.trueFalseAnswer,
-                                              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                                              visualDensity: VisualDensity.compact,
-                                              activeColor: AppColors.primary_600,
-                                              onChanged: (val) {
-                                                if (val != null) _updateQuestion(index, trueFalseAnswer: val);
-                                              },
+                                          Text(
+                                            "${index + 1}".padLeft(2, '0'),
+                                            style: TextStyle(
+                                              fontFamily: 'Nunito',
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.text_700,
                                             ),
                                           ),
-                                          Container(width: 1, height: 32, color: AppColors.secondary_200),
-                                          Expanded(
-                                            child: RadioListTile<bool>(
-                                              title: Text(
-                                                "False",
-                                                style: TextStyle(
-                                                  fontFamily: 'Nunito',
-                                                  fontSize: 15,
-                                                  color: AppColors.text_700,
-                                                ),
-                                              ),
-                                              value: false,
-                                              groupValue: q.trueFalseAnswer,
-                                              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                                              visualDensity: VisualDensity.compact,
-                                              activeColor: AppColors.primary_600,
-                                              onChanged: (val) {
-                                                if (val != null) _updateQuestion(index, trueFalseAnswer: val);
-                                              },
+                                          const Spacer(),
+                                          ReorderableDragStartListener(
+                                            index: index,
+                                            child: Icon(
+                                              Icons.drag_indicator,
+                                              color: AppColors.text_400,
+                                              size: 24,
                                             ),
                                           ),
                                         ],
                                       ),
-                                    )
-                                  else
-                                    _buildTextField(
-                                      hint: "Type correct answer...",
-                                      controller: q.answerController,
-                                      onChanged: (val) => _updateQuestion(index, answer: val),
-                                      minLines: 1,
-                                      maxLines: null,
                                     ),
-                                ],
-                              ),
-                            ),
 
-                            // [DELETE] Delete button
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              alignment: Alignment.centerRight,
-                              child: TextButton.icon(
-                                onPressed: () => _removeQuestion(index),
-                                icon: const Icon(Icons.delete_outline, size: 18),
-                                label: const Text(
-                                  "Delete",
-                                  style: TextStyle(fontFamily: 'Nunito', fontSize: 15),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: [
+                                          // [DROPDOWN] Question type
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: AppColors.secondary_300),
+                                            ),
+                                            child: DropdownButton<String>(
+                                              value: q.type,
+                                              isExpanded: true,
+                                              underline: const SizedBox(),
+                                              icon: Icon(Icons.arrow_drop_down, size: 20, color: AppColors.text_700),
+                                              items: questionTypes.map((type) {
+                                                return DropdownMenuItem(
+                                                  value: type,
+                                                  child: Row(
+                                                    children: [
+                                                      _getTypeIcon(type),
+                                                      const SizedBox(width: 10),
+                                                      Text(
+                                                        type,
+                                                        style: TextStyle(
+                                                          fontFamily: 'Nunito',
+                                                          fontSize: 15,
+                                                          color: AppColors.text_700,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              }).toList(),
+                                              onChanged: (val) {
+                                                if (val != null) _updateQuestion(index, type: val);
+                                              },
+                                            ),
+                                          ),
+                                          const SizedBox(height: 14),
+
+                                          // [INPUT] Question
+                                          Text(
+                                            "Question",
+                                            style: TextStyle(
+                                              fontFamily: 'Nunito',
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.text_700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          _buildTextField(
+                                            hint: "Type question...",
+                                            controller: q.questionController,
+                                            onChanged: (val) => _updateQuestion(index, question: val),
+                                          ),
+                                          const SizedBox(height: 14),
+
+                                          // [INPUT] Correct Answer
+                                          Text(
+                                            "Correct Answer",
+                                            style: TextStyle(
+                                              fontFamily: 'Nunito',
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.text_700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          if (q.type == "True or False")
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: Border.all(color: AppColors.secondary_300),
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: RadioListTile<bool>(
+                                                      title: Text(
+                                                        "True",
+                                                        style: TextStyle(
+                                                          fontFamily: 'Nunito',
+                                                          fontSize: 15,
+                                                          color: AppColors.text_700,
+                                                        ),
+                                                      ),
+                                                      value: true,
+                                                      groupValue: q.trueFalseAnswer,
+                                                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                                      visualDensity: VisualDensity.compact,
+                                                      activeColor: AppColors.primary_600,
+                                                      onChanged: (val) {
+                                                        if (val != null) _updateQuestion(index, trueFalseAnswer: val);
+                                                      },
+                                                    ),
+                                                  ),
+                                                  Container(width: 1, height: 32, color: AppColors.secondary_200),
+                                                  Expanded(
+                                                    child: RadioListTile<bool>(
+                                                      title: Text(
+                                                        "False",
+                                                        style: TextStyle(
+                                                          fontFamily: 'Nunito',
+                                                          fontSize: 15,
+                                                          color: AppColors.text_700,
+                                                        ),
+                                                      ),
+                                                      value: false,
+                                                      groupValue: q.trueFalseAnswer,
+                                                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                                                      visualDensity: VisualDensity.compact,
+                                                      activeColor: AppColors.primary_600,
+                                                      onChanged: (val) {
+                                                        if (val != null) _updateQuestion(index, trueFalseAnswer: val);
+                                                      },
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            )
+                                          else
+                                            _buildTextField(
+                                              hint: "Type correct answer...",
+                                              controller: q.answerController,
+                                              onChanged: (val) => _updateQuestion(index, answer: val),
+                                              minLines: 1,
+                                              maxLines: null,
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // [DELETE] Delete button
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      alignment: Alignment.centerRight,
+                                      child: TextButton.icon(
+                                        onPressed: () => _removeQuestion(index),
+                                        icon: const Icon(Icons.delete_outline, size: 18),
+                                        label: const Text(
+                                          "Delete",
+                                          style: TextStyle(fontFamily: 'Nunito', fontSize: 15),
+                                        ),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.red[400],
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.red[400],
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // [FOOTER] Action Buttons — Import PDF + Add Item + Save Quiz
+                  SafeArea(
+                    top: false,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary_50,
+                        border: Border(
+                          top: BorderSide(color: AppColors.secondary_200),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 16,
+                            offset: const Offset(0, -4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // [ROW 1] Import PDF — full width
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _importFromPdf,
+                              icon: const Icon(Icons.picture_as_pdf_rounded),
+                              label: const Text(
+                                'Import PDF',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontFamily: 'Nunito',
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary_600,
+                                foregroundColor: Colors.white,
+                                elevation: 1,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
                             ),
-                          ],
-                        ),
-                      );
-                    },
+                          ),
+                          const SizedBox(height: 10),
+                          // [ROW 2] Add Item + Save Quiz
+                          Row(
+                            children: [
+                              // [BUTTON] Add Item
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _addQuestion,
+                                  icon: const Icon(Icons.playlist_add_rounded),
+                                  label: const Text(
+                                    'Add Item',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontFamily: 'Nunito',
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.secondary_100,
+                                    foregroundColor: AppColors.text_700,
+                                    elevation: 1,
+                                    side: BorderSide(color: AppColors.secondary_300),
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // [BUTTON] Save Quiz
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _saveQuiz,
+                                  icon: const Icon(Icons.save_rounded),
+                                  label: const Text(
+                                    'Save Quiz',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontFamily: 'Nunito',
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary_600,
+                                    foregroundColor: Colors.white,
+                                    elevation: 1,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-          ),
-          // [FOOTER] Action Buttons — Add Item + Save Quiz
-SafeArea(
-  top: false,
-  child: Container(
-    padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-    decoration: BoxDecoration(
-      color: AppColors.secondary_50,
-      border: Border(
-        top: BorderSide(
-          color: AppColors.secondary_200,
-        ),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 16,
-          offset: const Offset(0, -4),
-        ),
-      ],
-    ),
-    child: Row(
-      children: [
-        // [BUTTON] Add Item
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: _addQuestion,
-            icon: const Icon(Icons.playlist_add_rounded),
-            label: const Text(
-              'Add Item',
-              style: TextStyle(
-                fontSize: 16,
-                fontFamily: 'Nunito',
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.secondary_100,
-              foregroundColor: AppColors.text_700,
-              elevation: 1,
-              side: BorderSide(
-                color: AppColors.secondary_300,
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ),
-
-        const SizedBox(width: 12),
-
-        // [BUTTON] Save Quiz
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: _saveQuiz,
-            icon: const Icon(Icons.save_rounded),
-            label: const Text(
-              'Save Quiz',
-              style: TextStyle(
-                fontSize: 16,
-                fontFamily: 'Nunito',
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary_600,
-              foregroundColor: Colors.white,
-              elevation: 1,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  ),
-),
-          ],
-        ),
             ),
           ],
         ),
