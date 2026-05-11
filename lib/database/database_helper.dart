@@ -503,7 +503,7 @@ class DatabaseHelper {
     }
     final prefs  = await _prefs;
     final coins  = prefs.getInt('${email}_coins') ?? 0;
-    final exp    = prefs.getInt('${email}_exp')   ?? 0;
+    final exp    = prefs.getInt('${email}_totalExp')   ?? 0;
     final rawAch = prefs.getString('${email}_achievements');
     final achievements = rawAch != null
         ? List<String>.from(_decodeList(rawAch).cast<String>())
@@ -531,8 +531,8 @@ class DatabaseHelper {
     final email = await _loggedInEmail();
     if (email == null) return;
     final prefs   = await _prefs;
-    final current = prefs.getInt('${email}_exp') ?? 0;
-    await prefs.setInt('${email}_exp', current + amount);
+    final current = prefs.getInt('${email}_totalExp') ?? 0;
+    await prefs.setInt('${email}_totalExp', current + amount);
   }
 
   Future<void> unlockAchievement(String achievementId) async {
