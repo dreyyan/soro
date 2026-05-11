@@ -78,3 +78,4 @@ macos/Flutter/Generated.xcconfig"devtools_options.yaml"
 ".metadata" 
 "devtools_options.yaml" 
 devtools_options.yaml
+lib/config.dart
