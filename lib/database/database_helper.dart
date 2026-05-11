@@ -694,10 +694,8 @@ class DatabaseHelper {
     final next    = idx < rankTiers.length - 1 ? rankTiers[idx + 1] : null;
     final nextExp = next != null ? (next['minExp'] as int) : null;
     final progress = nextExp != null
-        ? ((exp - (current['minExp'] as int)) /
-               (nextExp - (current['minExp'] as int)))
-            .clamp(0.0, 1.0)
-        : 1.0;
+      ? (exp / nextExp).clamp(0.0, 1.0)
+      : 1.0;
     return {
       ...current,
       'exp':      exp,

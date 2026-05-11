@@ -67,7 +67,7 @@ class _StreakCalendarState extends State<StreakCalendar> {
     // Remove this block and pass real activeDays from your DB instead.
     final testActiveDays = isCurrentMonth
         ? <int>{
-            for (int d = 1; d < today.day; d++)
+            for (int d = 1; d <= today.day; d++)
               if (d % 2 == 0 || d % 3 == 0) d // example: some random days
           }
         : <int>{};
@@ -77,7 +77,9 @@ class _StreakCalendarState extends State<StreakCalendar> {
 
     // Streak band only renders when streak >= 3
     final hasActiveStreak = widget.streak >= 3;
-    final streakStart = hasActiveStreak ? today.day - widget.streak + 1 : -1;
+    final streakStart = hasActiveStreak
+    ? (today.day - widget.streak).clamp(1, today.day)
+    : -1;
 
     bool isStreakDay(int day) {
       if (!isCurrentMonth || !hasActiveStreak) return false;
@@ -92,8 +94,10 @@ class _StreakCalendarState extends State<StreakCalendar> {
 
     BorderRadius streakBorderRadius(int day) {
       final gridCol = (day + firstWeekday - 2) % 7;
+      final streakOverflows = streakStart == 1 && (today.day - widget.streak + 1) < 1;
 
-      final roundLeft  = day == streakStart || gridCol == 0;
+
+      final roundLeft  = day == streakStart || gridCol == 0 || (day == 1 && streakOverflows);
       final roundRight = day == today.day   || gridCol == 6;
 
       const r = Radius.circular(8);
@@ -125,7 +129,7 @@ class _StreakCalendarState extends State<StreakCalendar> {
                 Row(
                   children: [
                     Text(
-                      '${widget.streak}',
+                      '${widget.streak + 1}',
                       style: const TextStyle(
                         fontFamily: "Baloo",
                         fontSize: 28,
