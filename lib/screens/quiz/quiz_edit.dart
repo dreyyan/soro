@@ -802,7 +802,7 @@ SafeArea(
               foregroundColor: AppColors.text_700,
               elevation: 1,
               side: BorderSide(
-                color: AppColors.secondary_300,
+                color: AppColors.text_200,
               ),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(

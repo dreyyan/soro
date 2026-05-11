@@ -711,10 +711,10 @@ $trimmedText
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.secondary_50,
+                        backgroundColor: AppColors.secondary_100,
                         foregroundColor: AppColors.primary_600,
-                        side: BorderSide(color: AppColors.primary_600),
-                        elevation: 0,
+                        side: BorderSide(color: AppColors.primary_300),
+                        elevation: 1,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -740,10 +740,10 @@ $trimmedText
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.secondary_50,
+                            backgroundColor: AppColors.secondary_100,
                             foregroundColor: AppColors.text_700,
-                            elevation: 0,
-                            side: BorderSide(color: AppColors.secondary_300),
+                            elevation: 1,
+                            side: BorderSide(color: AppColors.text_200),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
