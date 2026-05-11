@@ -279,11 +279,8 @@ class _CardsState extends State<Cards> {
   Widget build(BuildContext context) {
     final decks = _sortedDecks;
 
-    // Total individual cards across all decks
-    final totalCards = _decks.fold<int>(
-      0,
-      (sum, d) => sum + ((d['cards'] as List?)?.length ?? 0),
-    );
+    // Total number of decks created
+    final totalDecks = _decks.length;
 
     return Scaffold(
       backgroundColor: AppColors.secondary_50,
@@ -291,7 +288,7 @@ class _CardsState extends State<Cards> {
         child: Column(
           children: [
             // [COMPONENT] Header (Title + Count only)
-            _buildHeader(totalCards),
+            _buildHeader(totalDecks),
 
             // [COMPONENT] Deck List / Empty State
             Expanded(
@@ -324,7 +321,7 @@ class _CardsState extends State<Cards> {
   }
 
   // [WIDGET] Top Header Row - Title + Card Count only
-  Widget _buildHeader(int totalCards) {
+  Widget _buildHeader(int totalDecks) {
     return Material(
       color: AppColors.primary_600,
       elevation: 3,
@@ -343,7 +340,7 @@ class _CardsState extends State<Cards> {
             children: [
               const TextSpan(text: 'My Cards '),
               TextSpan(
-                text: '($totalCards)',
+                text: '($totalDecks)',
                 style: const TextStyle(
                   fontFamily: 'Nunito',
                   fontSize: 14,
