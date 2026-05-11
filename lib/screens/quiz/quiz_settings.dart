@@ -333,15 +333,6 @@ $trimmedText
                       color: AppColors.text_700,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Powered by Gemini AI",
-                    style: TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 12,
-                      color: AppColors.text_400,
-                    ),
-                  ),
                 ],
               ),
             ),
