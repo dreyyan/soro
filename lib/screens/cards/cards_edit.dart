@@ -179,45 +179,41 @@ class _CardsEditState extends State<CardsEdit> {
     );
   }
 
+  // [WIDGET] Empty state shown when no cards have been added yet
   Widget _buildEmptyState() {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
-          decoration: BoxDecoration(
-            color: AppColors.secondary_100,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.secondary_300),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+      decoration: BoxDecoration(
+        color: AppColors.secondary_100,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.secondary_300),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.style_outlined, size: 48, color: AppColors.text_200),
+          const SizedBox(height: 12),
+          Text(
+            'No items yet',
+            style: TextStyle(
+              fontFamily: 'Baloo',
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text_300,
+            ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.style_outlined, size: 48, color: AppColors.text_200),
-              const SizedBox(height: 12),
-              Text(
-                'No items yet',
-                style: TextStyle(
-                  fontFamily: 'Baloo',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.text_300,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Tap + Add Item to create one',
-                style: TextStyle(
-                  fontFamily: 'Nunito',
-                  fontSize: 15,
-                  color: AppColors.text_300,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+          const SizedBox(height: 4),
+          Text(
+            'Tap + Add Item to create one',
+            style: TextStyle(
+              fontFamily: 'Nunito',
+              fontSize: 15,
+              color: AppColors.text_300,
+            ),
+            textAlign: TextAlign.center,
           ),
-        ),
+        ],
       ),
     );
   }
@@ -259,14 +255,13 @@ class _CardsEditState extends State<CardsEdit> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary_50,
+                  backgroundColor: AppColors.secondary_100,
                   foregroundColor: AppColors.text_700,
-                  elevation: 0,
+                  elevation: 1,
                   side: BorderSide(
-                    color: AppColors.secondary_200,
-                    width: 2,
+                    color: AppColors.text_200,
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -292,9 +287,8 @@ class _CardsEditState extends State<CardsEdit> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary_600,
                   foregroundColor: Colors.white,
-                  elevation: 0,
-                  side: BorderSide(color: AppColors.primary_200, width: 2),
-                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  elevation: 1,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -311,172 +305,173 @@ class _CardsEditState extends State<CardsEdit> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.secondary_50,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "Edit Card",
-          style: TextStyle(
-            fontFamily: 'Baloo',
-            fontWeight: FontWeight.w700,
-            fontSize: 24,
-          ),
-        ),
-        backgroundColor: AppColors.primary_600,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-
-      // [FIX] Footer is now outside the scroll view — always visible
       body: Column(
         children: [
-          Expanded(
-            child: CustomScrollView(
-              slivers: [
-                // [HEADER] Fixed title + options section
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // [INPUT] Deck title label
-                        Text(
-                          "Card Title",
-                          style: TextStyle(
-                            fontFamily: 'Nunito',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.text_700,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
+          // [HEADER] Edit Card header
+          Material(
+            color: AppColors.secondary_50,
+            elevation: 3,
+            shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_600),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const Text(
+                    'Edit Card',
+                    style: TextStyle(
+                      fontFamily: 'Baloo',
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary_600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
 
-                        // [INPUT] Deck title field
-                        Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary_100,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: TextField(
-                            controller: titleController,
-                            textCapitalization: TextCapitalization.sentences,
+          // [BODY] Scrollable content
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // [INPUT] Card Title
+                  Text(
+                    "Card Title",
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text_700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary_100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.secondary_300),
+                    ),
+                    child: TextField(
+                      controller: titleController,
+                      textCapitalization: TextCapitalization.sentences,
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 15,
+                        color: AppColors.text_700,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: "Type card title...",
+                        hintStyle: TextStyle(color: AppColors.text_400),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // [SECTION] Options
+                  Text(
+                    "Options",
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text_700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary_100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.secondary_300),
+                    ),
+                    child: Column(
+                      children: [
+                        // [TOGGLE] Randomize card order
+                        SwitchListTile(
+                          value: _randomizeOrder,
+                          onChanged: (val) => setState(() => _randomizeOrder = val),
+                          activeColor: AppColors.primary_600,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                          title: const Text(
+                            "Randomize Order",
                             style: TextStyle(
                               fontFamily: 'Nunito',
-                              fontSize: 16,
+                              fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: AppColors.text_700,
                             ),
-                            decoration: InputDecoration(
-                              hintText: "Type card title...",
-                              hintStyle: TextStyle(color: AppColors.text_400),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          ),
+                          subtitle: const Text(
+                            "Shuffle cards each time you play",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 13,
+                              color: AppColors.text_400,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
 
-                        // [SECTION] Randomization options
-                        Text(
-                          "Options",
-                          style: TextStyle(
-                            fontFamily: 'Nunito',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.text_700,
+                        Divider(height: 1, color: AppColors.secondary_300),
+
+                        // [TOGGLE] Randomize front/back sides
+                        SwitchListTile(
+                          value: _randomizeSides,
+                          onChanged: (val) => setState(() => _randomizeSides = val),
+                          activeColor: AppColors.primary_600,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                          title: const Text(
+                            "Randomize Sides",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.text_700,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            "Randomly flip front and back",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 13,
+                              color: AppColors.text_400,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 8),
-
-                        Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary_100,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.secondary_300),
-                          ),
-                          child: Column(
-                            children: [
-                              // [TOGGLE] Randomize card order
-                              SwitchListTile(
-                                value: _randomizeOrder,
-                                onChanged: (val) => setState(() => _randomizeOrder = val),
-                                activeColor: AppColors.primary_600,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                                title: const Text(
-                                  "Randomize Order",
-                                  style: TextStyle(
-                                    fontFamily: 'Nunito',
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.text_700,
-                                  ),
-                                ),
-                                subtitle: const Text(
-                                  "Shuffle cards each time you play",
-                                  style: TextStyle(
-                                    fontFamily: 'Nunito',
-                                    fontSize: 13,
-                                    color: AppColors.text_400,
-                                  ),
-                                ),
-                              ),
-
-                              Divider(height: 1, color: AppColors.secondary_300),
-
-                              // [TOGGLE] Randomize front/back sides
-                              SwitchListTile(
-                                value: _randomizeSides,
-                                onChanged: (val) => setState(() => _randomizeSides = val),
-                                activeColor: AppColors.primary_600,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                                title: const Text(
-                                  "Randomize Sides",
-                                  style: TextStyle(
-                                    fontFamily: 'Nunito',
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.text_700,
-                                  ),
-                                ),
-                                subtitle: const Text(
-                                  "Randomly flip front and back",
-                                  style: TextStyle(
-                                    fontFamily: 'Nunito',
-                                    fontSize: 13,
-                                    color: AppColors.text_400,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // [LABEL] Items section
-                        Text(
-                          "Items",
-                          style: TextStyle(
-                            fontFamily: 'Nunito',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.text_700,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
                       ],
                     ),
                   ),
-                ),
+                  const SizedBox(height: 24),
 
-                // [CONTENT] Card items or empty state
-                if (cardItems.isEmpty)
-                  _buildEmptyState()
-                else
-                  SliverReorderableList(
+                  // [SECTION] Items
+                  Text(
+                    "Items",
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text_700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // [EMPTY STATE] Shown when no cards have been added yet
+                  if (cardItems.isEmpty)
+                    _buildEmptyState(),
+
+                  // [LIST] Cards — reorderable
+                  ReorderableListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: cardItems.length,
                     onReorder: _reorderCards,
                     itemBuilder: (ctx, i) {
@@ -486,7 +481,7 @@ class _CardsEditState extends State<CardsEdit> {
 
                       return Container(
                         key: ValueKey(card['id']),
-                        margin: const EdgeInsets.only(bottom: 16, left: 20, right: 20),
+                        margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
                           color: AppColors.secondary_100,
                           borderRadius: BorderRadius.circular(4),
@@ -522,27 +517,18 @@ class _CardsEditState extends State<CardsEdit> {
                               ),
                             ),
 
-                            // [FRONT] Front side input
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 16),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
+                                  // [FRONT] Front side input
                                   _buildLabel("Front"),
                                   const SizedBox(height: 6),
                                   _buildCardField(frontCtrl, "Type something..."),
-                                ],
-                              ),
-                            ),
+                                  const SizedBox(height: 14),
 
-                            const SizedBox(height: 12),
-
-                            // [BACK] Back side input
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
+                                  // [BACK] Back side input
                                   _buildLabel("Back"),
                                   const SizedBox(height: 6),
                                   _buildCardField(backCtrl, "Type something..."),
@@ -563,6 +549,8 @@ class _CardsEditState extends State<CardsEdit> {
                                 ),
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.red[400],
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 ),
                               ),
                             ),
@@ -571,14 +559,12 @@ class _CardsEditState extends State<CardsEdit> {
                       );
                     },
                   ),
-
-                // [PADDING] Bottom breathing room above footer
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-              ],
+                ],
+              ),
             ),
           ),
 
-          // [FOOTER] Always-visible Add Item + Save Changes
+          // [FOOTER] Action Buttons - Add Item + Save Changes
           _buildFooter(),
         ],
       ),
