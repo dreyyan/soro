@@ -16,20 +16,33 @@ class _CardsEditState extends State<CardsEdit> {
   final TextEditingController titleController = TextEditingController();
   List<Map<String, dynamic>> cardItems = [];
 
+  // [STATES] Randomization options
+  bool _randomizeOrder = false;
+  bool _randomizeSides = false;
+
   @override
   void initState() {
     super.initState();
     titleController.text = widget.deck['title'] as String? ?? '';
+    _randomizeOrder = widget.deck['randomizeOrder'] as bool? ?? false;
+    _randomizeSides = widget.deck['randomizeSides'] as bool? ?? false;
     final cards = (widget.deck['cards'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
     if (cards.isEmpty) {
-      _addCardItem();
+      // [INIT] Start with one blank card
+      cardItems.add({
+        'id': DateTime.now().millisecondsSinceEpoch,
+        'frontController': TextEditingController(),
+        'backController': TextEditingController(),
+      });
     } else {
+      // [INIT] Populate directly — no setState needed before first build
       for (final card in cards) {
-        _addCardItem(
-          frontText: card['term'] as String? ?? '',
-          backText: card['definition'] as String? ?? '',
-        );
+        cardItems.add({
+          'id': DateTime.now().millisecondsSinceEpoch,
+          'frontController': TextEditingController(text: card['term'] as String? ?? ''),
+          'backController': TextEditingController(text: card['definition'] as String? ?? ''),
+        });
       }
     }
   }
@@ -114,6 +127,8 @@ class _CardsEditState extends State<CardsEdit> {
       'title': title,
       'description': widget.deck['description'] as String? ?? '',
       'createdAt': widget.deck['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+      'randomizeOrder': _randomizeOrder,
+      'randomizeSides': _randomizeSides,
       'cards': cards,
     };
 
@@ -233,6 +248,14 @@ class _CardsEditState extends State<CardsEdit> {
           // [HEADER] Fixed title section
           SliverToBoxAdapter(
             child: Padding(
+      body: SafeArea(
+        child: Column(
+        children: [
+            _buildHeader(),
+
+            // [CONTENT] Scrollable card items
+          Expanded(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -272,6 +295,83 @@ class _CardsEditState extends State<CardsEdit> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 24),
+
+                  // [SECTION] Randomization options
+                  Text(
+                    "Options",
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.text_700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary_100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.secondary_300),
+                    ),
+                    child: Column(
+                      children: [
+                        // [TOGGLE] Randomize card order
+                        SwitchListTile(
+                          value: _randomizeOrder,
+                          onChanged: (val) => setState(() => _randomizeOrder = val),
+                          activeColor: AppColors.primary_600,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                          title: const Text(
+                            "Randomize Order",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.text_700,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            "Shuffle cards each time you play",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 13,
+                              color: AppColors.text_400,
+                            ),
+                          ),
+                        ),
+
+                        Divider(height: 1, color: AppColors.secondary_300),
+
+                        // [TOGGLE] Randomize front/back sides
+                        SwitchListTile(
+                          value: _randomizeSides,
+                          onChanged: (val) => setState(() => _randomizeSides = val),
+                          activeColor: AppColors.primary_600,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                          title: const Text(
+                            "Randomize Sides",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.text_700,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            "Randomly flip front and back",
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 13,
+                              color: AppColors.text_400,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   const SizedBox(height: 24),
 
                   // [LABEL] Items section
@@ -454,9 +554,117 @@ class _CardsEditState extends State<CardsEdit> {
                   ),
                 ),
               ],
+          // [FOOTER] Action Buttons — Add Item + Save Changes
+          SafeArea(
+            top: false,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+              decoration: BoxDecoration(
+                color: AppColors.secondary_50,
+                border: Border(
+                  top: BorderSide(
+                    color: AppColors.secondary_200,
+                  ),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  // [BUTTON] Add Item
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _addCardItem,
+                      icon: const Icon(Icons.playlist_add_rounded),
+                      label: const Text(
+                        'Add Item',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: AppColors.text_700,
+                        elevation: 0,
+                        side: BorderSide(
+                          color: AppColors.secondary_300,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // [BUTTON] Save Changes
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _saveDeck,
+                      icon: const Icon(Icons.save_rounded),
+                      label: const Text(
+                        'Save Changes',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary_600,
+                        foregroundColor: Colors.white,
+                        elevation: 1,
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
+        ),
+      ),
+    );
+  }
+
+  // [WIDGET] Header — matches CardsSettings layout
+  Widget _buildHeader() {
+    return Material(
+      color: AppColors.secondary_50,
+      elevation: 3,
+      shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_600),
+              onPressed: () => Navigator.pop(context),
+            ),
+            const Text(
+              'Edit Card',
+              style: TextStyle(
+                fontFamily: 'Baloo',
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary_600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

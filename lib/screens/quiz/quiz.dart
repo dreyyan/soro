@@ -132,6 +132,7 @@ class _QuizState extends State<Quiz> {
             context,
             '/quiz/start',
             arguments: {
+              'title':              quiz['title'],
               'numberOfQuestions':  quiz['questionCount'] ?? questions.length,
               'mode':               quiz['mode']          ?? 'Multiple Choice',
               'identificationMode': quiz['identificationMode'] ?? 'Definition',
@@ -151,7 +152,7 @@ class _QuizState extends State<Quiz> {
             MaterialPageRoute(builder: (_) => QuizEdit(quiz: quizData)),
           );
           await _loadQuizzes();
-      },
+        },
 
         // [DELETE] Close sheet then run the delete confirmation flow
         onDelete: () {
@@ -162,12 +163,131 @@ class _QuizState extends State<Quiz> {
     );
   }
 
+  // [SORT] Show custom sort bottom sheet
+  Future<void> _showSortSheet() async {
+    final options = [
+      _SortOption(value: 'newest', label: 'Newest First', icon: Icons.arrow_downward_rounded),
+      _SortOption(value: 'oldest', label: 'Oldest First', icon: Icons.arrow_upward_rounded),
+      _SortOption(value: 'alpha',  label: 'A → Z',        icon: Icons.sort_by_alpha_rounded),
+      _SortOption(value: 'reverse_alpha',  label: 'Z → A',        icon: Icons.sort_by_alpha_rounded),
+    ];
+
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.secondary_50,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: AppColors.text_200,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+
+              // Sheet title
+              const Padding(
+                padding: EdgeInsets.only(left: 4, bottom: 16),
+                child: Text(
+                  'Sort Quizzes',
+                  style: TextStyle(
+                    fontFamily: 'Baloo',
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.text_700,
+                  ),
+                ),
+              ),
+
+              // Options
+              ...options.map((opt) {
+                final isActive = _sortBy == opt.value;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Material(
+                    color: isActive
+                        ? AppColors.primary_600
+                        : AppColors.secondary_100,
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => Navigator.pop(ctx, opt.value),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isActive
+                                ? AppColors.primary_600
+                                : AppColors.secondary_300,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              opt.icon,
+                              size: 20,
+                              color: isActive
+                                  ? Colors.white
+                                  : AppColors.text_500,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              opt.label,
+                              style: TextStyle(
+                                fontFamily: 'Nunito',
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: isActive
+                                    ? Colors.white
+                                    : AppColors.text_700,
+                              ),
+                            ),
+                            const Spacer(),
+                            if (isActive)
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                size: 20,
+                                color: Colors.white,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selected != null) setState(() => _sortBy = selected);
+  }
+
   @override
   Widget build(BuildContext context) {
     final quizzes = _sortedQuizzes;
 
     return Scaffold(
-      backgroundColor: AppColors.secondary_200,
+      backgroundColor: AppColors.secondary_50,
       body: SafeArea(
         child: Column(
           children: [
@@ -241,24 +361,13 @@ class _QuizState extends State<Quiz> {
   Widget _buildActionButtons() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      color: AppColors.secondary_200,
+      color: AppColors.secondary_50,
       child: Row(
         children: [
           // [BUTTON] Sort Menu
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: () async {
-                final selected = await showMenu<String>(
-                  context: context,
-                  position: const RelativeRect.fromLTRB(60, 528, 100, 100),
-                  items: const [
-                    PopupMenuItem(value: 'newest', child: Text('Newest first')),
-                    PopupMenuItem(value: 'oldest', child: Text('Oldest first')),
-                    PopupMenuItem(value: 'alpha',  child: Text('A → Z')),
-                  ],
-                );
-                if (selected != null) setState(() => _sortBy = selected);
-              },
+              onPressed: _showSortSheet,
               icon: const Icon(Icons.sort),
               label: const Text(
                 'Sort',
@@ -271,12 +380,12 @@ class _QuizState extends State<Quiz> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondary_100,
                 foregroundColor: AppColors.text_700,
+                elevation: 1,
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
-                  side: const BorderSide(color: AppColors.secondary_300)
+                  side: const BorderSide(color: AppColors.secondary_300),
                 ),
-                elevation: 1,
-                padding: const EdgeInsets.symmetric(vertical: 24),
               ),
             ),
           ),
@@ -299,11 +408,11 @@ class _QuizState extends State<Quiz> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary_600,
                 foregroundColor: Colors.white,
+                elevation: 1,
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                elevation: 1,
-                padding: const EdgeInsets.symmetric(vertical: 24),
               ),
             ),
           ),
@@ -341,4 +450,12 @@ class _QuizState extends State<Quiz> {
       ),
     );
   }
+}
+
+// [MODEL] Sort option data
+class _SortOption {
+  final String value;
+  final String label;
+  final IconData icon;
+  const _SortOption({required this.value, required this.label, required this.icon});
 }

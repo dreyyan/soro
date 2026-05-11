@@ -1,5 +1,6 @@
 // [IMPORT] Libraries
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'dart:math';
 import 'dart:async';
 
@@ -25,7 +26,7 @@ class QuizStart extends StatefulWidget {
   State<QuizStart> createState() => _QuizStartState();
 }
 
-class _QuizStartState extends State<QuizStart> {
+class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
   // [STATES] Quiz progress
   int score = 0;
   int currentNumber = 0;
@@ -60,9 +61,20 @@ class _QuizStartState extends State<QuizStart> {
   // [FLAG] Prevent _loadSettings from running twice
   bool _settingsLoaded = false;
 
+  // [PARTICLES] Animated background
+  Ticker? _particleTicker;
+  ValueNotifier<double>? _particleTime;
+  List<_Particle>? _particles;
+
   @override
   void initState() {
     super.initState();
+    _particles = List.generate(14, (i) => _Particle(Random(i * 7)));
+    _particleTime = ValueNotifier(0);
+    _particleTicker = createTicker((elapsed) {
+      _particleTime!.value = elapsed.inMilliseconds / 1000.0;
+    });
+    _particleTicker!.start();
   }
 
   @override
@@ -78,6 +90,8 @@ class _QuizStartState extends State<QuizStart> {
   void dispose() {
     timer?.cancel();
     identificationController.dispose();
+    _particleTicker?.dispose();
+    _particleTime?.dispose();
     super.dispose();
   }
 
@@ -91,6 +105,7 @@ class _QuizStartState extends State<QuizStart> {
       identificationMode = args['identificationMode'] ?? "Definition";
       selectedGameMode  = args['gameMode']          ?? "Classic";
       randomizeQuestions = args['randomizeQuestions'] ?? false;
+      quizTitle         = args['title']              ?? "Quiz";
 
       final savedSecs = args['timeLimitSecs'] as int?;
       timeLeft           = (savedSecs != null && savedSecs > 0) ? savedSecs : null;
@@ -155,6 +170,7 @@ class _QuizStartState extends State<QuizStart> {
       }
 
       // [MULTIPLE CHOICE] Pick 3 wrong answers + 1 correct, shuffle
+      // Exclude True/False answers so they never appear as MC distractors
       final wrongAnswers = allAnswers
           .where((a) => a != question.answer &&
             a.toLowerCase() != 'true' && 
@@ -281,82 +297,36 @@ class _QuizStartState extends State<QuizStart> {
 
     if (!mounted) return;
 
+    final wrongCount = questions.length - score;
+    final accuracy   = questions.isNotEmpty ? (score / questions.length) * 100 : 0.0;
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: Text(
-          selectedGameMode == "Time Attack" ? "Time's Up!" : "Quiz Complete!",
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Your score: $score / ${questions.length}"),
-            Text("Accuracy: ${rewards['accuracy']}%"),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.amber.shade50,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      const Text("⚡ XP Earned: ", style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text("+${rewards['expEarned']}", style: const TextStyle(color: Colors.blue)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Text("🪙 Coins Earned: ", style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text("+${rewards['coinsEarned']}", style: const TextStyle(color: Colors.orange)),
-                    ],
-                  ),
-                  if (rewards['leveledUp'] as bool) ...[
-                    const SizedBox(height: 8),
-                    const Row(
-                      children: [
-                        Text("🎉 Level Up!", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          // [RESTART] Reset and replay
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                currentNumber = 0;
-                score = 0;
-                selectedAnswer = "";
-                identificationController.clear();
-                identificationSubmitted = false;
-                timeLeft = _originalTimeLimit;
-              });
-              _generateChoices();
-              if (timeLeft != null) _startTimer();
-            },
-            child: const Text("Restart"),
-          ),
-
-          // [BACK] Return to menu
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _handleBack();
-            },
-            child: const Text("Back to Menu"),
-          ),
-        ],
+      builder: (_) => _QuizCompleteDialog(
+        correctCount:   score,
+        wrongCount:     wrongCount,
+        totalQuestions: questions.length,
+        accuracy:       accuracy,
+        rewards:        rewards,
+        isTimeAttack:   selectedGameMode == "Time Attack",
+        onRestart: () {
+          Navigator.pop(context);
+          setState(() {
+            currentNumber          = 0;
+            score                  = 0;
+            selectedAnswer         = "";
+            identificationController.clear();
+            identificationSubmitted = false;
+            timeLeft               = _originalTimeLimit;
+          });
+          _generateChoices();
+          if (timeLeft != null) _startTimer();
+        },
+        onBack: () {
+          Navigator.pop(context);
+          _handleBack();
+        },
       ),
     );
   }
@@ -433,27 +403,36 @@ class _QuizStartState extends State<QuizStart> {
     // [EMPTY] Fallback if no questions were loaded
     if (questions.isEmpty) {
       return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text("No questions found."),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _handleBack,
-                child: const Text("Go Back"),
+        backgroundColor: AppColors.secondary_300,
+        body: Stack(
+          children: [
+            Positioned.fill(child: _buildBackground()),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("No questions found."),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _handleBack,
+                    child: const Text("Go Back"),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
 
     return Scaffold(
       backgroundColor: AppColors.secondary_300,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
-        child: Column(
+      body: Stack(
+        children: [
+          Positioned.fill(child: _buildBackground()),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // [HEADER] Back button + quiz title + timer
@@ -486,6 +465,22 @@ class _QuizStartState extends State<QuizStart> {
             ),
           ],
         ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // [WIDGET] Animated particle background
+  Widget _buildBackground() {
+    final notifier = _particleTime;
+    final parts = _particles;
+    if (notifier == null || parts == null) return const SizedBox.shrink();
+    return AnimatedBuilder(
+      animation: notifier,
+      builder: (_, __) => CustomPaint(
+        painter: _ParticlePainter(notifier.value, parts),
+        child: const SizedBox.expand(),
       ),
     );
   }
@@ -536,7 +531,7 @@ class _QuizStartState extends State<QuizStart> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.secondary_100,
+                color: AppColors.secondary_50,
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: const [
                   BoxShadow(
@@ -548,16 +543,20 @@ class _QuizStartState extends State<QuizStart> {
                 ],
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   // [TEXT] Quiz title
-                  Text(
-                    quizTitle,
-                    style: const TextStyle(
-                      fontFamily: "Baloo",
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.text_800,
+                  Expanded(
+                    child: Text(
+                      quizTitle,
+                      textAlign: TextAlign.left,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: "Baloo",
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.text_800,
+                      ),
                     ),
                   ),
 
@@ -654,7 +653,7 @@ class _QuizStartState extends State<QuizStart> {
           // [TEXT] The question itself
           Text(
             currentQuestion.type == "True or False"
-                ? "True or False: ${currentQuestion.question}"
+                ? currentQuestion.question
                 : currentQuestion.type == "Identification"
                     ? (isTermToDefinition
                         ? currentQuestion.question  // Show term, answer is definition
@@ -841,4 +840,495 @@ class _QuizStartState extends State<QuizStart> {
       }).toList(),
     );
   }
+}
+
+// ─── QUIZ COMPLETE DIALOG ───────────────────────────────────────────────────
+
+class _QuizCompleteDialog extends StatefulWidget {
+  final int correctCount;
+  final int wrongCount;
+  final int totalQuestions;
+  final double accuracy;
+  final Map<String, dynamic> rewards;
+  final bool isTimeAttack;
+  final VoidCallback onRestart;
+  final VoidCallback onBack;
+
+  const _QuizCompleteDialog({
+    required this.correctCount,
+    required this.wrongCount,
+    required this.totalQuestions,
+    required this.accuracy,
+    required this.rewards,
+    required this.isTimeAttack,
+    required this.onRestart,
+    required this.onBack,
+  });
+
+  @override
+  State<_QuizCompleteDialog> createState() => _QuizCompleteDialogState();
+}
+
+class _QuizCompleteDialogState extends State<_QuizCompleteDialog>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _slideAnim;
+  late Animation<double> _fadeAnim;
+  bool _showingReplayChoice = false;
+
+  ({String emoji, String message, Color color}) get _tier {
+    if (widget.accuracy >= 90) {
+      return (emoji: '🏆', message: 'Perfect score!', color: const Color(0xFFF59E0B));
+    } else if (widget.accuracy >= 70) {
+      return (emoji: '🌟', message: 'Great job!', color: AppColors.primary_600);
+    } else if (widget.accuracy >= 50) {
+      return (emoji: '👍', message: 'Good work!', color: const Color(0xFF0D9488));
+    }
+    return (emoji: '💪', message: 'Keep practicing!', color: const Color(0xFFF97316));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _slideAnim = Tween<double>(begin: 40, end: 0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic),
+    );
+    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
+    );
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tier = _tier;
+
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (context, _) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Transform.translate(
+          offset: Offset(0, _slideAnim.value),
+          child: Opacity(
+            opacity: _fadeAnim.value,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.10),
+                    blurRadius: 20,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Header ─────────────────────────────────────────
+                  Row(
+                    children: [
+                      Text(tier.emoji,
+                          style: const TextStyle(fontSize: 28)),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.isTimeAttack ? "Time's Up!" : 'Quiz Complete',
+                            style: const TextStyle(
+                              fontFamily: 'Baloo',
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.text_800,
+                            ),
+                          ),
+                          Text(
+                            tier.message,
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 13,
+                              color: tier.color,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Ring + Stats ───────────────────────────────────
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 88,
+                        height: 88,
+                        child: TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0, end: widget.accuracy / 100),
+                          duration: const Duration(milliseconds: 900),
+                          curve: Curves.easeOutCubic,
+                          builder: (_, value, __) => CustomPaint(
+                            painter: _AccuracyRingPainter(value, tier.color),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "${(value * 100).toStringAsFixed(0)}%",
+                                    style: TextStyle(
+                                      fontFamily: 'Baloo',
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                      color: tier.color,
+                                    ),
+                                  ),
+                                  const Text(
+                                    'accuracy',
+                                    style: TextStyle(
+                                      fontFamily: 'Nunito',
+                                      fontSize: 10,
+                                      color: AppColors.text_400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildStatRow(
+                              label: 'Correct',
+                              value: widget.correctCount,
+                              color: Colors.green.shade600,
+                            ),
+                            const SizedBox(height: 10),
+                            _buildStatRow(
+                              label: 'Wrong',
+                              value: widget.wrongCount,
+                              color: Colors.red.shade500,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // ── Rewards ────────────────────────────────────────
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text('⚡ XP Earned: ',
+                                style: TextStyle(
+                                    fontFamily: 'Nunito',
+                                    color: AppColors.text_700,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13)),
+                            Text(
+                              '+${widget.rewards['expEarned']}',
+                              style: const TextStyle(
+                                  fontFamily: 'Nunito',
+                                  color: Colors.blue,
+                                  fontSize: 13),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Text('🪙 Coins Earned: ',
+                                style: TextStyle(
+                                    fontFamily: 'Nunito',
+                                    color: AppColors.text_700,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13)),
+                            Text(
+                              '+${widget.rewards['coinsEarned']}',
+                              style: const TextStyle(
+                                  fontFamily: 'Nunito',
+                                  color: Colors.orange,
+                                  fontSize: 13),
+                            ),
+                          ],
+                        ),
+                        if (widget.rewards['leveledUp'] as bool) ...[
+                          const SizedBox(height: 4),
+                          const Text(
+                            '🎉 Level Up!',
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Buttons ────────────────────────────────────────
+                  AnimatedCrossFade(
+                    duration: const Duration(milliseconds: 200),
+                    crossFadeState: _showingReplayChoice
+                        ? CrossFadeState.showSecond
+                        : CrossFadeState.showFirst,
+                    firstChild: Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () =>
+                                setState(() => _showingReplayChoice = true),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.text_600,
+                              side: const BorderSide(
+                                  color: AppColors.text_100, width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 13),
+                            ),
+                            child: const Text(
+                              'Play Again',
+                              style: TextStyle(
+                                  fontFamily: 'Nunito',
+                                  fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: widget.onBack,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary_600,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 13),
+                            ),
+                            child: const Text(
+                              'Back to Menu',
+                              style: TextStyle(
+                                  fontFamily: 'Nunito',
+                                  fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    secondChild: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text(
+                          'Play which questions?',
+                          style: TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.text_400,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: widget.onRestart,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.secondary_100,
+                            foregroundColor: AppColors.text_700,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 13),
+                          ),
+                          child: const Text(
+                            'All questions',
+                            style: TextStyle(
+                                fontFamily: 'Nunito',
+                                fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        TextButton(
+                          onPressed: () =>
+                              setState(() => _showingReplayChoice = false),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.text_400,
+                            padding: EdgeInsets.zero,
+                            tapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(
+                                fontFamily: 'Nunito', fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatRow({
+    required String label,
+    required int value,
+    required Color color,
+  }) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: value.toDouble()),
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeOutCubic,
+      builder: (_, animated, __) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Nunito',
+              fontSize: 13,
+              color: AppColors.text_400,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Text(
+            "${animated.round()}",
+            style: TextStyle(
+              fontFamily: 'Baloo',
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── ACCURACY RING PAINTER ──────────────────────────────────────────────────
+
+class _AccuracyRingPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+
+  _AccuracyRingPainter(this.progress, this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.shortestSide / 2 - 7;
+    const strokeW = 8.0;
+    const startAngle = -pi / 2;
+
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = const Color(0xFFF3F4F6)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeW,
+    );
+
+    if (progress > 0) {
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        2 * pi * progress,
+        false,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeW
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_AccuracyRingPainter old) =>
+      old.progress != progress || old.color != color;
+}
+
+// ─── PARTICLE BACKGROUND ────────────────────────────────────────────────────
+
+class _Particle {
+  final double originX, originY, radius, velX, velY;
+
+  _Particle(Random r)
+      : originX = r.nextDouble(),
+        originY = r.nextDouble(),
+        radius = 20 + r.nextDouble() * 40,
+        velX = (r.nextDouble() - 0.5) * 0.04,
+        velY = (r.nextDouble() - 0.5) * 0.04;
+}
+
+class _ParticlePainter extends CustomPainter {
+  final double t;
+  final List<_Particle> particles;
+
+  _ParticlePainter(this.t, this.particles);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (int i = 0; i < particles.length; i++) {
+      final p = particles[i];
+      // Wrap around screen edges using modulo — truly endless
+      final x = ((p.originX + p.velX * t) % 1.0 + 1.0) % 1.0;
+      final y = ((p.originY + p.velY * t) % 1.0 + 1.0) % 1.0;
+      final paint = Paint()
+        ..color = AppColors.primary_500.withOpacity(i.isEven ? 0.18 : 0.10)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(
+        Offset(x * size.width, y * size.height),
+        p.radius,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ParticlePainter old) => old.t != t;
 }
