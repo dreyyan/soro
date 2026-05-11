@@ -720,8 +720,9 @@ $trimmedText
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary_600,
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.secondary_100,
+                        foregroundColor: AppColors.primary_600,
+                        side: BorderSide(color: AppColors.secondary_300),
                         elevation: 1,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
