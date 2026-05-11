@@ -172,7 +172,9 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
       // [MULTIPLE CHOICE] Pick 3 wrong answers + 1 correct, shuffle
       // Exclude True/False answers so they never appear as MC distractors
       final wrongAnswers = allAnswers
-          .where((a) => a != question.answer && a != 'True' && a != 'False')
+          .where((a) => a != question.answer &&
+            a.toLowerCase() != 'true' && 
+            a.toLowerCase() != 'false')
           .toSet()
           .toList()
         ..shuffle(random);
@@ -237,7 +239,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
 
   // [NAVIGATE] Return to the quiz list page
   void _handleBack() {
-    Navigator.popUntil(context, (route) => route.settings.name == '/quiz' || route.isFirst);
+    Navigator.pop(context);
   }
 
   // [CONFIRM] Show dialog before returning to menu
