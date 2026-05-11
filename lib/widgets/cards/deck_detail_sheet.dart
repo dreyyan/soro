@@ -21,214 +21,210 @@ class DeckDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // [DATA] Extract deck fields — same pattern as QuizDetailSheet
+    // [DATA] Extract deck fields
     final title       = deck['title']       as String? ?? 'Untitled Deck';
     final description = deck['description'] as String? ?? '';
     final cardCount   = (deck['cards'] as List?)?.length ?? 0;
     final createdAt   = deck['createdAt']   as String? ?? '';
 
-    // [FORMAT] Parse ISO date into readable MM/DD/YYYY — exact same as QuizDetailSheet
+    // [FORMAT] Parse ISO date into readable MM/DD/YYYY
     String dateLabel = '';
     if (createdAt.isNotEmpty) {
       final dt = DateTime.tryParse(createdAt);
       if (dt != null) dateLabel = '${dt.month}/${dt.day}/${dt.year}';
     }
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.65,
-      minChildSize: 0.4,
-      maxChildSize: 0.92,
-      builder: (_, controller) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.secondary_50,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            // [HANDLE] Drag indicator pill — identical
-            const SizedBox(height: 12),
-            Container(
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.secondary_50,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // [HANDLE] Drag indicator pill
+          Center(
+            child: Container(
               width: 40,
               height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
                 color: AppColors.text_200,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 16),
+          ),
 
-            // [CONTENT] Scrollable body
-            Expanded(
-              child: ListView(
-                controller: controller,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                children: [
-                  // [TEXT] Deck title — same styling as QuizDetailSheet
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontFamily: 'Baloo',
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.text_800,
-                    ),
-                  ),
-
-                  // [TEXT] Description (if present)
-                  if (description.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        fontFamily: 'Nunito',
-                        fontSize: 14,
-                        color: AppColors.text_500,
-                      ),
-                    ),
-                  ],
-
-                  const SizedBox(height: 20),
-                  const Divider(),
-                  const SizedBox(height: 12),
-
-                  // [DETAILS] Deck metadata rows — same _buildDetailRow helper
-                  _buildDetailRow(
-                    Icons.quiz_outlined,
-                    'Cards',
-                    '$cardCount card${cardCount == 1 ? '' : 's'}',
-                  ),
-                  if (dateLabel.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    _buildDetailRow(
-                      Icons.calendar_today_outlined,
-                      'Created',
-                      dateLabel,
-                    ),
-                  ],
-
-                  const SizedBox(height: 28),
-
-                  // [BUTTON] Study Cards
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: onPlay,
-                      icon: const Icon(Icons.play_arrow),
-                      label: const Text(
-                        'Study Cards',
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary_600,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // [BUTTON] Edit Cards — same style as QuizDetailSheet
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: onEdit, // ← Just calls the callback. No logic.
-                      icon: const Icon(
-                        Icons.edit_outlined,
-                        color: AppColors.primary_600,
-                      ),
-                      label: const Text(
-                        'Edit Cards',
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary_600,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(
-                          color: AppColors.primary_600,
-                          width: 1,
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // [BUTTON] Delete Cards — same style as QuizDetailSheet
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: onDelete, // ← Just calls the callback. No logic.
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      label: const Text(
-                        'Delete Cards',
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.red,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.red, width: 1),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 28),
-                ],
+          // [TEXT] Deck title
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 4),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontFamily: 'Baloo',
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: AppColors.text_700,
               ),
             ),
+          ),
+
+          // [TEXT] Description (if present)
+          if (description.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 16),
+              child: Text(
+                description,
+                style: const TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 16,
+                  color: AppColors.text_500,
+                ),
+              ),
+            )
+          else
+            const SizedBox(height: 16),
+
+          // [DETAILS] Metadata info rows (non-tappable)
+          _buildInfoRow(
+            Icons.style_outlined,
+            'Cards',
+            '$cardCount card${cardCount == 1 ? '' : 's'}',
+          ),
+          if (dateLabel.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            _buildInfoRow(Icons.calendar_today_outlined, 'Created', dateLabel),
           ],
-        ),
+
+          const SizedBox(height: 16),
+
+          // [ACTION] Study Cards — primary (filled)
+          _buildActionRow(
+            icon: Icons.play_arrow_rounded,
+            label: 'Study Cards',
+            isPrimary: true,
+            onTap: onPlay,
+          ),
+          const SizedBox(height: 10),
+
+          // [ACTION] Edit Cards
+          _buildActionRow(
+            icon: Icons.edit_outlined,
+            label: 'Edit Cards',
+            onTap: onEdit,
+          ),
+          const SizedBox(height: 10),
+
+          // [ACTION] Delete Deck — danger
+          _buildActionRow(
+            icon: Icons.delete_outline,
+            label: 'Delete Deck',
+            isDanger: true,
+            onTap: onDelete,
+          ),
+        ],
       ),
     );
   }
 
-  // [WIDGET] A single icon + label + value metadata row — exact copy from QuizDetailSheet
-  Widget _buildDetailRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: AppColors.primary_600),
-        const SizedBox(width: 12),
-        Text(
-          '$label: ',
-          style: const TextStyle(
-            fontFamily: 'Nunito',
-            fontSize: 14,
-            color: AppColors.text_400,
+  // [WIDGET] Non-tappable metadata row — same card shape as Sort options
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: AppColors.text_500),
+          const SizedBox(width: 12),
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Nunito',
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AppColors.text_400,
+            ),
           ),
-        ),
-        Expanded(
-          child: Text(
+          const Spacer(),
+          Text(
             value,
             style: const TextStyle(
               fontFamily: 'Nunito',
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: FontWeight.w700,
               color: AppColors.text_700,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // [WIDGET] Tappable action row — identical structure to Sort option rows
+  Widget _buildActionRow({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isPrimary = false,
+    bool isDanger = false,
+  }) {
+    final bgColor = isPrimary 
+        ? AppColors.primary_600 
+        : isDanger
+            ? Colors.transparent
+            : Colors.transparent;
+    final borderColor = isPrimary
+        ? AppColors.primary_600
+        : isDanger
+            ? Colors.transparent
+            : Colors.transparent;
+    final iconColor = isPrimary
+        ? Colors.white
+        : isDanger
+            ? Colors.redAccent
+            : AppColors.text_500;
+    final textColor = isPrimary
+        ? Colors.white
+        : isDanger
+            ? Colors.redAccent
+            : AppColors.text_700;
+
+    return Material(
+      color: bgColor,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: isPrimary ? 16 : 8,
+            ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 20, color: iconColor),
+              const SizedBox(width: 10),
+
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                ),
+              ),
+            ],
+          ),
         ),
-      ],
+      ),
     );
   }
 }
