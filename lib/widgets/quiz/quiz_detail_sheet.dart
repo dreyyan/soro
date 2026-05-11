@@ -101,7 +101,7 @@ class QuizDetailSheet extends StatelessWidget {
           _buildInfoRow(
             Icons.timer_outlined,
             'Time Limit',
-            timeLimit != null ? '${timeLimit ~/ 60} min' : 'No limit',
+            timeLimit != null ? _formatTimeLimit(timeLimit) : 'No limit',
           ),
           if (dateLabel.isNotEmpty) ...[
             const SizedBox(height: 10),
@@ -137,6 +137,26 @@ class QuizDetailSheet extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // [HELPER] Format seconds into human-readable time label
+  String _formatTimeLimit(int secs) {
+    if (secs < 60) {
+      return '$secs sec${secs == 1 ? '' : 's'}';
+    } else if (secs < 3600) {
+      final mins = secs ~/ 60;
+      final rem  = secs % 60;
+      if (rem == 0) return '$mins min${mins == 1 ? '' : 's'}';
+      return '$mins min${mins == 1 ? '' : 's'} $rem sec${rem == 1 ? '' : 's'}';
+    } else {
+      final hrs  = secs ~/ 3600;
+      final mins = (secs % 3600) ~/ 60;
+      final rem  = secs % 60;
+      String label = '$hrs hr${hrs == 1 ? '' : 's'}';
+      if (mins > 0) label += ' $mins min${mins == 1 ? '' : 's'}';
+      if (rem  > 0) label += ' $rem sec${rem  == 1 ? '' : 's'}';
+      return label;
+    }
   }
 
   // [WIDGET] Non-tappable metadata row — plain row, no card border
