@@ -281,7 +281,7 @@ $trimmedText
               "${parsed.length} card(s) imported from PDF.",
               style: const TextStyle(fontFamily: 'Nunito'),
             ),
-            backgroundColor: AppColors.primary_600,
+            backgroundColor: AppColors.primary_500,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 3),
           ),
@@ -302,7 +302,7 @@ $trimmedText
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         content: Row(
           children: [
-            CircularProgressIndicator(color: AppColors.primary_600),
+            CircularProgressIndicator(color: AppColors.primary_500),
             const SizedBox(width: 20),
             Expanded(
               child: Column(
@@ -467,7 +467,7 @@ $trimmedText
                         SwitchListTile(
                           value: _randomizeOrder,
                           onChanged: (val) => setState(() => _randomizeOrder = val),
-                          activeColor: AppColors.primary_600,
+                          activeColor: AppColors.primary_500,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                           title: const Text(
                             "Randomize Order",
@@ -494,7 +494,7 @@ $trimmedText
                         SwitchListTile(
                           value: _randomizeSides,
                           onChanged: (val) => setState(() => _randomizeSides = val),
-                          activeColor: AppColors.primary_600,
+                          activeColor: AppColors.primary_500,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                           title: const Text(
                             "Randomize Sides",
@@ -712,7 +712,7 @@ $trimmedText
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.secondary_100,
-                        foregroundColor: AppColors.primary_600,
+                        foregroundColor: AppColors.primary_500,
                         side: BorderSide(color: AppColors.primary_300),
                         elevation: 1,
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -766,7 +766,7 @@ $trimmedText
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary_600,
+                            backgroundColor: AppColors.primary_500,
                             foregroundColor: Colors.white,
                             elevation: 1,
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -799,7 +799,7 @@ $trimmedText
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_600),
+              icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_500),
               onPressed: () => Navigator.pop(context),
             ),
             const Text(
@@ -808,7 +808,7 @@ $trimmedText
                 fontFamily: 'Baloo',
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.primary_600,
+                color: AppColors.primary_500,
               ),
             ),
           ],

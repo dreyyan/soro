@@ -66,7 +66,7 @@ class _EditProfileState extends State<EditProfile> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Profile updated successfully!'),
-          backgroundColor: AppColors.primary_600,
+          backgroundColor: AppColors.primary_500,
         ),
       );
       Navigator.pop(context, true); // Return true to refresh profile screen
@@ -166,7 +166,7 @@ class _EditProfileState extends State<EditProfile> {
                         child: ElevatedButton(
                           onPressed: _isSaving ? null : _saveProfile,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary_600,
+                            backgroundColor: AppColors.primary_500,
                             foregroundColor: AppColors.secondary_50,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(

@@ -290,7 +290,7 @@ class HomeWithNavState extends State<HomeWithNav> {
             elevation: 0,
 
             // [STYLE] Colors
-            selectedItemColor: AppColors.primary_600,
+            selectedItemColor: AppColors.primary_500,
             unselectedItemColor: AppColors.text_300,
 
             // [STYLE] Typography
@@ -300,7 +300,7 @@ class HomeWithNavState extends State<HomeWithNav> {
               fontWeight: FontWeight.w600,
               height: 1.3,
               letterSpacing: 0,
-              color: AppColors.primary_600,
+              color: AppColors.primary_500,
             ),
             unselectedLabelStyle: const TextStyle(
               fontFamily: 'Baloo',

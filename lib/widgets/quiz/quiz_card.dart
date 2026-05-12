@@ -45,7 +45,7 @@ class QuizCard extends StatelessWidget {
                   color: AppColors.primary_100,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.quiz, color: AppColors.primary_600),
+                child: const Icon(Icons.quiz, color: AppColors.primary_500),
               ),
 
               const SizedBox(width: 14),
@@ -90,7 +90,7 @@ class QuizCard extends StatelessWidget {
                         fontFamily: 'Nunito',
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primary_600,
+                        color: AppColors.primary_500,
                       ),
                     ),
                   ],
@@ -101,7 +101,7 @@ class QuizCard extends StatelessWidget {
               IconButton(
                 icon: const Icon(
                   Icons.delete_outline,
-                  color: AppColors.primary_600,
+                  color: AppColors.primary_500,
                 ),
                 onPressed: onDeleted,
               ),

@@ -128,7 +128,7 @@ class _SettingsState extends State<Settings> {
         trailing: Switch(
           value: value,
           onChanged: onChanged,
-          activeThumbColor: AppColors.primary_600,
+          activeThumbColor: AppColors.primary_500,
         ),
       ),
     );

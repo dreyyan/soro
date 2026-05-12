@@ -296,7 +296,7 @@ $trimmedText
               "${parsed.length} question(s) imported from PDF.",
               style: const TextStyle(fontFamily: 'Nunito'),
             ),
-            backgroundColor: AppColors.primary_600,
+            backgroundColor: AppColors.primary_500,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 3),
           ),
@@ -317,7 +317,7 @@ $trimmedText
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         content: Row(
           children: [
-            CircularProgressIndicator(color: AppColors.primary_600),
+            CircularProgressIndicator(color: AppColors.primary_500),
             const SizedBox(width: 20),
             Expanded(
               child: Column(
@@ -386,7 +386,7 @@ $trimmedText
             onChanged(newValue);
             controller.text = newValue.toString().padLeft(2, '0');
           },
-          child: Icon(Icons.keyboard_arrow_up_rounded, size: 24, color: AppColors.primary_600),
+          child: Icon(Icons.keyboard_arrow_up_rounded, size: 24, color: AppColors.primary_500),
         ),
         const SizedBox(height: 4),
         // [INPUT FIELD] Time value
@@ -419,7 +419,7 @@ $trimmedText
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: AppColors.primary_600, width: 1.5),
+                borderSide: const BorderSide(color: AppColors.primary_500, width: 1.5),
               ),
               counterText: '',
             ),
@@ -441,7 +441,7 @@ $trimmedText
             onChanged(newValue);
             controller.text = newValue.toString().padLeft(2, '0');
           },
-          child: Icon(Icons.keyboard_arrow_down_rounded, size: 24, color: AppColors.primary_600),
+          child: Icon(Icons.keyboard_arrow_down_rounded, size: 24, color: AppColors.primary_500),
         ),
         const SizedBox(height: 4),
         // [LABEL] Unit
@@ -583,7 +583,7 @@ $trimmedText
                                 SwitchListTile(
                                   value: _timerEnabled,
                                   onChanged: (v) => setState(() => _timerEnabled = v),
-                                  activeColor: AppColors.primary_600,
+                                  activeColor: AppColors.primary_500,
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                                   title: const Text(
                                     "Timer",
@@ -614,12 +614,12 @@ $trimmedText
                                         _buildTimeUnit(_hours, "hr", (v) => setState(() => _hours = v), _hoursController, 23),
                                         Padding(
                                           padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
-                                          child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
+                                          child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_500)),
                                         ),
                                         _buildTimeUnit(_minutes, "min", (v) => setState(() => _minutes = v), _minutesController, 59),
                                         Padding(
                                           padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
-                                          child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
+                                          child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_500)),
                                         ),
                                         _buildTimeUnit(_seconds, "sec", (v) => setState(() => _seconds = v), _secondsController, 59),
                                       ],
@@ -632,7 +632,7 @@ $trimmedText
                                 SwitchListTile(
                                   value: _randomizeQuestions,
                                   onChanged: (v) => setState(() => _randomizeQuestions = v),
-                                  activeColor: AppColors.primary_600,
+                                  activeColor: AppColors.primary_500,
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                                   title: const Text(
                                     "Randomize Questions",
@@ -848,7 +848,7 @@ $trimmedText
                                                       groupValue: q.trueFalseAnswer,
                                                       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                                                       visualDensity: VisualDensity.compact,
-                                                      activeColor: AppColors.primary_600,
+                                                      activeColor: AppColors.primary_500,
                                                       onChanged: (val) {
                                                         if (val != null) _updateQuestion(index, trueFalseAnswer: val);
                                                       },
@@ -869,7 +869,7 @@ $trimmedText
                                                       groupValue: q.trueFalseAnswer,
                                                       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                                                       visualDensity: VisualDensity.compact,
-                                                      activeColor: AppColors.primary_600,
+                                                      activeColor: AppColors.primary_500,
                                                       onChanged: (val) {
                                                         if (val != null) _updateQuestion(index, trueFalseAnswer: val);
                                                       },
@@ -956,7 +956,7 @@ $trimmedText
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.secondary_100,
                                 side: BorderSide(color: AppColors.primary_300),
-                                foregroundColor: AppColors.primary_600,
+                                foregroundColor: AppColors.primary_500,
                                 elevation: 1,
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
@@ -1009,7 +1009,7 @@ $trimmedText
                                     ),
                                   ),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary_600,
+                                    backgroundColor: AppColors.primary_500,
                                     foregroundColor: Colors.white,
                                     elevation: 1,
                                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1045,7 +1045,7 @@ $trimmedText
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_600),
+              icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_500),
               onPressed: () => Navigator.pop(context),
             ),
             const Text(
@@ -1054,7 +1054,7 @@ $trimmedText
                 fontFamily: 'Baloo',
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.primary_600,
+                color: AppColors.primary_500,
               ),
             ),
           ],

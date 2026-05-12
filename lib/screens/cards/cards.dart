@@ -214,7 +214,7 @@ class _CardsState extends State<Cards> {
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Material(
                     color: isActive
-                        ? AppColors.primary_600
+                        ? AppColors.primary_500
                         : AppColors.secondary_100,
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
@@ -227,7 +227,7 @@ class _CardsState extends State<Cards> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isActive
-                                ? AppColors.primary_600
+                                ? AppColors.primary_500
                                 : AppColors.secondary_300,
                           ),
                         ),
@@ -323,7 +323,7 @@ class _CardsState extends State<Cards> {
   // [WIDGET] Top Header Row - Title + Card Count only
   Widget _buildHeader(int totalDecks) {
     return Material(
-      color: AppColors.primary_600,
+      color: AppColors.primary_500,
       elevation: 1,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
@@ -404,7 +404,7 @@ class _CardsState extends State<Cards> {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary_600,
+                backgroundColor: AppColors.primary_500,
                 foregroundColor: Colors.white,
                 elevation: 1,
                 padding: const EdgeInsets.symmetric(vertical: 16),

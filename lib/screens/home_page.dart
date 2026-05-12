@@ -110,7 +110,7 @@ class _HomePageState extends State<HomePage> {
             fontWeight: FontWeight.w700,
             height: 1.2,
             letterSpacing: 0,
-            color: AppColors.primary_600,
+            color: AppColors.primary_500,
           ),
         ),
         const SizedBox(height: 2),

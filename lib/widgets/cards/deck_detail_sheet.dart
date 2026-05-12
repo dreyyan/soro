@@ -170,12 +170,12 @@ class DeckDetailSheet extends StatelessWidget {
     bool isDanger = false,
   }) {
     final bgColor = isPrimary 
-        ? AppColors.primary_600 
+        ? AppColors.primary_500 
         : isDanger
             ? Colors.transparent
             : Colors.transparent;
     final borderColor = isPrimary
-        ? AppColors.primary_600
+        ? AppColors.primary_500
         : isDanger
             ? Colors.transparent
             : Colors.transparent;

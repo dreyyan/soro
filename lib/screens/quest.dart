@@ -153,7 +153,7 @@ class _QuestState extends State<Quest> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [AppColors.primary_600, AppColors.primary_800],
+            colors: [AppColors.primary_500, AppColors.primary_800],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -389,7 +389,7 @@ class _QuestState extends State<Quest> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppColors.primary_600,
+                      color: AppColors.primary_500,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(

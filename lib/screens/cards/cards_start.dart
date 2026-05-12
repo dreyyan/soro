@@ -149,7 +149,7 @@ class _CardsPlayState extends State<CardsPlay>
               _handleBack();
             },
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary_600,
+              foregroundColor: AppColors.primary_500,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
             child: const Text(
@@ -629,7 +629,7 @@ class _CardsPlayState extends State<CardsPlay>
                 backgroundColor:
                     const WidgetStatePropertyAll(AppColors.secondary_50),
                 foregroundColor:
-                    const WidgetStatePropertyAll(AppColors.primary_600),
+                    const WidgetStatePropertyAll(AppColors.primary_500),
                 shape: WidgetStatePropertyAll(
                   RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -764,7 +764,7 @@ class _StudyCompleteDialogState extends State<_StudyCompleteDialog>
     if (widget.accuracy >= 90) {
       return (emoji: '🏆', message: 'Perfect score!', color: const Color(0xFFF59E0B));
     } else if (widget.accuracy >= 70) {
-      return (emoji: '🌟', message: 'Great job!', color: AppColors.primary_600);
+      return (emoji: '🌟', message: 'Great job!', color: AppColors.primary_500);
     } else if (widget.accuracy >= 50) {
       return (emoji: '👍', message: 'Good work!', color: const Color(0xFF0D9488));
     }
@@ -961,7 +961,7 @@ class _StudyCompleteDialogState extends State<_StudyCompleteDialog>
                           child: ElevatedButton(
                             onPressed: widget.onBack,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary_600,
+                              backgroundColor: AppColors.primary_500,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
@@ -1016,7 +1016,7 @@ class _StudyCompleteDialogState extends State<_StudyCompleteDialog>
                               ? widget.onReviewMissed
                               : null,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary_600,
+                            backgroundColor: AppColors.primary_500,
                             foregroundColor: Colors.white,
                             disabledBackgroundColor:
                                 AppColors.secondary_200,

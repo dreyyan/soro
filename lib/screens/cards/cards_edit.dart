@@ -285,7 +285,7 @@ class _CardsEditState extends State<CardsEdit> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary_600,
+                  backgroundColor: AppColors.primary_500,
                   foregroundColor: Colors.white,
                   elevation: 1,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -317,7 +317,7 @@ class _CardsEditState extends State<CardsEdit> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_600),
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_500),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Text(
@@ -326,7 +326,7 @@ class _CardsEditState extends State<CardsEdit> {
                       fontFamily: 'Baloo',
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primary_600,
+                      color: AppColors.primary_500,
                     ),
                   ),
                 ],
@@ -400,7 +400,7 @@ class _CardsEditState extends State<CardsEdit> {
                         SwitchListTile(
                           value: _randomizeOrder,
                           onChanged: (val) => setState(() => _randomizeOrder = val),
-                          activeColor: AppColors.primary_600,
+                          activeColor: AppColors.primary_500,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                           title: const Text(
                             "Randomize Order",
@@ -427,7 +427,7 @@ class _CardsEditState extends State<CardsEdit> {
                         SwitchListTile(
                           value: _randomizeSides,
                           onChanged: (val) => setState(() => _randomizeSides = val),
-                          activeColor: AppColors.primary_600,
+                          activeColor: AppColors.primary_500,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                           title: const Text(
                             "Randomize Sides",

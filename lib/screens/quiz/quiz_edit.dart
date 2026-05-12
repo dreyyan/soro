@@ -224,7 +224,7 @@ class _QuizEditState extends State<QuizEdit> {
             onChanged(newValue);
             controller.text = newValue.toString().padLeft(2, '0');
           },
-          child: Icon(Icons.keyboard_arrow_up_rounded, size: 24, color: AppColors.primary_600),
+          child: Icon(Icons.keyboard_arrow_up_rounded, size: 24, color: AppColors.primary_500),
         ),
         const SizedBox(height: 4),
         // [INPUT FIELD] Time value
@@ -257,7 +257,7 @@ class _QuizEditState extends State<QuizEdit> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: AppColors.primary_600, width: 1.5),
+                borderSide: const BorderSide(color: AppColors.primary_500, width: 1.5),
               ),
               counterText: '',
             ),
@@ -279,7 +279,7 @@ class _QuizEditState extends State<QuizEdit> {
             onChanged(newValue);
             controller.text = newValue.toString().padLeft(2, '0');
           },
-          child: Icon(Icons.keyboard_arrow_down_rounded, size: 24, color: AppColors.primary_600),
+          child: Icon(Icons.keyboard_arrow_down_rounded, size: 24, color: AppColors.primary_500),
         ),
         const SizedBox(height: 4),
         // [LABEL] Unit
@@ -347,7 +347,7 @@ class _QuizEditState extends State<QuizEdit> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_600),
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_500),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Text(
@@ -356,7 +356,7 @@ class _QuizEditState extends State<QuizEdit> {
                       fontFamily: 'Baloo',
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primary_600,
+                      color: AppColors.primary_500,
                     ),
                   ),
                 ],
@@ -428,7 +428,7 @@ class _QuizEditState extends State<QuizEdit> {
                         SwitchListTile(
                           value: _timerEnabled,
                           onChanged: (v) => setState(() => _timerEnabled = v),
-                          activeColor: AppColors.primary_600,
+                          activeColor: AppColors.primary_500,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                           title: const Text(
                             "Timer",
@@ -459,12 +459,12 @@ class _QuizEditState extends State<QuizEdit> {
                                 _buildTimeUnit(_hours,   "hr",  (v) => setState(() => _hours   = v), _hoursController, 23),
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
-                                  child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
+                                  child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_500)),
                                 ),
                                 _buildTimeUnit(_minutes, "min", (v) => setState(() => _minutes = v), _minutesController, 59),
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
-                                  child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_600)),
+                                  child: Text(":", style: TextStyle(fontFamily: 'Nunito', fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.primary_500)),
                                 ),
                                 _buildTimeUnit(_seconds, "sec", (v) => setState(() => _seconds = v), _secondsController, 59),
                               ],
@@ -477,7 +477,7 @@ class _QuizEditState extends State<QuizEdit> {
                         SwitchListTile(
                           value: _randomizeQuestions,
                           onChanged: (v) => setState(() => _randomizeQuestions = v),
-                          activeColor: AppColors.primary_600,
+                          activeColor: AppColors.primary_500,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                           title: const Text(
                             "Randomize Questions",
@@ -693,7 +693,7 @@ class _QuizEditState extends State<QuizEdit> {
                                               groupValue: q.trueFalseAnswer,
                                               contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                                               visualDensity: VisualDensity.compact,
-                                              activeColor: AppColors.primary_600,
+                                              activeColor: AppColors.primary_500,
                                               onChanged: (val) {
                                                 if (val != null) _updateQuestion(index, trueFalseAnswer: val);
                                               },
@@ -714,7 +714,7 @@ class _QuizEditState extends State<QuizEdit> {
                                               groupValue: q.trueFalseAnswer,
                                               contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                                               visualDensity: VisualDensity.compact,
-                                              activeColor: AppColors.primary_600,
+                                              activeColor: AppColors.primary_500,
                                               onChanged: (val) {
                                                 if (val != null) _updateQuestion(index, trueFalseAnswer: val);
                                               },
@@ -828,7 +828,7 @@ SafeArea(
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary_600,
+              backgroundColor: AppColors.primary_500,
               foregroundColor: Colors.white,
               elevation: 1,
               padding: const EdgeInsets.symmetric(vertical: 16),

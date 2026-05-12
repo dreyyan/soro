@@ -221,7 +221,7 @@ class _QuizState extends State<Quiz> {
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Material(
                     color: isActive
-                        ? AppColors.primary_600
+                        ? AppColors.primary_500
                         : AppColors.secondary_100,
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
@@ -234,7 +234,7 @@ class _QuizState extends State<Quiz> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isActive
-                                ? AppColors.primary_600
+                                ? AppColors.primary_500
                                 : AppColors.secondary_300,
                           ),
                         ),
@@ -325,7 +325,7 @@ class _QuizState extends State<Quiz> {
   // [WIDGET] Top Header Row — Title + Quiz Count only
   Widget _buildHeader() {
     return Material(
-      color: AppColors.primary_600,
+      color: AppColors.primary_500,
       elevation: 1,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
@@ -406,7 +406,7 @@ class _QuizState extends State<Quiz> {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary_600,
+                backgroundColor: AppColors.primary_500,
                 foregroundColor: Colors.white,
                 elevation: 1,
                 padding: const EdgeInsets.symmetric(vertical: 16),

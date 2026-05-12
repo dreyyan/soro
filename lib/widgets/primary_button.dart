@@ -36,7 +36,7 @@ class PrimaryButton extends StatelessWidget {
           minimumSize: WidgetStatePropertyAll(Size(double.infinity, 50)),
           backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
             if (states.contains(WidgetState.pressed)) {
-              return AppColors.primary_600;
+              return AppColors.primary_500;
             }
             return AppColors.primary_500;
           }),

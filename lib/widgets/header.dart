@@ -26,7 +26,7 @@ class Header extends StatelessWidget {
           Container(
             height: 32,
             width: double.infinity,
-            color: AppColors.primary_600,
+            color: AppColors.primary_500,
           ),
 
           // [BAR] Bottom with Title

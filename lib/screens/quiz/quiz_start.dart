@@ -279,7 +279,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
             _handleBack();          // Then execute the double-pop navigation
           },
           style: TextButton.styleFrom(
-            foregroundColor: AppColors.primary_600,
+            foregroundColor: AppColors.primary_500,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           ),
           child: const Text(
@@ -570,7 +570,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
                     Icon(
                       Icons.timer,
                       color: timeLeft! <= 10
-                          ? AppColors.primary_600
+                          ? AppColors.primary_500
                           : AppColors.text_700,
                       size: 14,
                     ),
@@ -582,7 +582,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: timeLeft! <= 10
-                            ? AppColors.primary_600
+                            ? AppColors.primary_500
                             : AppColors.text_800,
                       ),
                     ),
@@ -623,7 +623,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
               value: (currentNumber + 1) / questions.length,
               minHeight: 6,
               backgroundColor: AppColors.text_200,
-              valueColor: const AlwaysStoppedAnimation(AppColors.primary_600),
+              valueColor: const AlwaysStoppedAnimation(AppColors.primary_500),
             ),
           ),
 
@@ -985,7 +985,7 @@ class _QuizCompleteDialogState extends State<_QuizCompleteDialog>
     if (widget.accuracy >= 90) {
       return (emoji: '🏆', message: 'Perfect score!', color: const Color(0xFFF59E0B));
     } else if (widget.accuracy >= 70) {
-      return (emoji: '🌟', message: 'Great job!', color: AppColors.primary_600);
+      return (emoji: '🌟', message: 'Great job!', color: AppColors.primary_500);
     } else if (widget.accuracy >= 50) {
       return (emoji: '👍', message: 'Good work!', color: const Color(0xFF0D9488));
     }
@@ -1240,7 +1240,7 @@ class _QuizCompleteDialogState extends State<_QuizCompleteDialog>
                           child: ElevatedButton(
                             onPressed: widget.onBack,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary_600,
+                              backgroundColor: AppColors.primary_500,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
