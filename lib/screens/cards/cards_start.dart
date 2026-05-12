@@ -18,6 +18,9 @@ class _CardsPlayState extends State<CardsPlay>
   int wrongCount = 0;
   bool isFlipped = false;
   List<int> _missedIndices = [];
+  // [FIX] Tracks which card index has been answered and how, to prevent
+  // re-marking after navigating back with the Previous button.
+  Map<int, String> _answeredCards = {}; // value: 'correct' | 'wrong'
 
   String deckTitle = "Flashcard Deck";
   List<Map<String, dynamic>> cards = [];
@@ -186,6 +189,7 @@ class _CardsPlayState extends State<CardsPlay>
             wrongCount = 0;
             isFlipped = false;
             _missedIndices = [];
+            _answeredCards = {};
             _flipController.reset();
           });
         },
@@ -201,6 +205,7 @@ class _CardsPlayState extends State<CardsPlay>
             wrongCount = 0;
             isFlipped = false;
             _missedIndices = [];
+            _answeredCards = {};
             _flipController.reset();
           });
         },
@@ -213,7 +218,21 @@ class _CardsPlayState extends State<CardsPlay>
   }
 
   void _markCorrect() {
-    setState(() => correctCount++);
+    final previous = _answeredCards[currentNumber];
+    // [FIX] If already marked correct, just advance — no double-count
+    if (previous == 'correct') {
+      _nextCard();
+      return;
+    }
+    setState(() {
+      _answeredCards[currentNumber] = 'correct';
+      correctCount++;
+      // [FIX] Undo the previous wrong mark if switching answers
+      if (previous == 'wrong') {
+        wrongCount--;
+        _missedIndices.remove(currentNumber);
+      }
+    });
     Future.delayed(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       _nextCard();
@@ -221,9 +240,20 @@ class _CardsPlayState extends State<CardsPlay>
   }
 
   void _markWrong() {
+    final previous = _answeredCards[currentNumber];
+    // [FIX] If already marked wrong, just advance — no double-count
+    if (previous == 'wrong') {
+      _nextCard();
+      return;
+    }
     setState(() {
+      _answeredCards[currentNumber] = 'wrong';
       wrongCount++;
       _missedIndices.add(currentNumber);
+      // [FIX] Undo the previous correct mark if switching answers
+      if (previous == 'correct') {
+        correctCount--;
+      }
     });
     Future.delayed(const Duration(milliseconds: 300), () {
       if (!mounted) return;
@@ -510,9 +540,17 @@ class _CardsPlayState extends State<CardsPlay>
               padding:
                   const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
+                // [FIX] Highlight if this is the current answer for this card
+                color: _answeredCards[currentNumber] == 'wrong'
+                    ? Colors.red.shade100
+                    : Colors.red.shade50,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.shade200, width: 1.5),
+                border: Border.all(
+                  color: _answeredCards[currentNumber] == 'wrong'
+                      ? Colors.red.shade400
+                      : Colors.red.shade200,
+                  width: _answeredCards[currentNumber] == 'wrong' ? 2.0 : 1.5,
+                ),
               ),
               child: Row(
                 children: [
@@ -539,10 +577,17 @@ class _CardsPlayState extends State<CardsPlay>
               padding:
                   const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.green.shade50,
+                // [FIX] Highlight if this is the current answer for this card
+                color: _answeredCards[currentNumber] == 'correct'
+                    ? Colors.green.shade100
+                    : Colors.green.shade50,
                 borderRadius: BorderRadius.circular(8),
-                border:
-                    Border.all(color: Colors.green.shade200, width: 1.5),
+                border: Border.all(
+                  color: _answeredCards[currentNumber] == 'correct'
+                      ? Colors.green.shade400
+                      : Colors.green.shade200,
+                  width: _answeredCards[currentNumber] == 'correct' ? 2.0 : 1.5,
+                ),
               ),
               child: Row(
                 children: [
