@@ -135,7 +135,7 @@ class _DeckFormState extends State<DeckForm> {
         ElevatedButton(
           onPressed: _submit,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary_600,
+            backgroundColor: AppColors.primary_500,
             foregroundColor: Colors.white,
           ),
           child: Text(isEditing ? 'Save Changes' : 'Create'), // ← Dynamic label

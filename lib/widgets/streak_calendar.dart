@@ -134,7 +134,7 @@ class _StreakCalendarState extends State<StreakCalendar> {
                         fontFamily: "Baloo",
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.primary_600,
+                        color: AppColors.primary_500,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -162,7 +162,7 @@ class _StreakCalendarState extends State<StreakCalendar> {
               ],
               Icon(
                 Icons.local_fire_department,
-                color: hasActiveStreak ? AppColors.primary_600: AppColors.text_300,
+                color: hasActiveStreak ? AppColors.primary_500: AppColors.text_300,
                 size: 28,
               ),
             ],
@@ -237,7 +237,7 @@ class _StreakCalendarState extends State<StreakCalendar> {
                         ? streakBorderRadius(day)
                         : BorderRadius.circular(6),
                     border: isToday
-                        ? Border.all(color: AppColors.primary_600, width: 2)
+                        ? Border.all(color: AppColors.primary_500, width: 2)
                         : null,
                   ),
                   child: Text(

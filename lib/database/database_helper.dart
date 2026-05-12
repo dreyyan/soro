@@ -221,7 +221,7 @@ class DatabaseHelper {
     };
   }
 
-  // [REWARDS] Player Progression Stats (EXP, Coins, Level)
+  // [REWARDS] Player Progression Stats (XP, Coins, Level)
   Future<UserStats> getProgressionStats() async {
     final email = await _loggedInEmail();
     if (email == null) {
@@ -237,7 +237,7 @@ class DatabaseHelper {
     );
   }
 
-  // [SAVE] Adds EXP and Coins, returns true if the user leveled up
+  // [SAVE] Adds XP and Coins, returns true if the user leveled up
   Future<bool> saveRewards(int exp, int coins) async {
     final email = await _loggedInEmail();
     if (email == null) return false;
@@ -402,7 +402,7 @@ class DatabaseHelper {
     // [CARDS] Count total cards in the deck
     final cardCount = ((deck['cards'] as List?) ?? []).length;
     
-    // [REWARDS] Add EXP and progress quests
+    // [REWARDS] Add XP and progress quests
     await addExp(5);
     await _progressQuest('dailyStudy');
     await _updateQuestProgress('createCards5', cardCount);
@@ -487,7 +487,7 @@ class DatabaseHelper {
   await _saveQuizzes(quizzes);
 }
 
-  // * [CURRENCY]  (coins, EXP, achievements)
+  // * [CURRENCY]  (coins, XP, achievements)
   static const List<Map<String, dynamic>> rankTiers = [
     {'title': 'Novice',     'minExp': 0,    'icon': '🌱'},
     {'title': 'Apprentice', 'minExp': 500,  'icon': '📖'},
@@ -684,7 +684,7 @@ class DatabaseHelper {
     }
   }
 
-  // [HELPER] Derive rank title, icon, and progress from total EXP
+  // [HELPER] Derive rank title, icon, and progress from total XP
   static Map<String, dynamic> getRankFromExp(int exp) {
     Map<String, dynamic> current = rankTiers.first;
     for (final tier in rankTiers) {
@@ -921,7 +921,7 @@ class DatabaseHelper {
     }
   }
 
-  // [CLAIM] Award EXP + coins for a completed quest; returns false if invalid
+  // [CLAIM] Award XP + coins for a completed quest; returns false if invalid
   Future<bool> claimQuestReward(String questId) async {
     final email = await _loggedInEmail();
     if (email == null) return false;

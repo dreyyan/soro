@@ -18,6 +18,9 @@ class _CardsPlayState extends State<CardsPlay>
   int wrongCount = 0;
   bool isFlipped = false;
   List<int> _missedIndices = [];
+  // [FIX] Tracks which card index has been answered and how, to prevent
+  // re-marking after navigating back with the Previous button.
+  Map<int, String> _answeredCards = {}; // value: 'correct' | 'wrong'
 
   String deckTitle = "Flashcard Deck";
   List<Map<String, dynamic>> cards = [];
@@ -42,7 +45,7 @@ class _CardsPlayState extends State<CardsPlay>
     _particleTicker!.start();
 
     _flipController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     );
     _flipAnimation = Tween<double>(begin: 0, end: 1).animate(
@@ -146,7 +149,7 @@ class _CardsPlayState extends State<CardsPlay>
               _handleBack();
             },
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.primary_600,
+              foregroundColor: AppColors.primary_500,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
             child: const Text(
@@ -186,11 +189,21 @@ class _CardsPlayState extends State<CardsPlay>
             wrongCount = 0;
             isFlipped = false;
             _missedIndices = [];
+            _answeredCards = {};
             _flipController.reset();
           });
         },
         onReviewMissed: () {
-          final missed = _missedIndices
+          // Collect wrong cards + any card the user never answered (skipped)
+          final skippedIndices = [
+            for (int i = 0; i < cards.length; i++)
+              if (!_answeredCards.containsKey(i)) i,
+          ];
+          final missedAndSkipped = {
+            ..._missedIndices,
+            ...skippedIndices,
+          }.toList()..sort();
+          final missed = missedAndSkipped
               .map((i) => Map<String, dynamic>.from(cards[i]))
               .toList();
           Navigator.pop(context);
@@ -201,6 +214,7 @@ class _CardsPlayState extends State<CardsPlay>
             wrongCount = 0;
             isFlipped = false;
             _missedIndices = [];
+            _answeredCards = {};
             _flipController.reset();
           });
         },
@@ -213,7 +227,21 @@ class _CardsPlayState extends State<CardsPlay>
   }
 
   void _markCorrect() {
-    setState(() => correctCount++);
+    final previous = _answeredCards[currentNumber];
+    // [FIX] If already marked correct, just advance — no double-count
+    if (previous == 'correct') {
+      _nextCard();
+      return;
+    }
+    setState(() {
+      _answeredCards[currentNumber] = 'correct';
+      correctCount++;
+      // [FIX] Undo the previous wrong mark if switching answers
+      if (previous == 'wrong') {
+        wrongCount--;
+        _missedIndices.remove(currentNumber);
+      }
+    });
     Future.delayed(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       _nextCard();
@@ -221,9 +249,20 @@ class _CardsPlayState extends State<CardsPlay>
   }
 
   void _markWrong() {
+    final previous = _answeredCards[currentNumber];
+    // [FIX] If already marked wrong, just advance — no double-count
+    if (previous == 'wrong') {
+      _nextCard();
+      return;
+    }
     setState(() {
+      _answeredCards[currentNumber] = 'wrong';
       wrongCount++;
       _missedIndices.add(currentNumber);
+      // [FIX] Undo the previous correct mark if switching answers
+      if (previous == 'correct') {
+        correctCount--;
+      }
     });
     Future.delayed(const Duration(milliseconds: 300), () {
       if (!mounted) return;
@@ -281,7 +320,7 @@ class _CardsPlayState extends State<CardsPlay>
               onPressed: _confirmGoBack,
               style: ButtonStyle(
                 padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-                splashFactory: NoSplash.splashFactory,
+                splashFactory: InkRipple.splashFactory,
                 overlayColor: const WidgetStatePropertyAll(Colors.transparent),
                 backgroundColor:
                     const WidgetStatePropertyAll(AppColors.secondary_50),
@@ -333,9 +372,9 @@ class _CardsPlayState extends State<CardsPlay>
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontFamily: 'Baloo',
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.text_800,
+                  color: AppColors.text_700,
                 ),
               ),
             ),
@@ -414,7 +453,7 @@ class _CardsPlayState extends State<CardsPlay>
                               fontFamily: 'Nunito',
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.text_800,
+                              color: AppColors.text_700,
                               height: 1.4,
                             ),
                           ),
@@ -470,7 +509,7 @@ class _CardsPlayState extends State<CardsPlay>
               onPressed: currentNumber > 0 ? _previousCard : null,
               style: ButtonStyle(
                 padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-                splashFactory: NoSplash.splashFactory,
+                splashFactory: InkRipple.splashFactory,
                 overlayColor: const WidgetStatePropertyAll(Colors.transparent),
                 backgroundColor: WidgetStatePropertyAll(
                   currentNumber > 0
@@ -510,9 +549,17 @@ class _CardsPlayState extends State<CardsPlay>
               padding:
                   const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
+                // [FIX] Highlight if this is the current answer for this card
+                color: _answeredCards[currentNumber] == 'wrong'
+                    ? Colors.red.shade100
+                    : Colors.red.shade50,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.shade200, width: 1.5),
+                border: Border.all(
+                  color: _answeredCards[currentNumber] == 'wrong'
+                      ? Colors.red.shade400
+                      : Colors.red.shade200,
+                  width: _answeredCards[currentNumber] == 'wrong' ? 2.0 : 1.5,
+                ),
               ),
               child: Row(
                 children: [
@@ -539,10 +586,17 @@ class _CardsPlayState extends State<CardsPlay>
               padding:
                   const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.green.shade50,
+                // [FIX] Highlight if this is the current answer for this card
+                color: _answeredCards[currentNumber] == 'correct'
+                    ? Colors.green.shade100
+                    : Colors.green.shade50,
                 borderRadius: BorderRadius.circular(8),
-                border:
-                    Border.all(color: Colors.green.shade200, width: 1.5),
+                border: Border.all(
+                  color: _answeredCards[currentNumber] == 'correct'
+                      ? Colors.green.shade400
+                      : Colors.green.shade200,
+                  width: _answeredCards[currentNumber] == 'correct' ? 2.0 : 1.5,
+                ),
               ),
               child: Row(
                 children: [
@@ -570,12 +624,12 @@ class _CardsPlayState extends State<CardsPlay>
               onPressed: isLastCard ? _submitSession : _nextCard,
               style: ButtonStyle(
                 padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-                splashFactory: NoSplash.splashFactory,
+                splashFactory: InkRipple.splashFactory,
                 overlayColor: const WidgetStatePropertyAll(Colors.transparent),
                 backgroundColor:
                     const WidgetStatePropertyAll(AppColors.secondary_50),
                 foregroundColor:
-                    const WidgetStatePropertyAll(AppColors.primary_600),
+                    const WidgetStatePropertyAll(AppColors.primary_500),
                 shape: WidgetStatePropertyAll(
                   RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -710,7 +764,7 @@ class _StudyCompleteDialogState extends State<_StudyCompleteDialog>
     if (widget.accuracy >= 90) {
       return (emoji: '🏆', message: 'Perfect score!', color: const Color(0xFFF59E0B));
     } else if (widget.accuracy >= 70) {
-      return (emoji: '🌟', message: 'Great job!', color: AppColors.primary_600);
+      return (emoji: '🌟', message: 'Great job!', color: AppColors.primary_500);
     } else if (widget.accuracy >= 50) {
       return (emoji: '👍', message: 'Good work!', color: const Color(0xFF0D9488));
     }
@@ -784,7 +838,7 @@ class _StudyCompleteDialogState extends State<_StudyCompleteDialog>
                               fontFamily: 'Baloo',
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.text_800,
+                              color: AppColors.text_700,
                             ),
                           ),
                           Text(
@@ -907,7 +961,7 @@ class _StudyCompleteDialogState extends State<_StudyCompleteDialog>
                           child: ElevatedButton(
                             onPressed: widget.onBack,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary_600,
+                              backgroundColor: AppColors.primary_500,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
@@ -958,11 +1012,11 @@ class _StudyCompleteDialogState extends State<_StudyCompleteDialog>
                         ),
                         const SizedBox(height: 8),
                         ElevatedButton(
-                          onPressed: widget.wrongCount > 0
+                          onPressed: (widget.wrongCount + widget.skippedCount) > 0
                               ? widget.onReviewMissed
                               : null,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary_600,
+                            backgroundColor: AppColors.primary_500,
                             foregroundColor: Colors.white,
                             disabledBackgroundColor:
                                 AppColors.secondary_200,
@@ -973,8 +1027,8 @@ class _StudyCompleteDialogState extends State<_StudyCompleteDialog>
                                 vertical: 13),
                           ),
                           child: Text(
-                            widget.wrongCount > 0
-                                ? 'Only missed (${widget.wrongCount})'
+                            (widget.wrongCount + widget.skippedCount) > 0
+                                ? 'Only missed & skipped (${widget.wrongCount + widget.skippedCount})'
                                 : 'No missed cards',
                             style: const TextStyle(
                                 fontFamily: 'Nunito',

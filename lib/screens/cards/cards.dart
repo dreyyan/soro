@@ -214,7 +214,7 @@ class _CardsState extends State<Cards> {
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Material(
                     color: isActive
-                        ? AppColors.primary_600
+                        ? AppColors.primary_500
                         : AppColors.secondary_100,
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
@@ -227,7 +227,7 @@ class _CardsState extends State<Cards> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isActive
-                                ? AppColors.primary_600
+                                ? AppColors.primary_500
                                 : AppColors.secondary_300,
                           ),
                         ),
@@ -279,11 +279,8 @@ class _CardsState extends State<Cards> {
   Widget build(BuildContext context) {
     final decks = _sortedDecks;
 
-    // Total individual cards across all decks
-    final totalCards = _decks.fold<int>(
-      0,
-      (sum, d) => sum + ((d['cards'] as List?)?.length ?? 0),
-    );
+    // Total number of decks created
+    final totalDecks = _decks.length;
 
     return Scaffold(
       backgroundColor: AppColors.secondary_50,
@@ -291,7 +288,7 @@ class _CardsState extends State<Cards> {
         child: Column(
           children: [
             // [COMPONENT] Header (Title + Count only)
-            _buildHeader(totalCards),
+            _buildHeader(totalDecks),
 
             // [COMPONENT] Deck List / Empty State
             Expanded(
@@ -324,10 +321,10 @@ class _CardsState extends State<Cards> {
   }
 
   // [WIDGET] Top Header Row - Title + Card Count only
-  Widget _buildHeader(int totalCards) {
+  Widget _buildHeader(int totalDecks) {
     return Material(
-      color: AppColors.primary_600,
-      elevation: 3,
+      color: AppColors.primary_500,
+      elevation: 1,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -343,7 +340,7 @@ class _CardsState extends State<Cards> {
             children: [
               const TextSpan(text: 'My Cards '),
               TextSpan(
-                text: '($totalCards)',
+                text: '($totalDecks)',
                 style: const TextStyle(
                   fontFamily: 'Nunito',
                   fontSize: 14,
@@ -407,7 +404,7 @@ class _CardsState extends State<Cards> {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary_600,
+                backgroundColor: AppColors.primary_500,
                 foregroundColor: Colors.white,
                 elevation: 1,
                 padding: const EdgeInsets.symmetric(vertical: 16),

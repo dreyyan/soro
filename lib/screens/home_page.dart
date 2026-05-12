@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
         ? fullName.split(' ').first
         : (user?['email'] as String? ?? 'there').split('@').first;
 
-    // [RANK] Calculate rank from total EXP
+    // [RANK] Calculate rank from total XP
     final rankInfo = DatabaseHelper.getRankFromExp(stats.totalExp);
 
     setState(() {
@@ -110,7 +110,7 @@ class _HomePageState extends State<HomePage> {
             fontWeight: FontWeight.w700,
             height: 1.2,
             letterSpacing: 0,
-            color: AppColors.primary_600,
+            color: AppColors.primary_500,
           ),
         ),
         const SizedBox(height: 2),

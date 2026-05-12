@@ -81,7 +81,7 @@ class _ProfileState extends State<Profile> {
     IconData icon,
     String title,
     VoidCallback onTap, {
-    Color iconColor = AppColors.primary_600,
+    Color iconColor = AppColors.primary_500,
     Color textColor = AppColors.text_800,
   }) {
     return Card(
@@ -220,7 +220,7 @@ class _ProfileState extends State<Profile> {
                             style: const TextStyle(
                               fontFamily: "Nunito",
                               fontSize: 15,
-                              color: AppColors.primary_600,
+                              color: AppColors.primary_500,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

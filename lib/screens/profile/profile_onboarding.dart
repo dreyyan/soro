@@ -53,7 +53,7 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
           colorScheme: const ColorScheme.light(
-            primary: AppColors.primary_600,
+            primary: AppColors.primary_500,
             onPrimary: Colors.white,
             surface: Colors.white,
           ),
@@ -135,7 +135,7 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
           width: active ? 24 : 10,
           height: 10,
           decoration: BoxDecoration(
-            color: active ? AppColors.primary_600 : AppColors.primary_200,
+            color: active ? AppColors.primary_500 : AppColors.primary_200,
             borderRadius: BorderRadius.circular(8),
           ),
         );
@@ -388,7 +388,7 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
                             setState(() => _currentStep = _currentStep - 1),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: AppColors.primary_600),
+                          side: const BorderSide(color: AppColors.primary_500),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -399,7 +399,7 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
                             fontFamily: "Nunito",
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.primary_600,
+                            color: AppColors.primary_500,
                           ),
                         ),
                       ),
@@ -414,9 +414,9 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
                           ? null
                           : (_currentStep < 2 ? _nextStep : _finishOnboarding),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary_600,
+                        backgroundColor: AppColors.primary_500,
                         disabledBackgroundColor:
-                            AppColors.primary_600.withOpacity(0.6),
+                            AppColors.primary_500.withOpacity(0.6),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),

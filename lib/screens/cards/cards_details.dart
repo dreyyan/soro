@@ -87,7 +87,7 @@ class _DeckDetailsState extends State<DeckDetails> {
     return Scaffold(
       backgroundColor: AppColors.secondary_200,
       appBar: AppBar(
-        backgroundColor: AppColors.primary_600,
+        backgroundColor: AppColors.primary_500,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [],
@@ -239,7 +239,7 @@ class _DeckDetailsState extends State<DeckDetails> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary_600,
+                  backgroundColor: AppColors.primary_500,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -338,7 +338,7 @@ class _DeckDetailsState extends State<DeckDetails> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary_600,
+                  backgroundColor: AppColors.primary_500,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -384,7 +384,7 @@ class _DeckDetailsState extends State<DeckDetails> {
 
         // [BUTTON] Delete card
         trailing: IconButton(
-          icon: const Icon(Icons.delete_outline, color: AppColors.primary_600),
+          icon: const Icon(Icons.delete_outline, color: AppColors.primary_500),
           onPressed: () => _deleteCard(index),
         ),
       ),
