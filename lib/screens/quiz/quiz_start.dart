@@ -292,7 +292,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
   Future<void> _submitQuiz() async {
     timer?.cancel();
 
-    // [RECORD] Save quiz result to stats and award EXP
+    // [RECORD] Save quiz result to stats and award XP
     final rewards = await DatabaseHelper().recordQuizResult(score, questions.length);
 
     if (!mounted) return;

@@ -194,7 +194,16 @@ class _CardsPlayState extends State<CardsPlay>
           });
         },
         onReviewMissed: () {
-          final missed = _missedIndices
+          // Collect wrong cards + any card the user never answered (skipped)
+          final skippedIndices = [
+            for (int i = 0; i < cards.length; i++)
+              if (!_answeredCards.containsKey(i)) i,
+          ];
+          final missedAndSkipped = {
+            ..._missedIndices,
+            ...skippedIndices,
+          }.toList()..sort();
+          final missed = missedAndSkipped
               .map((i) => Map<String, dynamic>.from(cards[i]))
               .toList();
           Navigator.pop(context);
@@ -1003,7 +1012,7 @@ class _StudyCompleteDialogState extends State<_StudyCompleteDialog>
                         ),
                         const SizedBox(height: 8),
                         ElevatedButton(
-                          onPressed: widget.wrongCount > 0
+                          onPressed: (widget.wrongCount + widget.skippedCount) > 0
                               ? widget.onReviewMissed
                               : null,
                           style: ElevatedButton.styleFrom(
@@ -1018,8 +1027,8 @@ class _StudyCompleteDialogState extends State<_StudyCompleteDialog>
                                 vertical: 13),
                           ),
                           child: Text(
-                            widget.wrongCount > 0
-                                ? 'Only missed (${widget.wrongCount})'
+                            (widget.wrongCount + widget.skippedCount) > 0
+                                ? 'Only missed & skipped (${widget.wrongCount + widget.skippedCount})'
                                 : 'No missed cards',
                             style: const TextStyle(
                                 fontFamily: 'Nunito',

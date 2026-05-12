@@ -92,7 +92,7 @@ class _QuestState extends State<Quest> {
           _currencyChip('🪙', '$coins', 'Coins',
               AppColors.secondary_50, AppColors.secondary_700),
           const SizedBox(width: 10),
-          _currencyChip('⚡', '$exp', 'EXP',
+          _currencyChip('⚡', '$exp', 'XP',
               AppColors.primary_100, AppColors.primary_700),
           const SizedBox(width: 10),
           _currencyChip('🏅', '$achievements', 'Badges',
@@ -193,7 +193,7 @@ class _QuestState extends State<Quest> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '$exp EXP',
+                      '$exp XP',
                       style: const TextStyle(
                         fontFamily: 'Baloo',
                         fontSize: 16,
@@ -215,7 +215,7 @@ class _QuestState extends State<Quest> {
               ],
             ),
             const SizedBox(height: 14),
-            // EXP progress bar
+            // XP progress bar
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: LinearProgressIndicator(
@@ -230,7 +230,7 @@ class _QuestState extends State<Quest> {
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
-                  '${nextExp - exp} EXP to ${_nextRankTitle()}',
+                  '${nextExp - exp} XP to ${_nextRankTitle()}',
                   style: const TextStyle(
                     fontFamily: 'Nunito',
                     fontSize: 11,
@@ -441,7 +441,7 @@ class _QuestState extends State<Quest> {
                   size: 14, color: AppColors.text_400),
               const SizedBox(width: 4),
               Text(
-                'Reward: +$rewardExp EXP  •  +$rewardCoins coins',
+                'Reward: +$rewardExp XP  •  +$rewardCoins coins',
                 style: const TextStyle(
                   fontFamily: 'Nunito',
                   fontSize: 12,

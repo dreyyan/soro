@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
         ? fullName.split(' ').first
         : (user?['email'] as String? ?? 'there').split('@').first;
 
-    // [RANK] Calculate rank from total EXP
+    // [RANK] Calculate rank from total XP
     final rankInfo = DatabaseHelper.getRankFromExp(stats.totalExp);
 
     setState(() {
