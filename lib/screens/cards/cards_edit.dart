@@ -312,7 +312,9 @@ class _CardsEditState extends State<CardsEdit> {
             color: AppColors.secondary_50,
             elevation: 1,
             shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
-            child: Container(
+            child: SafeArea(
+              bottom: false,
+              child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: Row(
                 children: [
@@ -331,6 +333,7 @@ class _CardsEditState extends State<CardsEdit> {
                   ),
                 ],
               ),
+            ),
             ),
           ),
 
