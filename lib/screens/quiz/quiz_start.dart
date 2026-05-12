@@ -230,10 +230,16 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
 
   // [FORMAT] Convert seconds into MM:SS display string
   String _formatTime(int seconds) {
-    final mins = (seconds ~/ 60).toString().padLeft(2, '0');
+  if (seconds >= 3600) {
+    final hrs  = (seconds ~/ 3600).toString().padLeft(2, '0');
+    final mins = ((seconds % 3600) ~/ 60).toString().padLeft(2, '0');
     final secs = (seconds % 60).toString().padLeft(2, '0');
-    return "$mins:$secs";
+    return "$hrs:$mins:$secs";
   }
+  final mins = (seconds ~/ 60).toString().padLeft(2, '0');
+  final secs = (seconds % 60).toString().padLeft(2, '0');
+  return "$mins:$secs";
+}
 
   // [NAVIGATE] Return to the quiz list page
   void _handleBack() {
