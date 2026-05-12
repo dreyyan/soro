@@ -324,7 +324,7 @@ class _CardsState extends State<Cards> {
   Widget _buildHeader(int totalDecks) {
     return Material(
       color: AppColors.primary_600,
-      elevation: 3,
+      elevation: 1,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
