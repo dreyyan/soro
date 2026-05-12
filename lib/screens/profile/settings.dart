@@ -18,9 +18,9 @@ class _SettingsState extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.secondary_50,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.secondary_50,
         elevation: 0,
         title: const Text(
           'Settings',
@@ -106,7 +106,7 @@ class _SettingsState extends State<Settings> {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 0,
-      color: const Color(0xFFF9F9F9),
+      color: AppColors.secondary_100,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ListTile(
         title: Text(

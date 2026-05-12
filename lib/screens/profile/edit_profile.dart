@@ -87,9 +87,9 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.secondary_50,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.secondary_50,
         elevation: 0,
         title: const Text(
           'Edit Profile',
@@ -167,12 +167,12 @@ class _EditProfileState extends State<EditProfile> {
                           onPressed: _isSaving ? null : _saveProfile,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary_600,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            foregroundColor: AppColors.secondary_50,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            elevation: 3,
+                            elevation: 1,
                           ),
                           child: _isSaving
                               ? const SizedBox(
@@ -223,7 +223,7 @@ class _EditProfileState extends State<EditProfile> {
           borderSide: BorderSide.none,
         ),
         filled: true,
-        fillColor: const Color(0xFFF9F9F9),
+        fillColor: AppColors.secondary_100,
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       ),
       style: const TextStyle(fontFamily: 'Nunito'),
