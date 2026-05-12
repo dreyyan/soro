@@ -6,7 +6,7 @@ import 'package:soro/main.dart';
 import 'package:soro/database/database_helper.dart';
 import 'package:soro/screens/profile/edit_profile.dart';
 import 'package:soro/screens/profile/change_password.dart';
-import 'package:soro/screens/profile/settings.dart';
+import 'package:soro/screens/main-screens/settings.dart';
 
 // [CLASS] Profile Page
 class Profile extends StatefulWidget {
