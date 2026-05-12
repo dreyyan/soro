@@ -263,10 +263,10 @@ class HomeWithNavState extends State<HomeWithNav> {
       // [SECTION] Bottom Navigation Bar
       bottomNavigationBar: Theme(
         data: Theme.of(context).copyWith(
-        splashFactory: NoSplash.splashFactory, // remove ripple circle
-        splashColor: Colors.transparent, // remove splash color
-        highlightColor: Colors.transparent, // remove default gray circle
-        hoverColor: Colors.transparent, // remove hover effect
+          splashFactory: InkRipple.splashFactory,
+          splashColor: AppColors.primary_500.withOpacity(0.15),
+          highlightColor: AppColors.primary_500.withOpacity(0.08),
+          hoverColor: Colors.transparent,
         ),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 4),

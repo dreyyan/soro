@@ -23,7 +23,7 @@ class PrimaryButton extends StatelessWidget {
         onPressed: onPressed,
         style: ButtonStyle(
           padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
-          splashFactory: NoSplash.splashFactory, // disable default ripple when button is pressed
+          splashFactory: InkRipple.splashFactory, // disable default ripple when button is pressed
           overlayColor: WidgetStatePropertyAll(Colors.transparent),
           textStyle: WidgetStatePropertyAll(
             TextStyle(

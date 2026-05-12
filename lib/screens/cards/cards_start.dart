@@ -320,7 +320,7 @@ class _CardsPlayState extends State<CardsPlay>
               onPressed: _confirmGoBack,
               style: ButtonStyle(
                 padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-                splashFactory: NoSplash.splashFactory,
+                splashFactory: InkRipple.splashFactory,
                 overlayColor: const WidgetStatePropertyAll(Colors.transparent),
                 backgroundColor:
                     const WidgetStatePropertyAll(AppColors.secondary_50),
@@ -509,7 +509,7 @@ class _CardsPlayState extends State<CardsPlay>
               onPressed: currentNumber > 0 ? _previousCard : null,
               style: ButtonStyle(
                 padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-                splashFactory: NoSplash.splashFactory,
+                splashFactory: InkRipple.splashFactory,
                 overlayColor: const WidgetStatePropertyAll(Colors.transparent),
                 backgroundColor: WidgetStatePropertyAll(
                   currentNumber > 0
@@ -624,7 +624,7 @@ class _CardsPlayState extends State<CardsPlay>
               onPressed: isLastCard ? _submitSession : _nextCard,
               style: ButtonStyle(
                 padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-                splashFactory: NoSplash.splashFactory,
+                splashFactory: InkRipple.splashFactory,
                 overlayColor: const WidgetStatePropertyAll(Colors.transparent),
                 backgroundColor:
                     const WidgetStatePropertyAll(AppColors.secondary_50),

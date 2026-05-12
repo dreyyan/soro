@@ -504,7 +504,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
         onPressed: _confirmGoBack,  // ← NEW: shows "Are you sure?" first
         style: ButtonStyle(
           padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-          splashFactory: NoSplash.splashFactory,
+          splashFactory: InkRipple.splashFactory,
           overlayColor: const WidgetStatePropertyAll(Colors.transparent),
           backgroundColor: const WidgetStatePropertyAll(AppColors.secondary_50),
           foregroundColor: const WidgetStatePropertyAll(AppColors.text_700),
