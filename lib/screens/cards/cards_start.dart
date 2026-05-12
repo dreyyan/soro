@@ -45,7 +45,7 @@ class _CardsPlayState extends State<CardsPlay>
     _particleTicker!.start();
 
     _flipController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     );
     _flipAnimation = Tween<double>(begin: 0, end: 1).animate(
