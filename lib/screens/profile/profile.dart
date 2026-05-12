@@ -86,7 +86,7 @@ class _ProfileState extends State<Profile> {
   }) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
-      elevation: 1,
+      elevation: 0,
       color: AppColors.secondary_100,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
