@@ -11,8 +11,6 @@ import 'package:soro/main.dart';
 import 'package:soro/screens/quiz/quiz_settings.dart';
 
 // [IMPORT] Widgets
-import 'package:soro/widgets/choice_button.dart';
-
 // [IMPORT] Database
 import 'package:soro/database/database_helper.dart';
 
@@ -689,27 +687,70 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: currentQuestion.choices.map((choice) {
-        // [COLOR] Highlight correct/wrong after submission
-        Color btnColor = AppColors.secondary_50;
+        final isSelected = selectedAnswer == choice;
+        final isCorrect  = choice == currentQuestion.answer;
+
+        // [COLOR] Match cards_start green/red palette
+        Color bgColor     = AppColors.secondary_50;
+        Color borderColor = AppColors.text_100;
+
         if (answerSubmitted) {
-          if (choice == currentQuestion.answer) {
-            btnColor = AppColors.green_300;
-          } else if (choice == selectedAnswer) {
-            btnColor = AppColors.primary_300;
+          if (isCorrect) {
+            // Correct answer: stronger highlight if the user picked it
+            bgColor     = isSelected ? Colors.green.shade100 : Colors.green.shade50;
+            borderColor = isSelected ? Colors.green.shade400 : Colors.green.shade200;
+          } else if (isSelected) {
+            // User's wrong pick
+            bgColor     = Colors.red.shade50;
+            borderColor = Colors.red.shade200;
           }
-        } else if (selectedAnswer == choice) {
-          btnColor = AppColors.secondary_200;
         }
+
+        // [ICON] Only on the choice the user actually selected
+        final IconData? icon = answerSubmitted && isSelected
+            ? (isCorrect ? Icons.check_box : Icons.disabled_by_default)
+            : null;
+        final Color iconColor = isCorrect
+            ? Colors.green.shade700
+            : Colors.red.shade700;
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
-          child: ChoiceButton(
-            text: choice,
-            backgroundColor: btnColor,
-            onPressed: answerSubmitted
-                ? () {}
+          child: GestureDetector(
+            onTap: answerSubmitted
+                ? null
                 : () => _handleMultipleChoiceAnswer(choice),
-            selectedAnswer: selectedAnswer == choice,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: borderColor, width: 1.5),
+              ),
+              child: Row(
+                children: [
+                  // [TEXT] Left-aligned choice label
+                  Expanded(
+                    child: Text(
+                      choice,
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.text_800,
+                      ),
+                    ),
+                  ),
+                  // [ICON] Result indicator on right side
+                  if (icon != null) ...[
+                    const SizedBox(width: 8),
+                    Icon(icon, color: iconColor, size: 22),
+                  ],
+                ],
+              ),
+            ),
           ),
         );
       }).toList(),
@@ -718,12 +759,12 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
 
   // [WIDGET] Identification text input + submit button
   Widget _buildIdentification() {
-    // [COLOR] Field turns green/red after submission
-    Color fieldColor = AppColors.secondary_50;
+    // [COLOR] Match cards_start green/red palette after submission
+    Color fieldColor  = AppColors.secondary_50;
+    Color borderColor = AppColors.text_200;
     if (identificationSubmitted) {
-      fieldColor = identificationCorrect
-          ? AppColors.green_300
-          : AppColors.primary_300;
+      fieldColor  = identificationCorrect ? Colors.green.shade50  : Colors.red.shade50;
+      borderColor = identificationCorrect ? Colors.green.shade200 : Colors.red.shade200;
     }
 
     return Column(
@@ -748,7 +789,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
           decoration: BoxDecoration(
             color: fieldColor,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.text_200, width: 2),
+            border: Border.all(color: borderColor, width: 2),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: TextField(
@@ -767,20 +808,36 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
 
         const SizedBox(height: 12),
 
-        // [FEEDBACK] Correct / wrong feedback text
+        // [FEEDBACK] Icon + text after submission
         if (identificationSubmitted)
-          Text(
-            identificationCorrect
-                ? "✓ Correct!"
-                : "✗ Correct answer: ${isTermToDefinition ? currentQuestion.answer : currentQuestion.question}",
-            style: TextStyle(
-              fontFamily: "Nunito",
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-              color: identificationCorrect
-                  ? AppColors.green_600
-                  : AppColors.primary_600,
-            ),
+          Row(
+            children: [
+              Icon(
+                identificationCorrect
+                    ? Icons.check_box
+                    : Icons.disabled_by_default,
+                color: identificationCorrect
+                    ? Colors.green.shade700
+                    : Colors.red.shade700,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  identificationCorrect
+                      ? "Correct!"
+                      : "Correct answer: ${isTermToDefinition ? currentQuestion.answer : currentQuestion.question}",
+                  style: TextStyle(
+                    fontFamily: "Nunito",
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: identificationCorrect
+                        ? Colors.green.shade700
+                        : Colors.red.shade700,
+                  ),
+                ),
+              ),
+            ],
           ),
 
         const SizedBox(height: 8),
@@ -814,27 +871,68 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: ["True", "False"].map((choice) {
-        // [COLOR] Highlight correct/wrong after submission
-        Color btnColor = AppColors.secondary_50;
+        final isSelected = selectedAnswer == choice;
+        final isCorrect  = choice == currentQuestion.answer;
+
+        // [COLOR] Match cards_start green/red palette
+        Color bgColor     = AppColors.secondary_50;
+        Color borderColor = AppColors.text_100;
+
         if (answerSubmitted) {
-          if (choice == currentQuestion.answer) {
-            btnColor = AppColors.green_300;
-          } else if (choice == selectedAnswer) {
-            btnColor = AppColors.primary_300;
+          if (isCorrect) {
+            bgColor     = isSelected ? Colors.green.shade100 : Colors.green.shade50;
+            borderColor = isSelected ? Colors.green.shade400 : Colors.green.shade200;
+          } else if (isSelected) {
+            bgColor     = Colors.red.shade50;
+            borderColor = Colors.red.shade200;
           }
-        } else if (selectedAnswer == choice) {
-          btnColor = AppColors.secondary_200;
         }
+
+        // [ICON] Only on the choice the user actually selected
+        final IconData? icon = answerSubmitted && isSelected
+            ? (isCorrect ? Icons.check_box : Icons.disabled_by_default)
+            : null;
+        final Color iconColor = isCorrect
+            ? Colors.green.shade700
+            : Colors.red.shade700;
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
-          child: ChoiceButton(
-            text: choice,
-            backgroundColor: btnColor,
-            onPressed: answerSubmitted
-                ? () {}
+          child: GestureDetector(
+            onTap: answerSubmitted
+                ? null
                 : () => _handleTrueOrFalseAnswer(choice),
-            selectedAnswer: selectedAnswer == choice,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: borderColor, width: 1.5),
+              ),
+              child: Row(
+                children: [
+                  // [TEXT] Left-aligned choice label
+                  Expanded(
+                    child: Text(
+                      choice,
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.text_800,
+                      ),
+                    ),
+                  ),
+                  // [ICON] Result indicator on right side
+                  if (icon != null) ...[
+                    const SizedBox(width: 8),
+                    Icon(icon, color: iconColor, size: 22),
+                  ],
+                ],
+              ),
+            ),
           ),
         );
       }).toList(),
