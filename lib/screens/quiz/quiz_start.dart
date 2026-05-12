@@ -551,7 +551,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontFamily: "Baloo",
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: AppColors.text_800,
                       ),
@@ -566,13 +566,14 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
                       color: timeLeft! <= 10
                           ? AppColors.primary_600
                           : AppColors.text_700,
-                      size: 18,
+                      size: 14,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       _formatTime(timeLeft!),
                       style: TextStyle(
-                        fontSize: 16,
+                        fontFamily: "Nunito",
+                        fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: timeLeft! <= 10
                             ? AppColors.primary_600
@@ -658,7 +659,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
                         : currentQuestion.answer)   // Show definition, answer is term
                     : currentQuestion.question,
             style: const TextStyle(
-              color: AppColors.text_800,
+              color: AppColors.text_700,
               fontFamily: "Baloo",
               fontSize: 18,
               fontWeight: FontWeight.w500,
@@ -726,7 +727,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 color: bgColor,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: borderColor, width: 1.5),
+                border: Border.all(color: borderColor, width: 2),
               ),
               child: Row(
                 children: [
@@ -908,7 +909,7 @@ class _QuizStartState extends State<QuizStart> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 color: bgColor,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: borderColor, width: 1.5),
+                border: Border.all(color: borderColor, width: 2),
               ),
               child: Row(
                 children: [
