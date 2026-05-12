@@ -323,7 +323,7 @@ class _CardsState extends State<Cards> {
   // [WIDGET] Top Header Row - Title + Card Count only
   Widget _buildHeader(int totalDecks) {
     return Material(
-      color: AppColors.primary_500,
+      color: AppColors.secondary_50,
       elevation: 1,
       shadowColor: AppColors.secondary_500.withValues(alpha: 0.4),
       child: Container(
@@ -335,7 +335,7 @@ class _CardsState extends State<Cards> {
               fontFamily: 'Baloo',
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: AppColors.text_50,
+              color: AppColors.text_700,
             ),
             children: [
               const TextSpan(text: 'My Cards '),
@@ -345,7 +345,7 @@ class _CardsState extends State<Cards> {
                   fontFamily: 'Nunito',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.text_100,
+                  color: AppColors.text_400,
                 ),
               ),
             ],

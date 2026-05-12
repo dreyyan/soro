@@ -317,7 +317,7 @@ class _CardsEditState extends State<CardsEdit> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_500),
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.text_700),
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Text(
@@ -326,7 +326,7 @@ class _CardsEditState extends State<CardsEdit> {
                       fontFamily: 'Baloo',
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primary_500,
+                      color: AppColors.text_700,
                     ),
                   ),
                 ],
