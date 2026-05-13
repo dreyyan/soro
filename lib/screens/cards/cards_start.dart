@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'dart:math';
 import 'package:soro/main.dart';
-import 'package:soro/database/database_helper.dart';
+//import 'package:soro/database/database_helper.dart';
 
 class CardsPlay extends StatefulWidget {
   const CardsPlay({super.key});

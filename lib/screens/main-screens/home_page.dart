@@ -39,7 +39,7 @@ class _HomePageState extends State<HomePage> {
   String _rankTitle = "Novice";
   String _rankIcon = "🌱";
   int _totalExp = 0;
-  int _totalCoins = 0;
+  //int _totalCoins = 0;
   int _currentLevelExp = 0;
   int _nextLevelExp = 500;
   double _expProgress = 0.0;
@@ -83,7 +83,7 @@ class _HomePageState extends State<HomePage> {
       _rankTitle       = rankInfo['title']    as String;
       _rankIcon        = rankInfo['icon']     as String;
       _totalExp        = stats.totalExp;
-      _totalCoins      = stats.totalCoins;
+      // _totalCoins      = stats.totalCoins;
       _currentLevelExp = rankInfo['minExp']   as int;
       _nextLevelExp    = rankInfo['nextExp']  as int? ?? _currentLevelExp;
       _expProgress     = rankInfo['progress'] as double;
@@ -587,9 +587,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // [PAINTER] Circular XP progress ring drawn around the rank tier icon
-// ─────────────────────────────────────────────────────────────────────────────
 class _XpRingPainter extends CustomPainter {
   final double progress;
   final Color ringColor;

@@ -7,11 +7,9 @@ import 'package:soro/main.dart';
 // [IMPORT] Database
 import 'package:soro/database/database_helper.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Onboarding flow — shown once after a new user registers.
 // Collects: full name, display name/username, birthday, and bio.
 // Email & password are already stored from signup.
-// ─────────────────────────────────────────────────────────────────────────────
 
 class ProfileOnboarding extends StatefulWidget {
   const ProfileOnboarding({super.key});
@@ -41,9 +39,7 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
     super.dispose();
   }
 
-  // ─────────────────────────────────────────────
   // [HELPER] Birthday picker
-  // ─────────────────────────────────────────────
   Future<void> _pickBirthday() async {
     final picked = await showDatePicker(
       context: context,
@@ -72,9 +68,7 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
     }
   }
 
-  // ─────────────────────────────────────────────
   // [ACTION] Validate current step and advance
-  // ─────────────────────────────────────────────
   void _nextStep() {
     setState(() => _errorMessage = null);
 
@@ -98,9 +92,7 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
     }
   }
 
-  // ─────────────────────────────────────────────
   // [ACTION] Finish onboarding — save to Hive
-  // ─────────────────────────────────────────────
   Future<void> _finishOnboarding() async {
     setState(() {
       _isLoading = true;
@@ -121,9 +113,7 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
     Navigator.pushReplacementNamed(context, '/');
   }
 
-  // ─────────────────────────────────────────────
   // [UI] Step indicator dots
-  // ─────────────────────────────────────────────
   Widget _buildStepDots() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -143,9 +133,7 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
     );
   }
 
-  // ─────────────────────────────────────────────
   // [UI] Step 0 — Full Name
-  // ─────────────────────────────────────────────
   Widget _buildStep0() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,10 +174,7 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
       ],
     );
   }
-
-  // ─────────────────────────────────────────────
   // [UI] Step 1 — Username
-  // ─────────────────────────────────────────────
   Widget _buildStep1() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,9 +215,7 @@ class _ProfileOnboardingState extends State<ProfileOnboarding> {
     );
   }
 
-  // ─────────────────────────────────────────────
   // [UI] Step 2 — Birthday & Bio
-  // ─────────────────────────────────────────────
   Widget _buildStep2() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -11,7 +11,7 @@ import 'package:soro/screens/cards/cards_start.dart';
 
 // [IMPORT] Widgets
 import 'package:soro/widgets/cards/deck_card.dart';
-import 'package:soro/widgets/cards/deck_form.dart';
+//import 'package:soro/widgets/cards/deck_form.dart';
 import 'package:soro/widgets/cards/deck_detail_sheet.dart';
 
 // [IMPORT] Database

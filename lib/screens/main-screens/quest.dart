@@ -59,9 +59,7 @@ class _QuestState extends State<Quest> {
     }
   }
 
-  // ─────────────────────────────────────────────
   // HELPERS
-  // ─────────────────────────────────────────────
 
   Map<String, dynamic> get _rank {
     final exp = _currency['exp'] as int? ?? 0;
@@ -74,11 +72,9 @@ class _QuestState extends State<Quest> {
     return Colors.white;
   }
 
-  // ─────────────────────────────────────────────
   // UI SECTIONS
-  // ─────────────────────────────────────────────
 
-  // ── Currency Row ─────────────────────────────────────────────────────────
+  // Currency Row
   Widget _buildCurrencyRow() {
     final coins = _currency['coins'] as int? ?? 0;
     final exp   = _currency['exp']   as int? ?? 0;
@@ -138,7 +134,7 @@ class _QuestState extends State<Quest> {
     );
   }
 
-  // ── Rank Card ─────────────────────────────────────────────────────────────
+  // Rank Card
   Widget _buildRankCard() {
     final rank     = _rank;
     final title    = rank['title']    as String;
@@ -269,7 +265,7 @@ class _QuestState extends State<Quest> {
     return '';
   }
 
-  // ── Daily Quests ──────────────────────────────────────────────────────────
+  // Daily Quests
   Widget _buildDailyQuests() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,7 +451,7 @@ class _QuestState extends State<Quest> {
     );
   }
 
-  // ── Achievements ──────────────────────────────────────────────────────────
+  // Achievements 
   Widget _buildAchievements() {
     // Color based on rarity
     Color rarityColor(String rarity, bool unlocked) {
@@ -581,9 +577,7 @@ class _QuestState extends State<Quest> {
     );
   }
 
-  // ─────────────────────────────────────────────
   // BUILD
-  // ─────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
