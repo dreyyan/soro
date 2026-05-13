@@ -8,7 +8,7 @@ import 'dart:async';
 import 'package:soro/main.dart';
 
 // [IMPORT] Screens
-import 'package:soro/screens/quiz/quiz_settings.dart';
+//import 'package:soro/screens/quiz/quiz_settings.dart';
 
 // [IMPORT] Widgets
 // [IMPORT] Database

@@ -6,15 +6,15 @@ import 'package:soro/screens/auth/login_page.dart';
 import 'package:soro/screens/auth/signup_page.dart';
 import 'package:soro/screens/hero_onboarding.dart';
 import 'package:soro/screens/profile/profile_onboarding.dart';
-import 'package:soro/screens/home_page.dart';
-import 'package:soro/screens/cards/cards.dart';
+import 'package:soro/screens/main-screens/home_page.dart';
+import 'package:soro/screens/main-screens/cards.dart';
 import 'package:soro/screens/profile/change_password.dart';
 import 'package:soro/screens/profile/edit_profile.dart';
-import 'package:soro/screens/profile/settings.dart';
-import 'package:soro/screens/quiz/quiz.dart';
+import 'package:soro/screens/main-screens/settings.dart';
+import 'package:soro/screens/main-screens/quiz.dart';
 import 'package:soro/screens/quiz/quiz_settings.dart';
 import 'package:soro/screens/quiz/quiz_start.dart';
-import 'package:soro/screens/quest.dart';
+import 'package:soro/screens/main-screens/quest.dart';
 import 'package:soro/screens/profile/profile.dart';
 
 // [IMPORT] Database

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:soro/main.dart';
 
 // [IMPORT] Screens
-import 'package:soro/screens/cards/cards_details.dart';
+//import 'package:soro/screens/cards/cards_details.dart';
 
 class DeckCard extends StatelessWidget {
   // Attributes
@@ -34,7 +34,7 @@ class DeckCard extends StatelessWidget {
     return Card(
       color: AppColors.secondary_100,
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 1,
+      elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: AppColors.secondary_300)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),

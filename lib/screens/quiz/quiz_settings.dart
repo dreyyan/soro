@@ -2,13 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
-import 'dart:math';
+//import 'dart:math';
 // [IMPORT] App
 import 'package:soro/main.dart';
 // [IMPORT] Database
 import 'package:soro/database/database_helper.dart';
 // [IMPORT] Models
-import 'package:soro/models/question.dart';
+//import 'package:soro/models/question.dart';
 // [IMPORT] PDF
 import 'package:file_picker/file_picker.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
@@ -1045,7 +1045,7 @@ $trimmedText
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.primary_500),
+              icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.text_700),
               onPressed: () => Navigator.pop(context),
             ),
             const Text(
@@ -1054,7 +1054,7 @@ $trimmedText
                 fontFamily: 'Baloo',
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.primary_500,
+                color: AppColors.text_700,
               ),
             ),
           ],

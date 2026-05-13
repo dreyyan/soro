@@ -6,7 +6,7 @@ import 'package:soro/main.dart';
 import 'package:soro/database/database_helper.dart';
 import 'package:soro/screens/profile/edit_profile.dart';
 import 'package:soro/screens/profile/change_password.dart';
-import 'package:soro/screens/profile/settings.dart';
+import 'package:soro/screens/main-screens/settings.dart';
 
 // [CLASS] Profile Page
 class Profile extends StatefulWidget {
@@ -86,7 +86,7 @@ class _ProfileState extends State<Profile> {
   }) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
-      elevation: 1,
+      elevation: 0,
       color: AppColors.secondary_100,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),

@@ -195,8 +195,10 @@ class _ChangePasswordState extends State<ChangePassword> {
       controller: controller,
       obscureText: obscureText,
       validator: validator,
+      style: const TextStyle(fontFamily: 'Nunito'),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: const TextStyle(fontFamily: 'Nunito', color: AppColors.text_400),
         prefixIcon: const Icon(Icons.lock_outline, color: AppColors.text_400),
         suffixIcon: IconButton(
           icon: Icon(
