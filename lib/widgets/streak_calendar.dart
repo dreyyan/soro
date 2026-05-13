@@ -9,8 +9,7 @@ class StreakCalendar extends StatefulWidget {
   final int streak;
 
   /// Day-of-month numbers the user was actually active in the displayed month.
-  /// Replace const {} default with real DB data when ready.
-  /// Example: {1, 3, 4, 5, 7} → active on the 1st, 3rd–5th, and 7th.
+  /// Pass real DB data here. Example: {1, 3, 4, 5, 7} → active on those days.
   final Set<int> activeDays;
 
   const StreakCalendar({
@@ -62,31 +61,20 @@ class _StreakCalendarState extends State<StreakCalendar> {
         _currentMonth.year == today.year &&
         _currentMonth.month == today.month;
 
-    // ─── TEST DATA (replace with DB fetch) ───────────────────────────────────
-    // Simulates the user being active on scattered days this month.
-    // Remove this block and pass real activeDays from your DB instead.
-    final testActiveDays = isCurrentMonth
-        ? <int>{
-            for (int d = 1; d <= today.day; d++)
-              if (d % 2 == 0 || d % 3 == 0) d // example: some random days
-          }
-        : <int>{};
-
-    final activeDays = widget.activeDays.isEmpty ? testActiveDays : widget.activeDays;
-    // ─────────────────────────────────────────────────────────────────────────
+    final activeDays = widget.activeDays;
 
     // Streak band only renders when streak >= 3
     final hasActiveStreak = widget.streak >= 3;
     final streakStart = hasActiveStreak
-    ? (today.day - widget.streak).clamp(1, today.day)
-    : -1;
+        ? (today.day - widget.streak).clamp(1, today.day)
+        : -1;
 
     bool isStreakDay(int day) {
       if (!isCurrentMonth || !hasActiveStreak) return false;
       return day >= streakStart && day <= today.day;
     }
 
-    // Pale highlight: user was active on this day but it is outside the streak band
+    // Pale highlight: user was active on this day but outside the streak band
     bool isUsedDay(int day) {
       if (isStreakDay(day)) return false;
       return activeDays.contains(day);
@@ -96,11 +84,10 @@ class _StreakCalendarState extends State<StreakCalendar> {
       final gridCol = (day + firstWeekday - 2) % 7;
       final streakOverflows = streakStart == 1 && (today.day - widget.streak + 1) < 1;
 
-
       final roundLeft  = day == streakStart || gridCol == 0 || (day == 1 && streakOverflows);
       final roundRight = day == today.day   || gridCol == 6;
 
-      const r = Radius.circular(8);
+      const r = Radius.circular(6);
       const z = Radius.zero;
 
       return BorderRadius.only(
@@ -113,7 +100,7 @@ class _StreakCalendarState extends State<StreakCalendar> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.secondary_50,
         borderRadius: BorderRadius.circular(12),
@@ -131,18 +118,18 @@ class _StreakCalendarState extends State<StreakCalendar> {
                     Text(
                       '${widget.streak + 1}',
                       style: const TextStyle(
-                        fontFamily: "Baloo",
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
+                        fontFamily: "Nunito",
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
                         color: AppColors.primary_500,
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     const Text(
                       "day streak!",
                       style: TextStyle(
                         fontFamily: "Nunito",
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: AppColors.text_600,
                       ),
@@ -154,7 +141,7 @@ class _StreakCalendarState extends State<StreakCalendar> {
                   "No active streak",
                   style: TextStyle(
                     fontFamily: "Nunito",
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: AppColors.text_400,
                   ),
@@ -162,13 +149,13 @@ class _StreakCalendarState extends State<StreakCalendar> {
               ],
               Icon(
                 Icons.local_fire_department,
-                color: hasActiveStreak ? AppColors.primary_500: AppColors.text_300,
-                size: 28,
+                color: hasActiveStreak ? AppColors.primary_500 : AppColors.text_300,
+                size: 22,
               ),
             ],
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 6),
 
           // [SECTION] Month Navigation
           Row(
@@ -176,25 +163,25 @@ class _StreakCalendarState extends State<StreakCalendar> {
             children: [
               GestureDetector(
                 onTap: () => _changeMonth(-1),
-                child: const Icon(Icons.chevron_left),
+                child: const Icon(Icons.chevron_left, size: 18),
               ),
               Text(
                 "${_monthName(_currentMonth.month)} ${_currentMonth.year}",
                 style: const TextStyle(
-                  fontFamily: "Baloo",
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                  fontFamily: "Nunito",
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.text_700,
                 ),
               ),
               GestureDetector(
                 onTap: () => _changeMonth(1),
-                child: const Icon(Icons.chevron_right),
+                child: const Icon(Icons.chevron_right, size: 18),
               ),
             ],
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
 
           // [SECTION] Calendar Grid
           GridView.builder(
@@ -203,8 +190,9 @@ class _StreakCalendarState extends State<StreakCalendar> {
             itemCount: daysInMonth + (firstWeekday - 1),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
-              mainAxisSpacing: 6,
+              mainAxisSpacing: 4,
               crossAxisSpacing: 0,
+              childAspectRatio: 1.1,
             ),
             itemBuilder: (context, index) {
               if (index < firstWeekday - 1) return const SizedBox();
@@ -219,12 +207,12 @@ class _StreakCalendarState extends State<StreakCalendar> {
               final isToday =
                   isCurrentMonth &&
                   today.day == day &&
-                  !hasActiveStreak; // ← no ring when streak band is active
+                  !hasActiveStreak;
 
               return Padding(
                 padding: streakDay
                     ? EdgeInsets.zero
-                    : const EdgeInsets.symmetric(horizontal: 3),
+                    : const EdgeInsets.symmetric(horizontal: 2),
                 child: Container(
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
@@ -232,19 +220,20 @@ class _StreakCalendarState extends State<StreakCalendar> {
                         ? AppColors.primary_500
                         : usedDay
                             ? AppColors.primary_100
-                            : AppColors.secondary_100,
+                            : AppColors.secondary_50,
                     borderRadius: streakDay
                         ? streakBorderRadius(day)
-                        : BorderRadius.circular(6),
+                        : BorderRadius.circular(5),
                     border: isToday
-                        ? Border.all(color: AppColors.primary_500, width: 2)
+                        ? Border.all(color: AppColors.primary_500, width: 1.5)
                         : null,
                   ),
                   child: Text(
                     '$day',
                     style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      fontFamily: "Nunito",
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
                       color: streakDay ? Colors.white : AppColors.text_600,
                     ),
                   ),
