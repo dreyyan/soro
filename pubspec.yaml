@@ -24,12 +24,12 @@ dev_dependencies:
   flutter_native_splash: ^2.4.6
 
 flutter_native_splash:
-  color: "#FFF9ED"
+  color: "#FF6B35"
   image: assets/images/splash-icon.png
   branding: assets/images/splash-branding.png   # image shown at bottom
   branding_mode: bottom
   android_12:
-    color: "#FFF9ED"
+    color: "#FF6B35"
     image: assets/images/splash-icon.png
     branding: assets/images/splash-branding.png
     branding_mode: bottom
